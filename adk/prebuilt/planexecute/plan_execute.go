@@ -283,10 +283,12 @@ type PlannerConfig struct {
 // GenPlannerModelInputFn 是一个生成 Planner 输入消息的函数类型。
 type GenPlannerModelInputFn func(ctx context.Context, userInput []adk.Message) ([]adk.Message, error)
 
+// defaultNewPlan 创建默认的 defaultPlan 实例。
 func defaultNewPlan(ctx context.Context) Plan {
 	return &defaultPlan{}
 }
 
+// defaultGenPlannerInputFn 使用默认的 PlannerPrompt 生成输入消息。
 func defaultGenPlannerInputFn(ctx context.Context, userInput []adk.Message) ([]adk.Message, error) {
 	msgs, err := PlannerPrompt.Format(ctx, map[string]any{
 		"input": userInput,
@@ -297,6 +299,7 @@ func defaultGenPlannerInputFn(ctx context.Context, userInput []adk.Message) ([]a
 	return msgs, nil
 }
 
+// planner 实现了负责生成执行计划的 Agent。
 type planner struct {
 	toolCall   bool
 	chatModel  model.BaseChatModel
@@ -304,14 +307,18 @@ type planner struct {
 	newPlan    NewPlan
 }
 
+// Name 返回 planner Agent 的名称。
 func (p *planner) Name(_ context.Context) string {
 	return "planner"
 }
 
+// Description 返回 planner Agent 的描述。
 func (p *planner) Description(_ context.Context) string {
 	return "a planner agent"
 }
 
+// argToContent 将工具调用的参数转换为 Assistant 消息的内容。
+// 这用于在流式传输时将工具调用参数展示给用户（如果需要）。
 func argToContent(msg adk.Message) (adk.Message, error) {
 	if len(msg.ToolCalls) == 0 {
 		return nil, schema.ErrNoValue
@@ -320,6 +327,10 @@ func argToContent(msg adk.Message) (adk.Message, error) {
 	return schema.AssistantMessage(msg.ToolCalls[0].Function.Arguments, nil), nil
 }
 
+// Run 执行 planner Agent 的主逻辑。
+// 1. 生成输入消息。
+// 2. 调用 ChatModel 生成计划（可能是直接文本或工具调用）。
+// 3. 解析生成的计划并存储到 Session 中。
 func (p *planner) Run(ctx context.Context, input *adk.AgentInput,
 	_ ...adk.AgentRunOption) *adk.AsyncIterator[*adk.AgentEvent] {
 
@@ -498,6 +509,7 @@ type ExecutorConfig struct {
 	GenInputFn GenModelInputFn
 }
 
+// ExecutedStep 记录了一个步骤的执行结果。
 type ExecutedStep struct {
 	Step   string
 	Result string
@@ -560,6 +572,8 @@ func NewExecutor(ctx context.Context, cfg *ExecutorConfig) (adk.Agent, error) {
 	return agent, nil
 }
 
+// defaultGenExecutorInputFn 使用默认的 ExecutorPrompt 生成输入消息。
+// 它会将当前计划、已执行步骤和下一步骤组合成 Prompt。
 func defaultGenExecutorInputFn(ctx context.Context, in *ExecutionContext) ([]adk.Message, error) {
 
 	planContent, err := in.Plan.MarshalJSON()
@@ -580,6 +594,8 @@ func defaultGenExecutorInputFn(ctx context.Context, in *ExecutionContext) ([]adk
 	return userMsgs, nil
 }
 
+// replanner 实现了负责重新规划的 Agent。
+// 它根据执行结果判断是继续执行、修改计划还是结束任务。
 type replanner struct {
 	chatModel   model.ToolCallingChatModel
 	planTool    *schema.ToolInfo
@@ -612,7 +628,7 @@ type ReplannerConfig struct {
 	NewPlan NewPlan
 }
 
-// formatInput formats the input messages into a string.
+// formatInput 将输入消息列表格式化为字符串。
 func formatInput(input []adk.Message) string {
 	var sb strings.Builder
 	for _, msg := range input {
@@ -623,6 +639,7 @@ func formatInput(input []adk.Message) string {
 	return sb.String()
 }
 
+// formatExecutedSteps 将已执行步骤列表格式化为字符串，用于 Prompt 上下文。
 func formatExecutedSteps(results []ExecutedStep) string {
 	var sb strings.Builder
 	for _, result := range results {
@@ -632,10 +649,12 @@ func formatExecutedSteps(results []ExecutedStep) string {
 	return sb.String()
 }
 
+// Name 返回 replanner Agent 的名称。
 func (r *replanner) Name(_ context.Context) string {
 	return "replanner"
 }
 
+// Description 返回 replanner Agent 的描述。
 func (r *replanner) Description(_ context.Context) string {
 	return "a replanner agent"
 }
@@ -692,6 +711,10 @@ func (r *replanner) genInput(ctx context.Context) ([]adk.Message, error) {
 	return msgs, nil
 }
 
+// Run 执行 replanner Agent 的主逻辑。
+// 1. 收集执行上下文（计划、结果、用户输入）。
+// 2. 调用 ChatModel 进行决策（使用 plan 工具或 respond 工具）。
+// 3. 根据决策结果更新计划或结束循环。
 func (r *replanner) Run(ctx context.Context, input *adk.AgentInput, _ ...adk.AgentRunOption) *adk.AsyncIterator[*adk.AgentEvent] {
 	iterator, generator := adk.NewAsyncIteratorPair[*adk.AgentEvent]()
 
@@ -780,6 +803,8 @@ func (r *replanner) Run(ctx context.Context, input *adk.AgentInput, _ ...adk.Age
 	return iterator
 }
 
+// buildGenReplannerInputFn 构建一个生成 Replanner 输入消息的函数。
+// 它允许注入工具名称以适应不同的工具配置。
 func buildGenReplannerInputFn(planToolName, respondToolName string) GenModelInputFn {
 	return func(ctx context.Context, in *ExecutionContext) ([]adk.Message, error) {
 		planContent, err := in.Plan.MarshalJSON()
