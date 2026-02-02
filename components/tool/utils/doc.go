@@ -15,4 +15,5 @@
  */
 
 // Package utils provides helper utilities for tools.
+// Package utils 提供工具的辅助实用程序。
 package utils

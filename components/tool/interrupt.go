@@ -41,6 +41,24 @@ import (
 //	    }
 //	    return doWork(args), nil
 //	}
+//
+// Interrupt 暂停工具执行并向编排层发送检查点信号。
+// 工具稍后可以使用可选数据恢复。
+//
+// 参数：
+//   - ctx: 传递给 InvokableRun/StreamableRun 的上下文
+//   - info: 关于工具为何中断的用户可见信息（例如，“需要用户确认”）
+//
+// 返回应从 InvokableRun/StreamableRun 返回的错误。
+//
+// 示例：
+//
+//	func (t *MyTool) InvokableRun(ctx context.Context, args string, opts ...Option) (string, error) {
+//	    if needsConfirmation(args) {
+//	        return "", tool.Interrupt(ctx, "Please confirm this action")
+//	    }
+//	    return doWork(args), nil
+//	}
 func Interrupt(ctx context.Context, info any) error {
 	is, err := core.Interrupt(ctx, info, nil, nil)
 	if err != nil {
@@ -68,6 +86,26 @@ func Interrupt(ctx context.Context, info any) error {
 //	    // Resumed - continue from saved state
 //	    return continueFrom(state), nil
 //	}
+//
+// StatefulInterrupt 暂停工具执行并保留状态。
+// 当工具具有必须在恢复时恢复的内部状态时使用此方法。
+//
+// 参数：
+//   - ctx: 传递给 InvokableRun/StreamableRun 的上下文
+//   - info: 关于中断的用户可见信息
+//   - state: 要持久化的内部状态（必须可 gob 序列化）
+//
+// 示例：
+//
+//	func (t *MyTool) InvokableRun(ctx context.Context, args string, opts ...Option) (string, error) {
+//	    wasInterrupted, hasState, state := tool.GetInterruptState[MyState](ctx)
+//	    if !wasInterrupted {
+//	        // 第一次运行 - 带状态中断
+//	        return "", tool.StatefulInterrupt(ctx, "processing", MyState{Step: 1})
+//	    }
+//	    // 已恢复 - 从保存的状态继续
+//	    return continueFrom(state), nil
+//	}
 func StatefulInterrupt(ctx context.Context, info any, state any) error {
 	is, err := core.Interrupt(ctx, info, state, nil)
 	if err != nil {
@@ -86,6 +124,28 @@ func StatefulInterrupt(ctx context.Context, info any, state any) error {
 //   - errs: Interrupt errors from sub-components (graphs, other tools, etc.)
 //
 // Example:
+//
+//	func (t *MyTool) InvokableRun(ctx context.Context, args string, opts ...Option) (string, error) {
+//	    result, err := t.internalGraph.Invoke(ctx, input)
+//	    if err != nil {
+//	        if _, ok := tool.IsInterruptError(err); ok {
+//	            return "", tool.CompositeInterrupt(ctx, "graph interrupted", myState, err)
+//	        }
+//	        return "", err
+//	    }
+//	    return result, nil
+//	}
+//
+// CompositeInterrupt 创建一个聚合多个子中断的中断。
+// 当工具在内部执行图或其他可中断组件时使用此方法。
+//
+// 参数：
+//   - ctx: 传递给 InvokableRun/StreamableRun 的上下文
+//   - info: 此工具中断的用户可见信息
+//   - state: 此工具要持久化的内部状态
+//   - errs: 来自子组件（图、其他工具等）的中断错误
+//
+// 示例：
 //
 //	func (t *MyTool) InvokableRun(ctx context.Context, args string, opts ...Option) (string, error) {
 //	    result, err := t.internalGraph.Invoke(ctx, input)

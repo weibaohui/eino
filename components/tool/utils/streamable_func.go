@@ -27,14 +27,16 @@ import (
 	"github.com/cloudwego/eino/schema"
 )
 
-// StreamFunc is the function type for the streamable tool.
+// StreamFunc is a function that takes a context and an input, and returns an output stream and an error.
+// StreamFunc 是一个接受上下文和输入，并返回输出流和错误的函数。
 type StreamFunc[T, D any] func(ctx context.Context, input T) (output *schema.StreamReader[D], err error)
 
-// OptionableStreamFunc is the function type for the streamable tool with tool option.
+// OptionableStreamFunc is a function that takes a context, an input, and options, and returns an output stream and an error.
+// OptionableStreamFunc 是一个接受上下文、输入和选项，并返回输出流和错误的函数。
 type OptionableStreamFunc[T, D any] func(ctx context.Context, input T, opts ...tool.Option) (output *schema.StreamReader[D], err error)
 
-// InferStreamTool creates an StreamableTool from a given function by inferring the ToolInfo from the function's request parameters
-// End-user can pass a SchemaCustomizerFn in opts to customize the go struct tag parsing process, overriding default behavior.
+// InferStreamTool creates a StreamableTool from a given function by inferring the ToolInfo from the function's request parameters.
+// InferStreamTool 通过从函数的请求参数推断 ToolInfo，从给定的函数创建一个 StreamableTool。
 func InferStreamTool[T, D any](toolName, toolDesc string, s StreamFunc[T, D], opts ...Option) (tool.StreamableTool, error) {
 	ti, err := goStruct2ToolInfo[T](toolName, toolDesc, opts...)
 	if err != nil {
@@ -44,7 +46,8 @@ func InferStreamTool[T, D any](toolName, toolDesc string, s StreamFunc[T, D], op
 	return NewStreamTool(ti, s, opts...), nil
 }
 
-// InferOptionableStreamTool creates an StreamableTool from a given function by inferring the ToolInfo from the function's request parameters, with tool option.
+// InferOptionableStreamTool creates a StreamableTool from a given function by inferring the ToolInfo from the function's request parameters.
+// InferOptionableStreamTool 通过从函数的请求参数推断 ToolInfo，从给定的函数创建一个 StreamableTool。
 func InferOptionableStreamTool[T, D any](toolName, toolDesc string, s OptionableStreamFunc[T, D], opts ...Option) (tool.StreamableTool, error) {
 	ti, err := goStruct2ToolInfo[T](toolName, toolDesc, opts...)
 	if err != nil {

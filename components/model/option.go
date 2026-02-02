@@ -128,25 +128,21 @@ func WithTools(tools []*schema.ToolInfo) Option {
 	}
 }
 
-// WithToolChoice is the option to set the tool choice for the model.
-//
-// WithToolChoice 是设置模型工具选择的选项。
-func WithToolChoice(toolChoice *schema.ToolChoice) Option {
+// WithToolChoice sets the tool choice for the model. It also allows for providing a list of
+// tool names to constrain the model to a specific subset of the available tools.
+func WithToolChoice(toolChoice schema.ToolChoice, allowedToolNames ...string) Option {
 	return Option{
 		apply: func(opts *Options) {
-			opts.ToolChoice = toolChoice
+			opts.ToolChoice = &toolChoice
+			opts.AllowedToolNames = allowedToolNames
 		},
 	}
 }
 
-// WithAllowedToolNames is the option to set the allowed tool names for the model.
-//
-// WithAllowedToolNames 是设置模型允许的工具名称的选项。
-func WithAllowedToolNames(allowedToolNames []string) Option {
+// WrapImplSpecificOptFn is the option to wrap the implementation specific option function.
+func WrapImplSpecificOptFn[T any](optFn func(*T)) Option {
 	return Option{
-		apply: func(opts *Options) {
-			opts.AllowedToolNames = allowedToolNames
-		},
+		implSpecificOptFn: optFn,
 	}
 }
 
@@ -181,15 +177,7 @@ func GetCommonOptions(base *Options, opts ...Option) *Options {
 
 	return base
 }
-
-// WrapImplSpecificOptFn is the option to wrap the implementation specific option function.
-//
-// WrapImplSpecificOptFn 是包装特定于实现的选项函数的选项。
-func WrapImplSpecificOptFn[T any](optFn func(*T)) Option {
-	return Option{
-		implSpecificOptFn: optFn,
-	}
-}
+ 
 
 // GetImplSpecificOptions extract the implementation specific options from Option list, optionally providing a base options with default values.
 // e.g.

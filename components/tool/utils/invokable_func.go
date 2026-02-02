@@ -29,13 +29,16 @@ import (
 	"github.com/cloudwego/eino/schema"
 )
 
-// InvokeFunc is the function type for the tool.
+// InvokeFunc is a function that takes a context and an input, and returns an output and an error.
+// InvokeFunc 是一个接受上下文和输入，并返回输出和错误的函数。
 type InvokeFunc[T, D any] func(ctx context.Context, input T) (output D, err error)
 
-// OptionableInvokeFunc is the function type for the tool with tool option.
+// OptionableInvokeFunc is a function that takes a context, an input, and options, and returns an output and an error.
+// OptionableInvokeFunc 是一个接受上下文、输入和选项，并返回输出和错误的函数。
 type OptionableInvokeFunc[T, D any] func(ctx context.Context, input T, opts ...tool.Option) (output D, err error)
 
 // InferTool creates an InvokableTool from a given function by inferring the ToolInfo from the function's request parameters.
+// InferTool 通过从函数的请求参数推断 ToolInfo，从给定的函数创建一个 InvokableTool。
 // End-user can pass a SchemaCustomizerFn in opts to customize the go struct tag parsing process, overriding default behavior.
 func InferTool[T, D any](toolName, toolDesc string, i InvokeFunc[T, D], opts ...Option) (tool.InvokableTool, error) {
 	ti, err := goStruct2ToolInfo[T](toolName, toolDesc, opts...)
@@ -46,7 +49,8 @@ func InferTool[T, D any](toolName, toolDesc string, i InvokeFunc[T, D], opts ...
 	return NewTool(ti, i, opts...), nil
 }
 
-// InferOptionableTool creates an InvokableTool from a given function by inferring the ToolInfo from the function's request parameters, with tool option.
+// InferOptionableTool creates an InvokableTool from a given function by inferring the ToolInfo from the function's request parameters.
+// InferOptionableTool 通过从函数的请求参数推断 ToolInfo，从给定的函数创建一个 InvokableTool。
 func InferOptionableTool[T, D any](toolName, toolDesc string, i OptionableInvokeFunc[T, D], opts ...Option) (tool.InvokableTool, error) {
 	ti, err := goStruct2ToolInfo[T](toolName, toolDesc, opts...)
 	if err != nil {
