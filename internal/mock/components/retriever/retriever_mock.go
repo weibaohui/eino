@@ -35,17 +35,20 @@ import (
 )
 
 // MockRetriever is a mock of Retriever interface.
+// MockRetriever 是 Retriever 接口的 Mock 实现。
 type MockRetriever struct {
 	ctrl     *gomock.Controller
 	recorder *MockRetrieverMockRecorder
 }
 
 // MockRetrieverMockRecorder is the mock recorder for MockRetriever.
+// MockRetrieverMockRecorder 是 MockRetriever 的 mock 记录器。
 type MockRetrieverMockRecorder struct {
 	mock *MockRetriever
 }
 
 // NewMockRetriever creates a new mock instance.
+// NewMockRetriever 创建一个新的 mock 实例。
 func NewMockRetriever(ctrl *gomock.Controller) *MockRetriever {
 	mock := &MockRetriever{ctrl: ctrl}
 	mock.recorder = &MockRetrieverMockRecorder{mock}
@@ -53,11 +56,13 @@ func NewMockRetriever(ctrl *gomock.Controller) *MockRetriever {
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT 返回一个对象，允许调用者指示预期的使用。
 func (m *MockRetriever) EXPECT() *MockRetrieverMockRecorder {
 	return m.recorder
 }
 
 // Retrieve mocks base method.
+// Retrieve 模拟基础方法。
 func (m *MockRetriever) Retrieve(ctx context.Context, query string, opts ...retriever.Option) ([]*schema.Document, error) {
 	m.ctrl.T.Helper()
 	varargs := []any{ctx, query}
@@ -71,6 +76,7 @@ func (m *MockRetriever) Retrieve(ctx context.Context, query string, opts ...retr
 }
 
 // Retrieve indicates an expected call of Retrieve.
+// Retrieve 指示对 Retrieve 的预期调用。
 func (mr *MockRetrieverMockRecorder) Retrieve(ctx, query any, opts ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]any{ctx, query}, opts...)

@@ -30,17 +30,20 @@ import (
 )
 
 // MockLoader is a mock of Loader interface.
+// MockLoader 是 Loader 接口的 Mock 实现。
 type MockLoader struct {
 	ctrl     *gomock.Controller
 	recorder *MockLoaderMockRecorder
 }
 
 // MockLoaderMockRecorder is the mock recorder for MockLoader.
+// MockLoaderMockRecorder 是 MockLoader 的 mock 记录器。
 type MockLoaderMockRecorder struct {
 	mock *MockLoader
 }
 
 // NewMockLoader creates a new mock instance.
+// NewMockLoader 创建一个新的 mock 实例。
 func NewMockLoader(ctrl *gomock.Controller) *MockLoader {
 	mock := &MockLoader{ctrl: ctrl}
 	mock.recorder = &MockLoaderMockRecorder{mock}
@@ -48,11 +51,13 @@ func NewMockLoader(ctrl *gomock.Controller) *MockLoader {
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT 返回一个对象，允许调用者指示预期的使用。
 func (m *MockLoader) EXPECT() *MockLoaderMockRecorder {
 	return m.recorder
 }
 
 // Load mocks base method.
+// Load 模拟基础方法。
 func (m *MockLoader) Load(ctx context.Context, src document.Source, opts ...document.LoaderOption) ([]*schema.Document, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, src}
@@ -66,6 +71,7 @@ func (m *MockLoader) Load(ctx context.Context, src document.Source, opts ...docu
 }
 
 // Load indicates an expected call of Load.
+// Load 指示对 Load 的预期调用。
 func (mr *MockLoaderMockRecorder) Load(ctx, src interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, src}, opts...)
@@ -73,17 +79,20 @@ func (mr *MockLoaderMockRecorder) Load(ctx, src interface{}, opts ...interface{}
 }
 
 // MockTransformer is a mock of Transformer interface.
+// MockTransformer 是 Transformer 接口的 Mock 实现。
 type MockTransformer struct {
 	ctrl     *gomock.Controller
 	recorder *MockTransformerMockRecorder
 }
 
 // MockTransformerMockRecorder is the mock recorder for MockTransformer.
+// MockTransformerMockRecorder 是 MockTransformer 的 mock 记录器。
 type MockTransformerMockRecorder struct {
 	mock *MockTransformer
 }
 
 // NewMockTransformer creates a new mock instance.
+// NewMockTransformer 创建一个新的 mock 实例。
 func NewMockTransformer(ctrl *gomock.Controller) *MockTransformer {
 	mock := &MockTransformer{ctrl: ctrl}
 	mock.recorder = &MockTransformerMockRecorder{mock}
@@ -91,11 +100,13 @@ func NewMockTransformer(ctrl *gomock.Controller) *MockTransformer {
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT 返回一个对象，允许调用者指示预期的使用。
 func (m *MockTransformer) EXPECT() *MockTransformerMockRecorder {
 	return m.recorder
 }
 
 // Transform mocks base method.
+// Transform 模拟基础方法。
 func (m *MockTransformer) Transform(ctx context.Context, src []*schema.Document, opts ...document.TransformerOption) ([]*schema.Document, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, src}

@@ -34,17 +34,20 @@ import (
 )
 
 // MockEmbedder is a mock of Embedder interface.
+// MockEmbedder 是 Embedder 接口的 Mock 实现。
 type MockEmbedder struct {
 	ctrl     *gomock.Controller
 	recorder *MockEmbedderMockRecorder
 }
 
 // MockEmbedderMockRecorder is the mock recorder for MockEmbedder.
+// MockEmbedderMockRecorder 是 MockEmbedder 的 mock 记录器。
 type MockEmbedderMockRecorder struct {
 	mock *MockEmbedder
 }
 
 // NewMockEmbedder creates a new mock instance.
+// NewMockEmbedder 创建一个新的 mock 实例。
 func NewMockEmbedder(ctrl *gomock.Controller) *MockEmbedder {
 	mock := &MockEmbedder{ctrl: ctrl}
 	mock.recorder = &MockEmbedderMockRecorder{mock}
@@ -52,11 +55,13 @@ func NewMockEmbedder(ctrl *gomock.Controller) *MockEmbedder {
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT 返回一个对象，允许调用者指示预期的使用。
 func (m *MockEmbedder) EXPECT() *MockEmbedderMockRecorder {
 	return m.recorder
 }
 
 // EmbedStrings mocks base method.
+// EmbedStrings 模拟基础方法。
 func (m *MockEmbedder) EmbedStrings(ctx context.Context, texts []string, opts ...embedding.Option) ([][]float64, error) {
 	m.ctrl.T.Helper()
 	varargs := []any{ctx, texts}
@@ -70,6 +75,7 @@ func (m *MockEmbedder) EmbedStrings(ctx context.Context, texts []string, opts ..
 }
 
 // EmbedStrings indicates an expected call of EmbedStrings.
+// EmbedStrings 指示对 EmbedStrings 的预期调用。
 func (mr *MockEmbedderMockRecorder) EmbedStrings(ctx, texts any, opts ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]any{ctx, texts}, opts...)

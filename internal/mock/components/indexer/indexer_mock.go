@@ -35,17 +35,20 @@ import (
 )
 
 // MockIndexer is a mock of Indexer interface.
+// MockIndexer 是 Indexer 接口的 Mock 实现。
 type MockIndexer struct {
 	ctrl     *gomock.Controller
 	recorder *MockIndexerMockRecorder
 }
 
 // MockIndexerMockRecorder is the mock recorder for MockIndexer.
+// MockIndexerMockRecorder 是 MockIndexer 的 mock 记录器。
 type MockIndexerMockRecorder struct {
 	mock *MockIndexer
 }
 
 // NewMockIndexer creates a new mock instance.
+// NewMockIndexer 创建一个新的 mock 实例。
 func NewMockIndexer(ctrl *gomock.Controller) *MockIndexer {
 	mock := &MockIndexer{ctrl: ctrl}
 	mock.recorder = &MockIndexerMockRecorder{mock}
@@ -53,11 +56,13 @@ func NewMockIndexer(ctrl *gomock.Controller) *MockIndexer {
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT 返回一个对象，允许调用者指示预期的使用。
 func (m *MockIndexer) EXPECT() *MockIndexerMockRecorder {
 	return m.recorder
 }
 
 // Store mocks base method.
+// Store 模拟基础方法。
 func (m *MockIndexer) Store(ctx context.Context, docs []*schema.Document, opts ...indexer.Option) ([]string, error) {
 	m.ctrl.T.Helper()
 	varargs := []any{ctx, docs}
@@ -71,6 +76,7 @@ func (m *MockIndexer) Store(ctx context.Context, docs []*schema.Document, opts .
 }
 
 // Store indicates an expected call of Store.
+// Store 指示对 Store 的预期调用。
 func (mr *MockIndexerMockRecorder) Store(ctx, docs any, opts ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]any{ctx, docs}, opts...)

@@ -34,6 +34,7 @@ import (
 )
 
 // MockAgent is a mock of Agent interface.
+// MockAgent 是 Agent 接口的 Mock 实现。
 type MockAgent struct {
 	ctrl     *gomock.Controller
 	recorder *MockAgentMockRecorder
@@ -41,11 +42,13 @@ type MockAgent struct {
 }
 
 // MockAgentMockRecorder is the mock recorder for MockAgent.
+// MockAgentMockRecorder 是 MockAgent 的 mock 记录器。
 type MockAgentMockRecorder struct {
 	mock *MockAgent
 }
 
 // NewMockAgent creates a new mock instance.
+// NewMockAgent 创建一个新的 mock 实例。
 func NewMockAgent(ctrl *gomock.Controller) *MockAgent {
 	mock := &MockAgent{ctrl: ctrl}
 	mock.recorder = &MockAgentMockRecorder{mock}
@@ -53,11 +56,13 @@ func NewMockAgent(ctrl *gomock.Controller) *MockAgent {
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT 返回一个对象，允许调用者指示预期的使用。
 func (m *MockAgent) EXPECT() *MockAgentMockRecorder {
 	return m.recorder
 }
 
 // Description mocks base method.
+// Description 模拟基础方法。
 func (m *MockAgent) Description(ctx context.Context) string {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Description", ctx)
@@ -66,12 +71,14 @@ func (m *MockAgent) Description(ctx context.Context) string {
 }
 
 // Description indicates an expected call of Description.
+// Description 指示对 Description 的预期调用。
 func (mr *MockAgentMockRecorder) Description(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Description", reflect.TypeOf((*MockAgent)(nil).Description), ctx)
 }
 
 // Name mocks base method.
+// Name 模拟基础方法。
 func (m *MockAgent) Name(ctx context.Context) string {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Name", ctx)
@@ -80,12 +87,14 @@ func (m *MockAgent) Name(ctx context.Context) string {
 }
 
 // Name indicates an expected call of Name.
+// Name 指示对 Name 的预期调用。
 func (mr *MockAgentMockRecorder) Name(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Name", reflect.TypeOf((*MockAgent)(nil).Name), ctx)
 }
 
 // Run mocks base method.
+// Run 模拟基础方法。
 func (m *MockAgent) Run(ctx context.Context, input *adk.AgentInput, options ...adk.AgentRunOption) *adk.AsyncIterator[*adk.AgentEvent] {
 	m.ctrl.T.Helper()
 	varargs := []any{ctx, input}
@@ -98,6 +107,7 @@ func (m *MockAgent) Run(ctx context.Context, input *adk.AgentInput, options ...a
 }
 
 // Run indicates an expected call of Run.
+// Run 指示对 Run 的预期调用。
 func (mr *MockAgentMockRecorder) Run(ctx, input any, options ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]any{ctx, input}, options...)

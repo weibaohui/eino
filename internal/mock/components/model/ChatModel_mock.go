@@ -35,6 +35,7 @@ import (
 )
 
 // MockBaseChatModel is a mock of BaseChatModel interface.
+// MockBaseChatModel 是 BaseChatModel 接口的 Mock 实现。
 type MockBaseChatModel struct {
 	ctrl     *gomock.Controller
 	recorder *MockBaseChatModelMockRecorder
@@ -42,11 +43,13 @@ type MockBaseChatModel struct {
 }
 
 // MockBaseChatModelMockRecorder is the mock recorder for MockBaseChatModel.
+// MockBaseChatModelMockRecorder 是 MockBaseChatModel 的 mock 记录器。
 type MockBaseChatModelMockRecorder struct {
 	mock *MockBaseChatModel
 }
 
 // NewMockBaseChatModel creates a new mock instance.
+// NewMockBaseChatModel 创建一个新的 mock 实例。
 func NewMockBaseChatModel(ctrl *gomock.Controller) *MockBaseChatModel {
 	mock := &MockBaseChatModel{ctrl: ctrl}
 	mock.recorder = &MockBaseChatModelMockRecorder{mock}
@@ -54,11 +57,13 @@ func NewMockBaseChatModel(ctrl *gomock.Controller) *MockBaseChatModel {
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT 返回一个对象，允许调用者指示预期的使用。
 func (m *MockBaseChatModel) EXPECT() *MockBaseChatModelMockRecorder {
 	return m.recorder
 }
 
 // Generate mocks base method.
+// Generate 模拟基础方法。
 func (m *MockBaseChatModel) Generate(ctx context.Context, input []*schema.Message, opts ...model.Option) (*schema.Message, error) {
 	m.ctrl.T.Helper()
 	varargs := []any{ctx, input}
@@ -72,6 +77,7 @@ func (m *MockBaseChatModel) Generate(ctx context.Context, input []*schema.Messag
 }
 
 // Generate indicates an expected call of Generate.
+// Generate 指示对 Generate 的预期调用。
 func (mr *MockBaseChatModelMockRecorder) Generate(ctx, input any, opts ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]any{ctx, input}, opts...)
@@ -79,6 +85,7 @@ func (mr *MockBaseChatModelMockRecorder) Generate(ctx, input any, opts ...any) *
 }
 
 // Stream mocks base method.
+// Stream 模拟基础方法。
 func (m *MockBaseChatModel) Stream(ctx context.Context, input []*schema.Message, opts ...model.Option) (*schema.StreamReader[*schema.Message], error) {
 	m.ctrl.T.Helper()
 	varargs := []any{ctx, input}
@@ -92,6 +99,7 @@ func (m *MockBaseChatModel) Stream(ctx context.Context, input []*schema.Message,
 }
 
 // Stream indicates an expected call of Stream.
+// Stream 指示对 Stream 的预期调用。
 func (mr *MockBaseChatModelMockRecorder) Stream(ctx, input any, opts ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]any{ctx, input}, opts...)
