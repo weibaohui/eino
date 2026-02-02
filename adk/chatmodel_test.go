@@ -495,6 +495,7 @@ func TestParallelReturnDirectlyToolCall(t *testing.T) {
 	}
 }
 
+// TestConcurrentSameToolSendToolGenActionUsesToolCallID tests that concurrent tool generation actions use the correct tool call ID.
 // TestConcurrentSameToolSendToolGenActionUsesToolCallID 测试并发调用相同工具时，ToolGenAction 是否正确使用了 ToolCallID。
 // 验证在并发环境下，同一工具的不同调用是否能通过 ToolCallID 正确区分。
 func TestConcurrentSameToolSendToolGenActionUsesToolCallID(t *testing.T) {
