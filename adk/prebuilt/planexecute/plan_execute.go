@@ -144,6 +144,35 @@ var (
 	// PlannerPrompt 是 Planner 的提示词模版。
 	// 它为 Planner 提供上下文和指导，说明如何生成 Plan。
 	PlannerPrompt = prompt.FromMessages(schema.FString,
+		// 规划器提示词的中文翻译：
+		// 你是一个专业的规划智能体。给定一个目标，请创建一个全面的分步骤计划以实现该目标。
+		//
+		// ## 你的任务
+		// 分析目标并生成一个战略计划，将目标分解为可管理、可执行的步骤。
+		//
+		// ## 规划要求
+		// 计划中的每一步必须：
+		// - **具体且可操作**：清晰的指令，可以毫无歧义地执行
+		// - **自包含**：包含所有必要的上下文、参数和要求
+		// - **可独立执行**：可以由智能体执行，而不依赖于其他步骤
+		// - **逻辑排序**：以最佳顺序排列，以便高效执行
+		// - **聚焦目标**：直接有助于实现主要目标
+		//
+		// ## 规划指南
+		// - 消除冗余或不必要的步骤
+		// - 包含每一步的相关约束、参数和成功标准
+		// - 确保最后一步产生完整的答案或可交付成果
+		// - 预见潜在挑战并包含缓解策略
+		// - 逻辑地构建步骤，使其相互建立
+		// - 提供足够的细节以确保成功执行
+		//
+		// ## 质量标准
+		// - 计划完整性：是否涵盖了目标的所有方面？
+		// - 步骤清晰度：每个步骤是否可以独立理解和执行？
+		// - 逻辑流程：步骤是否遵循合理的进展？
+		// - 效率：这是实现目标的最直接路径吗？
+		// - 适应性：计划能否处理意外结果或变化？
+
 		schema.SystemMessage(`You are an expert planning agent. Given an objective, create a comprehensive step-by-step plan to achieve the objective.
 
 ## YOUR TASK
@@ -177,7 +206,12 @@ Each step in your plan must be:
 	// ExecutorPrompt 是 Executor 的提示词模版。
 	// 它为 Executor 提供上下文和指导，说明如何执行 Task。
 	ExecutorPrompt = prompt.FromMessages(schema.FString,
+		// 执行器提示词的中文翻译：
+		// 你是一个勤奋而 meticulous 的执行智能体。按照给定的计划，仔细和彻底地执行你的任务。
 		schema.SystemMessage(`You are a diligent and meticulous executor agent. Follow the given plan and execute your tasks carefully and thoroughly.`),
+
+		// ## 你的任务
+		// 按照给定的计划，仔细和彻底地执行你的任务。
 		schema.UserMessage(`## OBJECTIVE
 {input}
 ## Given the following plan:
@@ -190,6 +224,43 @@ Each step in your plan must be:
 	// ReplannerPrompt 是 Replanner 的提示词模版。
 	// 它为 Replanner 提供上下文和指导，说明如何重新生成 Plan。
 	ReplannerPrompt = prompt.FromMessages(schema.FString,
+		// 重新规划器提示词的中文翻译：
+		// 你是一个专业的重新规划智能体。根据当前进度，分析当前状态并确定最优的下一个操作。
+		//
+		// ## 你的任务
+		// 根据上述进展，你必须选择恰好一个操作：
+		//
+		// ### 选项 1：完成（如果目标已完全实现）
+		// 调用 '{respond_tool}'，包含：
+		// - 全面的最终答案
+		// - 清晰总结目标是如何实现的结论
+		// - 执行过程中的关键洞察
+		//
+		// ### 选项 2：继续（如果需要更多工作）
+		// 调用 '{plan_tool}'，提供一个修订后的计划，该计划：
+		// - 仅包含剩余步骤（排除已完成的步骤）
+		// - 结合从已执行步骤中学到的经验
+		// - 解决发现的任何差距或问题
+		// - 保持逻辑步骤顺序
+		//
+		// ## 规划要求
+		// 计划中的每一步必须：
+		// - **具体且可操作**：可以毫无歧义地执行的清晰指令
+		// - **自包含**：包含所有必要的上下文、参数和要求
+		// - **可独立执行**：可以由智能体执行，而不依赖于其他步骤
+		// - **逻辑排序**：以最佳顺序排列，以便高效执行
+		// - **聚焦目标**：直接有助于实现主要目标
+		//
+		// ## 规划指南
+		// - 消除冗余或不必要的步骤
+		// - 根据新信息调整策略
+		// - 包含每一步的相关约束、参数和成功标准
+		//
+		// ## 决策标准
+		// - 原始目标是否已完全满足？
+		// - 是否还有剩余要求或子目标？
+		// - 结果是否表明需要调整策略？
+		// - 还需要哪些具体行动？
 		schema.SystemMessage(
 			`You are going to review the progress toward an objective. Analyze the current state and determine the optimal next action.
 
