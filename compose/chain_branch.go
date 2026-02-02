@@ -35,6 +35,9 @@ type nodeOptionsPair generic.Pair[*graphNode, *graphAddNodeOpts]
 // ChainBranch represents a conditional branch in a chain of operations.
 // It allows for dynamic routing of execution based on a condition.
 // All branches within ChainBranch are expected to either end the Chain, or converge to another node in the Chain.
+// ChainBranch 表示操作链中的条件分支。
+// 它允许基于条件动态路由执行。
+// ChainBranch 内的所有分支都应结束链，或汇聚到链中的另一个节点。
 type ChainBranch struct {
 	internalBranch *GraphBranch
 	key2BranchNode map[string]nodeOptionsPair
@@ -223,6 +226,7 @@ func (cb *ChainBranch) AddEmbedding(key string, node embedding.Embedder, opts ..
 }
 
 // AddRetriever adds a Retriever node to the branch.
+// AddRetriever 向分支添加 Retriever 节点。
 // eg.
 //
 //	retriever, err := volc_vikingdb.NewRetriever(ctx, &volc_vikingdb.RetrieverConfig{
@@ -236,6 +240,7 @@ func (cb *ChainBranch) AddRetriever(key string, node retriever.Retriever, opts .
 }
 
 // AddLoader adds a Loader node to the branch.
+// AddLoader 向分支添加 Loader 节点。
 // eg.
 //
 //	pdfParser, err := pdf.NewPDFParser()
@@ -250,6 +255,7 @@ func (cb *ChainBranch) AddLoader(key string, node document.Loader, opts ...Graph
 }
 
 // AddIndexer adds an Indexer node to the branch.
+// AddIndexer 向分支添加 Indexer 节点。
 // eg.
 //
 //	indexer, err := volc_vikingdb.NewIndexer(ctx, &volc_vikingdb.IndexerConfig{
@@ -263,6 +269,7 @@ func (cb *ChainBranch) AddIndexer(key string, node indexer.Indexer, opts ...Grap
 }
 
 // AddDocumentTransformer adds an Document Transformer node to the branch.
+// AddDocumentTransformer 向分支添加 Document Transformer 节点。
 // eg.
 //
 //	markdownSplitter, err := markdown.NewHeaderSplitter(ctx, &markdown.HeaderSplitterConfig{})
@@ -274,6 +281,7 @@ func (cb *ChainBranch) AddDocumentTransformer(key string, node document.Transfor
 }
 
 // AddGraph adds a generic Graph node to the branch.
+// AddGraph 向分支添加通用图节点。
 // eg.
 //
 //	graph, err := compose.NewGraph[string, string]()
@@ -285,6 +293,7 @@ func (cb *ChainBranch) AddGraph(key string, node AnyGraph, opts ...GraphAddNodeO
 }
 
 // AddPassthrough adds a Passthrough node to the branch.
+// AddPassthrough 向分支添加 Passthrough 节点。
 // eg.
 //
 //	cb.AddPassthrough("passthrough_node_key")
