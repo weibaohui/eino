@@ -22,22 +22,32 @@ import (
 )
 
 // CallbackInput is the input for the tool callback.
+//
+// CallbackInput 是工具回调的输入。
 type CallbackInput struct {
 	// ArgumentsInJSON is the arguments in json format for the tool.
+	// ArgumentsInJSON 是工具的 JSON 格式参数。
 	ArgumentsInJSON string
 	// Extra is the extra information for the tool.
+	// Extra 是工具的额外信息。
 	Extra map[string]any
 }
 
 // CallbackOutput is the output for the tool callback.
+//
+// CallbackOutput 是工具回调的输出。
 type CallbackOutput struct {
 	// Response is the response for the tool.
+	// Response 是工具的响应。
 	Response string
 	// Extra is the extra information for the tool.
+	// Extra 是工具的额外信息。
 	Extra map[string]any
 }
 
 // ConvCallbackInput converts the callback input to the tool callback input.
+//
+// ConvCallbackInput 将回调输入转换为工具回调输入。
 func ConvCallbackInput(src callbacks.CallbackInput) *CallbackInput {
 	switch t := src.(type) {
 	case *CallbackInput:
@@ -50,6 +60,8 @@ func ConvCallbackInput(src callbacks.CallbackInput) *CallbackInput {
 }
 
 // ConvCallbackOutput converts the callback output to the tool callback output.
+//
+// ConvCallbackOutput 将回调输出转换为工具回调输出。
 func ConvCallbackOutput(src callbacks.CallbackOutput) *CallbackOutput {
 	switch t := src.(type) {
 	case *CallbackOutput:

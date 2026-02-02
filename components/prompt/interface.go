@@ -25,6 +25,8 @@ import (
 var _ ChatTemplate = &DefaultChatTemplate{}
 
 // ChatTemplate formats variables into a list of messages according to a prompt schema.
+//
+// ChatTemplate 根据 prompt schema 将变量格式化为消息列表。
 type ChatTemplate interface {
 	Format(ctx context.Context, vs map[string]any, opts ...Option) ([]*schema.Message, error)
 }

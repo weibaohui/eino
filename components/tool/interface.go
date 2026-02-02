@@ -23,21 +23,30 @@ import (
 )
 
 // BaseTool get tool info for ChatModel intent recognition.
+//
+// BaseTool 获取 ChatModel 意图识别的工具信息。
 type BaseTool interface {
 	Info(ctx context.Context) (*schema.ToolInfo, error)
 }
 
 // InvokableTool the tool for ChatModel intent recognition and ToolsNode execution.
+//
+// InvokableTool 是用于 ChatModel 意图识别和 ToolsNode 执行的工具。
 type InvokableTool interface {
 	BaseTool
 
 	// InvokableRun call function with arguments in JSON format
+	// InvokableRun 使用 JSON 格式的参数调用函数
 	InvokableRun(ctx context.Context, argumentsInJSON string, opts ...Option) (string, error)
 }
 
 // StreamableTool the stream tool for ChatModel intent recognition and ToolsNode execution.
+//
+// StreamableTool 是用于 ChatModel 意图识别和 ToolsNode 执行的流式工具。
 type StreamableTool interface {
 	BaseTool
 
+	// StreamableRun call function with arguments in JSON format and return stream reader
+	// StreamableRun 使用 JSON 格式的参数调用函数并返回流式读取器
 	StreamableRun(ctx context.Context, argumentsInJSON string, opts ...Option) (*schema.StreamReader[string], error)
 }

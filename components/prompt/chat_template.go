@@ -25,6 +25,8 @@ import (
 )
 
 // DefaultChatTemplate is the default chat template implementation.
+//
+// DefaultChatTemplate 是默认的聊天模板实现。
 type DefaultChatTemplate struct {
 	// templates is the templates for the chat template.
 	templates []schema.MessagesTemplate
@@ -39,6 +41,14 @@ type DefaultChatTemplate struct {
 //	// in chain, or graph
 //	chain := compose.NewChain[map[string]any, []*schema.Message]()
 //	chain.AppendChatTemplate(template)
+//
+// FromMessages 根据给定的模板和格式类型创建一个新的 DefaultChatTemplate。
+// 例如：
+//
+//	template := prompt.FromMessages(schema.FString, &schema.Message{Content: "Hello, {name}!"}, &schema.Message{Content: "how are you?"})
+//	// in chain, or graph
+//	chain := compose.NewChain[map[string]any, []*schema.Message]()
+//	chain.AppendChatTemplate(template)
 func FromMessages(formatType schema.FormatType, templates ...schema.MessagesTemplate) *DefaultChatTemplate {
 	return &DefaultChatTemplate{
 		templates:  templates,
@@ -47,6 +57,8 @@ func FromMessages(formatType schema.FormatType, templates ...schema.MessagesTemp
 }
 
 // Format formats the chat template with the given context and variables.
+//
+// Format 使用给定的上下文和变量格式化聊天模板。
 func (t *DefaultChatTemplate) Format(ctx context.Context,
 	vs map[string]any, _ ...Option) (result []*schema.Message, err error) {
 	ctx = callbacks.EnsureRunInfo(ctx, t.GetType(), components.ComponentOfPrompt)
@@ -79,11 +91,15 @@ func (t *DefaultChatTemplate) Format(ctx context.Context,
 }
 
 // GetType returns the type of the chat template (Default).
+//
+// GetType 返回聊天模板的类型 (Default)。
 func (t *DefaultChatTemplate) GetType() string {
 	return "Default"
 }
 
 // IsCallbacksEnabled checks if the callbacks are enabled for the chat template.
+//
+// IsCallbacksEnabled 检查聊天模板是否启用了回调。
 func (t *DefaultChatTemplate) IsCallbacksEnabled() bool {
 	return true
 }

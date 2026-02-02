@@ -14,4 +14,7 @@
  * limitations under the License.
  */
 
+// Package retriever defines callback payloads for retrieval components.
+//
+// Package retriever 定义了 retrieval 组件的回调 payload。
 package retriever

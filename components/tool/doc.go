@@ -14,4 +14,7 @@
  * limitations under the License.
  */
 
+// Package tool defines callback inputs and outputs for tool execution.
+//
+// Package tool 定义了工具执行的回调输入和输出。
 package tool

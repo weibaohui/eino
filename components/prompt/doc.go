@@ -14,4 +14,7 @@
  * limitations under the License.
  */
 
+// Package prompt defines callback payloads for prompt components.
+//
+// Package prompt 定义了 prompt 组件的回调 payload。
 package prompt

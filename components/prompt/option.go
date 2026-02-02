@@ -17,11 +17,15 @@
 package prompt
 
 // Option is the call option for ChatTemplate component.
+//
+// Option 是 ChatTemplate 组件的调用选项。
 type Option struct {
 	implSpecificOptFn any
 }
 
 // WrapImplSpecificOptFn wraps the implementation specific option function.
+//
+// WrapImplSpecificOptFn 包装特定于实现的选项函数。
 func WrapImplSpecificOptFn[T any](optFn func(*T)) Option {
 	return Option{
 		implSpecificOptFn: optFn,
@@ -29,6 +33,8 @@ func WrapImplSpecificOptFn[T any](optFn func(*T)) Option {
 }
 
 // GetImplSpecificOptions extracts the implementation specific options from Option list, optionally providing a base options with default values.
+//
+// GetImplSpecificOptions 从 Option 列表中提取特定于实现的选项，可选择提供带有默认值的 base options。
 func GetImplSpecificOptions[T any](base *T, opts ...Option) *T {
 	if base == nil {
 		base = new(T)

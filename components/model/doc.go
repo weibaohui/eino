@@ -14,4 +14,7 @@
  * limitations under the License.
  */
 
+// Package model defines callback payloads and configuration types for chat models.
+//
+// Package model 定义了聊天模型的回调 payload 和配置类型。
 package model

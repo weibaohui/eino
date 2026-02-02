@@ -36,6 +36,19 @@ import (
 //
 //	 	graph := compose.NewGraph[inputType, outputType](compose.RunTypeDAG)
 //		graph.AddRetrieverNode("retriever_node_key", retriever) // <= using in graph
+//
+// Retriever 是 retriever 的接口。
+// 它用于从源检索文档。
+//
+// 例如：
+//
+//		retriever, err := redis.NewRetriever(ctx, &redis.RetrieverConfig{})
+//		if err != nil {...}
+//		docs, err := retriever.Retrieve(ctx, "query") // <= 直接使用
+//		docs, err := retriever.Retrieve(ctx, "query", retriever.WithTopK(3)) // <= 使用选项
+//
+//	 	graph := compose.NewGraph[inputType, outputType](compose.RunTypeDAG)
+//		graph.AddRetrieverNode("retriever_node_key", retriever) // <= 在图中使用
 type Retriever interface {
 	Retrieve(ctx context.Context, query string, opts ...Option) ([]*schema.Document, error)
 }
