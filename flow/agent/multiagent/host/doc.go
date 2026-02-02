@@ -14,4 +14,6 @@
  * limitations under the License.
  */
 
+// Package host implements the host pattern for multi-agent system.
+// Package host 实现了多智能体系统的 host 模式。
 package host
