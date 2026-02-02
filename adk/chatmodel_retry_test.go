@@ -180,6 +180,9 @@ func (m *streamErrorModel) WithTools(tools []*schema.ToolInfo) (model.ToolCallin
 	return m, nil
 }
 
+// TestChatModelAgentRetry_StreamError 测试流式输出中的错误重试机制。
+// 场景：模型在流式输出过程中发生错误（如网络中断）。
+// 验证：Agent 应该捕获流错误并根据配置进行重试，确保最终能获取完整的流数据。
 func TestChatModelAgentRetry_StreamError(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -269,6 +272,9 @@ func TestChatModelAgentRetry_StreamError(t *testing.T) {
 	}
 }
 
+// TestChatModelAgentRetry_WithTools_DirectError_Generate 测试带有工具调用的 Generate 模式下的错误重试。
+// 场景：带有工具的 Agent 在 Generate 调用时失败。
+// 验证：Agent 应该进行重试，并在成功后继续正常的工具调用流程。
 func TestChatModelAgentRetry_WithTools_DirectError_Generate(t *testing.T) {
 	ctx := context.Background()
 	ctrl := gomock.NewController(t)
@@ -323,6 +329,9 @@ func TestChatModelAgentRetry_WithTools_DirectError_Generate(t *testing.T) {
 	assert.Equal(t, int32(2), atomic.LoadInt32(&callCount))
 }
 
+// TestChatModelAgentRetry_NonRetryableError 测试不可重试的错误。
+// 场景：模型返回一个被标记为不可重试的错误。
+// 验证：Agent 应该直接返回错误，不进行重试。
 func TestChatModelAgentRetry_NonRetryableError(t *testing.T) {
 	ctx := context.Background()
 	ctrl := gomock.NewController(t)
@@ -380,6 +389,9 @@ func (m *inputCapturingModel) WithTools(_ []*schema.ToolInfo) (model.ToolCalling
 	return m, nil
 }
 
+// TestChatModelAgentRetry_MaxRetriesExhausted 测试超过最大重试次数的情况。
+// 场景：模型持续失败，超过配置的最大重试次数。
+// 验证：Agent 应该停止重试，并返回 RetryExhaustedError，其中包含最后一次的错误信息。
 func TestChatModelAgentRetry_MaxRetriesExhausted(t *testing.T) {
 	ctx := context.Background()
 	ctrl := gomock.NewController(t)
@@ -420,6 +432,8 @@ func TestChatModelAgentRetry_MaxRetriesExhausted(t *testing.T) {
 	assert.False(t, ok)
 }
 
+// TestChatModelAgentRetry_BackoffFunction 测试退避策略函数。
+// 验证自定义的退避函数是否被正确调用，以及重试间隔是否符合预期。
 func TestChatModelAgentRetry_BackoffFunction(t *testing.T) {
 	ctx := context.Background()
 	ctrl := gomock.NewController(t)
@@ -571,6 +585,8 @@ func (m *nonRetryAbleStreamErrorModel) WithTools(tools []*schema.ToolInfo) (mode
 	return m, nil
 }
 
+// TestChatModelAgentRetry_NoTools_NonRetryAbleStreamError 测试无工具调用的流式输出中的不可重试错误。
+// 验证在流式输出中遇到不可重试错误时，Agent 是否正确处理并终止流。
 func TestChatModelAgentRetry_NoTools_NonRetryAbleStreamError(t *testing.T) {
 	ctx := context.Background()
 
@@ -656,6 +672,8 @@ func TestDefaultBackoff(t *testing.T) {
 		"Delay should still be capped at 10s + jitter for very high attempts, got %v", d100)
 }
 
+// TestRetryExhaustedError_ErrorString 测试 RetryExhaustedError 的 Error 方法。
+// 验证错误信息字符串的格式是否正确。
 func TestRetryExhaustedError_ErrorString(t *testing.T) {
 	errWithLast := &RetryExhaustedError{
 		LastErr:      errors.New("connection timeout"),

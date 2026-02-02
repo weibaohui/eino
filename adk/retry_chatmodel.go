@@ -159,10 +159,16 @@ type ModelRetryConfig struct {
 	BackoffFunc func(ctx context.Context, attempt int) time.Duration
 }
 
+// defaultIsRetryAble 默认的重试判断函数。
+// 只要错误不为 nil，就认为是可重试的。
 func defaultIsRetryAble(_ context.Context, err error) bool {
 	return err != nil
 }
 
+// defaultBackoff 默认的退避策略函数。
+// 使用带有抖动的指数退避算法。
+// 基础延迟 100ms，最大延迟 10s。
+// 超过 7 次尝试后，使用最大延迟加随机抖动。
 func defaultBackoff(_ context.Context, attempt int) time.Duration {
 	baseDelay := 100 * time.Millisecond
 	maxDelay := 10 * time.Second
@@ -198,6 +204,8 @@ func genErrWrapper(ctx context.Context, config ModelRetryConfig, info streamRetr
 	}
 }
 
+// retryChatModel 带有重试逻辑的 ChatModel 包装器。
+// 它封装了一个内部的 ChatModel，并在其基础上添加了重试机制。
 type retryChatModel struct {
 	inner                 model.ToolCallingChatModel
 	config                *ModelRetryConfig
@@ -227,6 +235,15 @@ func (r *retryChatModel) WithTools(tools []*schema.ToolInfo) (model.ToolCallingC
 	return &retryChatModel{inner: newInner, config: r.config, innerHandlesCallbacks: innerHandlesCallbacks}, nil
 }
 
+// Generate 调用 ChatModel 生成回复，如果失败则根据配置进行重试。
+// 实现了 model.ChatModel 接口。
+// 流程：
+// 1. 获取重试判断函数和退避函数。
+// 2. 循环尝试调用内部 ChatModel 的 Generate 方法。
+// 3. 如果调用成功，直接返回结果。
+// 4. 如果调用失败，检查是否可重试。如果不可重试，直接返回错误。
+// 5. 如果可重试且未达到最大尝试次数，等待一段时间后重试。
+// 6. 如果所有尝试都失败，返回 RetryExhaustedError。
 func (r *retryChatModel) Generate(ctx context.Context, input []*schema.Message, opts ...model.Option) (*schema.Message, error) {
 	isRetryAble := r.config.IsRetryAble
 	if isRetryAble == nil {
@@ -266,6 +283,8 @@ func (r *retryChatModel) Generate(ctx context.Context, input []*schema.Message, 
 	return nil, &RetryExhaustedError{LastErr: lastErr, TotalRetries: r.config.MaxRetries}
 }
 
+// generateWithProxyCallbacks 在内部 ChatModel 不支持回调时，使用代理处理回调。
+// 确保在重试过程中也能正确触发 Start、Error 和 End 回调。
 func (r *retryChatModel) generateWithProxyCallbacks(ctx context.Context,
 	input []*schema.Message, opts ...model.Option) (*schema.Message, error) {
 
@@ -282,12 +301,15 @@ func (r *retryChatModel) generateWithProxyCallbacks(ctx context.Context,
 	return out, nil
 }
 
+// streamRetryKey 用于在 context 中存储重试信息的 key。
 type streamRetryKey struct{}
 
+// streamRetryInfo 存储流式重试的上下文信息。
 type streamRetryInfo struct {
 	attempt int // first request is 0, first retry is 1
 }
 
+// getStreamRetryInfo 从 context 中获取流式重试信息。
 func getStreamRetryInfo(ctx context.Context) (*streamRetryInfo, bool) {
 	info, ok := ctx.Value(streamRetryKey{}).(*streamRetryInfo)
 	return info, ok

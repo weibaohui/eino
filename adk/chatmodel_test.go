@@ -153,6 +153,8 @@ func TestChatModelAgentRun(t *testing.T) {
 	})
 
 	// Test with streaming output
+	// StreamOutput 测试流式输出功能。
+	// 验证 Agent 在启用流式输出时，能否正确返回流式事件。
 	t.Run("StreamOutput", func(t *testing.T) {
 		ctx := context.Background()
 
@@ -205,6 +207,8 @@ func TestChatModelAgentRun(t *testing.T) {
 	})
 
 	// Test error handling
+	// ErrorHandling 测试错误处理机制。
+	// 验证当模型返回错误时，Agent 能否正确捕获并返回错误。
 	t.Run("ErrorHandling", func(t *testing.T) {
 		ctx := context.Background()
 
@@ -247,6 +251,8 @@ func TestChatModelAgentRun(t *testing.T) {
 	})
 
 	// Test with tools
+	// WithTools 测试带有工具调用的场景。
+	// 验证 Agent 能否正确处理模型生成的工具调用请求，执行工具，并将结果反馈给模型。
 	t.Run("WithTools", func(t *testing.T) {
 		ctx := context.Background()
 
@@ -336,6 +342,8 @@ func TestChatModelAgentRun(t *testing.T) {
 }
 
 // TestExitTool tests the Exit tool functionality
+// TestExitTool 测试 Exit 工具的功能。
+// 验证当模型调用 Exit 工具时，Agent 是否会设置 Exit 标志并终止执行。
 func TestExitTool(t *testing.T) {
 	ctx := context.Background()
 
@@ -413,6 +421,8 @@ func TestExitTool(t *testing.T) {
 	assert.False(t, ok)
 }
 
+// TestParallelReturnDirectlyToolCall 测试并行工具调用且配置为直接返回的场景。
+// 验证当多个工具并行执行且部分工具配置为 ReturnDirectly 时，Agent 的行为是否符合预期。
 func TestParallelReturnDirectlyToolCall(t *testing.T) {
 	ctx := context.Background()
 	// Create a mock controller
@@ -485,6 +495,8 @@ func TestParallelReturnDirectlyToolCall(t *testing.T) {
 	}
 }
 
+// TestConcurrentSameToolSendToolGenActionUsesToolCallID 测试并发调用相同工具时，ToolGenAction 是否正确使用了 ToolCallID。
+// 验证在并发环境下，同一工具的不同调用是否能通过 ToolCallID 正确区分。
 func TestConcurrentSameToolSendToolGenActionUsesToolCallID(t *testing.T) {
 	ctx := context.Background()
 	ctrl := gomock.NewController(t)
@@ -600,8 +612,11 @@ func (s legacyStreamActionTool) StreamableRun(ctx context.Context, argumentsInJS
 }
 
 // TestChatModelAgentOutputKey tests the outputKey configuration and setOutputToSession function
+// TestChatModelAgentOutputKey 测试 OutputKey 配置和 setOutputToSession 函数。
+// 验证配置了 OutputKey 后，Agent 的输出是否能正确存储到 Session 中。
 func TestChatModelAgentOutputKey(t *testing.T) {
 	// Test outputKey configuration - stores output in session
+	// OutputKeyStoresInSession 测试 OutputKey 配置 - 将输出存储在 Session 中。
 	t.Run("OutputKeyStoresInSession", func(t *testing.T) {
 		for i := 0; i < 1000; i++ {
 
@@ -665,6 +680,7 @@ func TestChatModelAgentOutputKey(t *testing.T) {
 	})
 
 	// Test outputKey configuration with streaming - stores concatenated output in session
+	// OutputKeyWithStreamingStoresInSession 测试流式输出下的 OutputKey 配置 - 将拼接后的输出存储在 Session 中。
 	t.Run("OutputKeyWithStreamingStoresInSession", func(t *testing.T) {
 		ctx := context.Background()
 

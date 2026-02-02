@@ -266,6 +266,8 @@ func TestNewExecutor(t *testing.T) {
 // 2. Mock ChatModel 读取 UserInput 并返回响应。
 // 3. 运行 Executor。
 // 4. 验证 Executor 正确调用了 Model 并输出了结果。
+// TestExecutorRun 测试 Executor 组件的运行逻辑。
+// 验证执行器能否正确处理工具调用并返回结果。
 func TestExecutorRun(t *testing.T) {
 	ctx := context.Background()
 

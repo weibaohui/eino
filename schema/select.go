@@ -1,28 +1,15 @@
-/*
- * Copyright 2024 CloudWeGo Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package schema
 
-const maxSelectNum = 5
-
-// receiveN receives from one of the chosen streams efficiently using switch-case select.
-// It supports up to maxSelectNum streams.
-//
 // receiveN 使用 switch-case select 高效地从选定的流中接收数据。
 // 它最多支持 maxSelectNum 个流。
+// 参数：
+//   - chosenList: 需要从中接收数据的流的索引列表。
+//   - ss: 所有的流列表。
+//
+// 返回值：
+//   - index: 接收到数据的流的索引。
+//   - item: 接收到的数据项。
+//   - ok: 通道是否仍然打开。
 func receiveN[T any](chosenList []int, ss []*stream[T]) (int, *streamItem[T], bool) {
 	return []func(chosenList []int, ss []*stream[T]) (index int, item *streamItem[T], ok bool){
 		nil,
