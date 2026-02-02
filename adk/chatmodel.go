@@ -52,11 +52,15 @@ const (
 // chatModelAgentRunOptions 定义了 ChatModel Agent 的运行选项。
 type chatModelAgentRunOptions struct {
 	// run 阶段的选项
+	// chatModelOptions 是传递给 ChatModel 的选项。
 	chatModelOptions []model.Option
+	// toolOptions 是传递给工具的选项。
 	toolOptions      []tool.Option
+	// agentToolOptions 是传递给 Agent 工具的选项。
 	agentToolOptions map[ /*tool name*/ string][]AgentRunOption // todo: map or list?
 
 	// resume 阶段的选项
+	// historyModifier 是用于修改历史记录的函数。
 	historyModifier func(context.Context, []Message) []Message
 }
 

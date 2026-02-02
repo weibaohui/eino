@@ -195,18 +195,27 @@ func newAdkToolResultCollectorMiddleware() compose.ToolMiddleware {
 }
 
 type reactConfig struct {
+	// model 是底层的 ChatModel。
 	model model.ToolCallingChatModel
 
+	// toolsConfig 是工具节点配置。
 	toolsConfig *compose.ToolsNodeConfig
 
+	// toolsReturnDirectly 指定哪些工具需要直接返回结果。
 	toolsReturnDirectly map[string]bool
 
+	// agentName 是 Agent 的名称。
 	agentName string
 
+	// maxIterations 是最大迭代次数。
 	maxIterations int
 
-	beforeChatModel, afterChatModel []func(context.Context, *ChatModelAgentState) error
+	// beforeChatModel 是在 ChatModel 调用前的钩子函数。
+	beforeChatModel []func(context.Context, *ChatModelAgentState) error
+	// afterChatModel 是在 ChatModel 调用后的钩子函数。
+	afterChatModel []func(context.Context, *ChatModelAgentState) error
 
+	// modelRetryConfig 是模型重试配置。
 	modelRetryConfig *ModelRetryConfig
 }
 
