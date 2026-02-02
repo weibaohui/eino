@@ -31,6 +31,8 @@ type inMemoryBackend struct {
 	m []Skill
 }
 
+// List implements Backend.List
+// List 实现 Backend.List
 func (i *inMemoryBackend) List(ctx context.Context) ([]FrontMatter, error) {
 	matters := make([]FrontMatter, 0, len(i.m))
 	for _, skill := range i.m {
@@ -39,6 +41,8 @@ func (i *inMemoryBackend) List(ctx context.Context) ([]FrontMatter, error) {
 	return matters, nil
 }
 
+// Get implements Backend.Get
+// Get 实现 Backend.Get
 func (i *inMemoryBackend) Get(ctx context.Context, name string) (Skill, error) {
 	for _, skill := range i.m {
 		if skill.Name == name {
@@ -109,6 +113,7 @@ Base directory for this skill: basedir1
 content1`, result)
 
 	// chinese
+	// 中文
 	m, err = New(ctx, &Config{Backend: backend, UseChinese: true})
 	assert.NoError(t, err)
 	assert.Len(t, m.AdditionalTools, 1)
@@ -148,20 +153,25 @@ desc2
 content1`, result)
 }
 
+// TestSkillToolName 测试 Skill 工具名称自定义
 func TestSkillToolName(t *testing.T) {
 	ctx := context.Background()
 
 	// default
+	// 默认
 	m, err := New(ctx, &Config{Backend: &inMemoryBackend{m: []Skill{}}})
 	assert.NoError(t, err)
 	// instruction
+	// 指令
 	assert.Contains(t, m.AdditionalInstruction, "'skill'")
 	// tool name
+	// 工具名称
 	info, err := m.AdditionalTools[0].Info(ctx)
 	assert.NoError(t, err)
 	assert.Equal(t, "skill", info.Name)
 
 	// customized
+	// 自定义
 	name := "load_skill"
 	m, err = New(ctx, &Config{Backend: &inMemoryBackend{m: []Skill{}}, SkillToolName: &name})
 	assert.NoError(t, err)
@@ -171,6 +181,7 @@ func TestSkillToolName(t *testing.T) {
 	assert.Equal(t, "load_skill", info.Name)
 
 	// chinese
+	// 中文
 	m, err = New(ctx, &Config{Backend: &inMemoryBackend{m: []Skill{}}, SkillToolName: &name, UseChinese: true})
 	assert.NoError(t, err)
 	assert.Contains(t, m.AdditionalInstruction, "'load_skill'")

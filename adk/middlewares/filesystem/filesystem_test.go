@@ -33,6 +33,7 @@ func setupTestBackend() *filesystem.InMemoryBackend {
 	ctx := context.Background()
 
 	// Create test files
+	// 创建测试文件
 	backend.Write(ctx, &filesystem.WriteRequest{
 		FilePath: "/file1.txt",
 		Content:  "line1\nline2\nline3\nline4\nline5",
@@ -113,6 +114,7 @@ func TestLsTool(t *testing.T) {
 	}
 }
 
+// TestReadFileTool 测试 ReadFile 工具
 func TestReadFileTool(t *testing.T) {
 	backend := setupTestBackend()
 	readTool, err := newReadFileTool(backend, nil)
@@ -172,6 +174,7 @@ func TestReadFileTool(t *testing.T) {
 	}
 }
 
+// TestWriteFileTool 测试 WriteFile 工具
 func TestWriteFileTool(t *testing.T) {
 	backend := setupTestBackend()
 	writeTool, err := newWriteFileTool(backend, nil)
@@ -216,6 +219,7 @@ func TestWriteFileTool(t *testing.T) {
 	}
 
 	// Verify the file was actually written
+	// 验证文件是否实际写入
 	ctx := context.Background()
 	content, err := backend.Read(ctx, &filesystem.ReadRequest{
 		FilePath: "/newfile.txt",
@@ -230,6 +234,7 @@ func TestWriteFileTool(t *testing.T) {
 	}
 }
 
+// TestEditFileTool 测试 EditFile 工具
 func TestEditFileTool(t *testing.T) {
 	backend := setupTestBackend()
 	editTool, err := newEditFileTool(backend, nil)
@@ -279,6 +284,7 @@ func TestEditFileTool(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Setup file if needed
+			// 如果需要，设置文件
 			if tt.setupFile != "" {
 				backend.Write(ctx, &filesystem.WriteRequest{
 					FilePath: tt.setupFile,
@@ -311,6 +317,7 @@ func TestEditFileTool(t *testing.T) {
 	}
 }
 
+// TestGlobTool 测试 Glob 工具
 func TestGlobTool(t *testing.T) {
 	backend := setupTestBackend()
 	globTool, err := newGlobTool(backend, nil)
@@ -366,6 +373,7 @@ func TestGlobTool(t *testing.T) {
 	}
 }
 
+// TestGrepTool 测试 Grep 工具
 func TestGrepTool(t *testing.T) {
 	backend := setupTestBackend()
 	grepTool, err := newGrepTool(backend, nil)

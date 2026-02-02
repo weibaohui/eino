@@ -55,6 +55,7 @@ func TestNewLocalBackend(t *testing.T) {
 
 	t.Run("baseDir is a file returns error", func(t *testing.T) {
 		// Create a temporary file
+		// 创建一个临时文件
 		tmpFile, err := os.CreateTemp("", "skill-test-*")
 		require.NoError(t, err)
 		defer os.Remove(tmpFile.Name())
@@ -105,6 +106,7 @@ func TestLocalBackend_List(t *testing.T) {
 		defer os.RemoveAll(tmpDir)
 
 		// Create a subdirectory without SKILL.md
+		// 创建一个没有 SKILL.md 的子目录
 		subDir := filepath.Join(tmpDir, "subdir")
 		require.NoError(t, os.Mkdir(subDir, 0755))
 
@@ -122,6 +124,7 @@ func TestLocalBackend_List(t *testing.T) {
 		defer os.RemoveAll(tmpDir)
 
 		// Create a SKILL.md in root (should be ignored, only subdirs are scanned)
+		// 在根目录创建一个 SKILL.md（应被忽略，仅扫描子目录）
 		skillFile := filepath.Join(tmpDir, "SKILL.md")
 		require.NoError(t, os.WriteFile(skillFile, []byte(`---
 name: root-skill
@@ -143,6 +146,7 @@ Content`), 0644))
 		defer os.RemoveAll(tmpDir)
 
 		// Create a skill directory with SKILL.md
+		// 创建一个带有 SKILL.md 的技能目录
 		skillDir := filepath.Join(tmpDir, "my-skill")
 		require.NoError(t, os.Mkdir(skillDir, 0755))
 		skillFile := filepath.Join(skillDir, "SKILL.md")
@@ -172,6 +176,7 @@ This is the skill content.`), 0644))
 		defer os.RemoveAll(tmpDir)
 
 		// Create first skill
+		// 创建第一个技能
 		skill1Dir := filepath.Join(tmpDir, "skill-1")
 		require.NoError(t, os.Mkdir(skill1Dir, 0755))
 		require.NoError(t, os.WriteFile(filepath.Join(skill1Dir, "SKILL.md"), []byte(`---
@@ -181,6 +186,7 @@ description: First skill
 Content 1`), 0644))
 
 		// Create second skill
+		// 创建第二个技能
 		skill2Dir := filepath.Join(tmpDir, "skill-2")
 		require.NoError(t, os.Mkdir(skill2Dir, 0755))
 		require.NoError(t, os.WriteFile(filepath.Join(skill2Dir, "SKILL.md"), []byte(`---
@@ -197,6 +203,7 @@ Content 2`), 0644))
 		assert.Len(t, skills, 2)
 
 		// Check both skills exist (order may vary due to filesystem)
+		// 检查两个技能是否存在（由于文件系统的原因，顺序可能会有所不同）
 		names := []string{skills[0].Name, skills[1].Name}
 		assert.Contains(t, names, "skill-1")
 		assert.Contains(t, names, "skill-2")
@@ -208,6 +215,7 @@ Content 2`), 0644))
 		defer os.RemoveAll(tmpDir)
 
 		// Create a skill directory with invalid SKILL.md (no frontmatter)
+		// 创建一个带有无效 SKILL.md 的技能目录（无 frontmatter）
 		skillDir := filepath.Join(tmpDir, "invalid-skill")
 		require.NoError(t, os.Mkdir(skillDir, 0755))
 		skillFile := filepath.Join(skillDir, "SKILL.md")
@@ -246,6 +254,7 @@ func TestLocalBackend_Get(t *testing.T) {
 		defer os.RemoveAll(tmpDir)
 
 		// Create a skill directory
+		// 创建一个技能目录
 		skillDir := filepath.Join(tmpDir, "test-skill")
 		require.NoError(t, os.Mkdir(skillDir, 0755))
 		require.NoError(t, os.WriteFile(filepath.Join(skillDir, "SKILL.md"), []byte(`---
@@ -270,6 +279,7 @@ Test content here.`), 0644))
 		defer os.RemoveAll(tmpDir)
 
 		// Create multiple skills
+		// 创建多个技能
 		for _, name := range []string{"alpha", "beta", "gamma"} {
 			skillDir := filepath.Join(tmpDir, name)
 			require.NoError(t, os.Mkdir(skillDir, 0755))
@@ -291,6 +301,7 @@ Content for `+name), 0644))
 	})
 }
 
+// TestParseFrontmatter 测试 parseFrontmatter 函数
 func TestParseFrontmatter(t *testing.T) {
 	t.Run("valid frontmatter", func(t *testing.T) {
 		data := `---
@@ -330,6 +341,7 @@ Content  `
 		assert.NoError(t, err)
 		assert.Equal(t, "name: test", fm)
 		// Note: parseFrontmatter trims trailing whitespace from input data
+		// 注意：parseFrontmatter 会修剪输入数据的尾部空格
 		assert.Equal(t, "Content", content)
 	})
 
@@ -392,6 +404,7 @@ Content with --- in the middle`
 	})
 }
 
+// TestLoadSkillFromFile 测试 loadSkillFromFile 方法
 func TestLoadSkillFromFile(t *testing.T) {
 	t.Run("valid skill file", func(t *testing.T) {
 		tmpDir, err := os.MkdirTemp("", "skill-test-*")
@@ -413,6 +426,7 @@ File skill content.`), 0644))
 		assert.Equal(t, "File skill content.", skill.Content)
 
 		// Verify BaseDirectory is set correctly
+		// 验证 BaseDirectory 设置正确
 		absDir, _ := filepath.Abs(tmpDir)
 		assert.Equal(t, absDir, skill.BaseDirectory)
 	})
