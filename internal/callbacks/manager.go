@@ -29,6 +29,8 @@ type manager struct {
 
 var GlobalHandlers []Handler
 
+// newManager 创建回调管理器（结合全局与本地 handlers）
+// - 返回值第二个参数表示是否存在任何处理器
 func newManager(runInfo *RunInfo, handlers ...Handler) (*manager, bool) {
 	if len(handlers)+len(GlobalHandlers) == 0 {
 		return nil, false
@@ -44,10 +46,12 @@ func newManager(runInfo *RunInfo, handlers ...Handler) (*manager, bool) {
 	}, true
 }
 
+// ctxWithManager 将管理器注入上下文
 func ctxWithManager(ctx context.Context, manager *manager) context.Context {
 	return context.WithValue(ctx, CtxManagerKey{}, manager)
 }
 
+// withRunInfo 在现有管理器上改写 RunInfo（复制一份）
 func (m *manager) withRunInfo(runInfo *RunInfo) *manager {
 	if m == nil {
 		return nil
@@ -58,6 +62,7 @@ func (m *manager) withRunInfo(runInfo *RunInfo) *manager {
 	return &n
 }
 
+// managerFromCtx 从上下文获取管理器（若存在则复制返回）
 func managerFromCtx(ctx context.Context) (*manager, bool) {
 	v := ctx.Value(CtxManagerKey{})
 	m, ok := v.(*manager)

@@ -32,6 +32,7 @@ type AddressSegmentType string
 type Address []AddressSegment
 
 // String converts an Address into its unique string representation.
+// String 将层级地址转换为唯一字符串表示（Type:ID(:SubID);...）
 func (p Address) String() string {
 	if p == nil {
 		return ""
@@ -52,6 +53,7 @@ func (p Address) String() string {
 	return sb.String()
 }
 
+// Equals 比较两个层级地址是否完全一致
 func (p Address) Equals(other Address) bool {
 	if len(p) != len(other) {
 		return false
@@ -99,6 +101,7 @@ type globalResumeInfo struct {
 // GetCurrentAddress returns the hierarchical address of the currently executing component.
 // The address is a sequence of segments, each identifying a structural part of the execution
 // like an agent, a graph node, or a tool call. This can be useful for logging or debugging.
+// GetCurrentAddress 返回当前执行组件的层级地址（用于日志/诊断）
 func GetCurrentAddress(ctx context.Context) Address {
 	if p, ok := ctx.Value(addrCtxKey{}).(*addrCtx); ok {
 		return p.addr
@@ -115,6 +118,9 @@ func GetCurrentAddress(ctx context.Context) Address {
 //   - ctx: The parent context, typically the one passed into the component's Invoke/Stream method.
 //   - segType: The type of the new address segment (e.g., "node", "tool").
 //   - segID: The unique ID for the new address segment.
+// AppendAddressSegment 为子组件创建新的执行上下文（扩展地址，并注入中断/恢复信息）
+// - 使用：在进入子组件（节点/工具等）时调用，形成新的地址段上下文
+// - 逻辑：根据当前地址生成新地址；若全局恢复信息存在，注入匹配的中断状态与恢复数据
 func AppendAddressSegment(ctx context.Context, segType AddressSegmentType, segID string,
 	subID string) context.Context {
 	// get current address
@@ -194,6 +200,7 @@ func AppendAddressSegment(ctx context.Context, segType AddressSegmentType, segID
 }
 
 // GetNextResumptionPoints finds the immediate child resumption points for a given parent address.
+// GetNextResumptionPoints 返回当前地址的“下一层”可恢复子节点集合（ID->true）
 func GetNextResumptionPoints(ctx context.Context) (map[string]bool, error) {
 	parentAddr := GetCurrentAddress(ctx)
 
@@ -246,6 +253,9 @@ func GetNextResumptionPoints(ctx context.Context) (map[string]bool, error) {
 //
 // This function is the foundation for the "Explicit Targeted Resume" strategy. Components whose interrupt IDs
 // are present as keys in the map will receive `isResumeFlow = true` when they call `GetResumeContext`.
+// BatchResumeWithData 向上下文注入“目标恢复数据”（显式点名恢复策略）
+// - 参数：resumeData 为 ID->数据 的映射，ID 为地址字符串
+// - 行为：若上下文未含全局恢复信息，创建并复制用户映射；否则合并注入
 func BatchResumeWithData(ctx context.Context, resumeData map[string]any) context.Context {
 	rInfo, ok := ctx.Value(globalResumeInfoKey{}).(*globalResumeInfo)
 	if !ok {
@@ -274,6 +284,7 @@ func BatchResumeWithData(ctx context.Context, resumeData map[string]any) context
 
 func PopulateInterruptState(ctx context.Context, id2Addr map[string]Address,
 	id2State map[string]InterruptState) context.Context {
+	// Populate 全局的中断地址与状态表，同时尝试与当前运行上下文匹配注入
 	rInfo, ok := ctx.Value(globalResumeInfoKey{}).(*globalResumeInfo)
 	if ok {
 		if rInfo.id2Addr == nil {
@@ -330,6 +341,7 @@ type InterruptInfo struct {
 	IsRootCause bool
 }
 
+// String 返回用户可读的中断信息字符串
 func (i *InterruptInfo) String() string {
 	if i == nil {
 		return ""

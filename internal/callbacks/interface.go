@@ -35,6 +35,10 @@ type CallbackInput any
 
 type CallbackOutput any
 
+// Handler 回调处理器接口
+// - 用户：希望在组件执行生命周期插入监控/日志/指标的使用者
+// - 使用：实现 Handler 并通过 InitCallbacks/AppendHandlers 注入上下文
+// - 事件：开始/结束（支持常规与流式），以及错误事件
 type Handler interface {
 	OnStart(ctx context.Context, info *RunInfo, input CallbackInput) context.Context
 	OnEnd(ctx context.Context, info *RunInfo, output CallbackOutput) context.Context
@@ -49,6 +53,7 @@ type Handler interface {
 
 type CallbackTiming uint8
 
+// TimingChecker 用于按时机筛选是否需要触发当前 Handler
 type TimingChecker interface {
 	Needed(ctx context.Context, info *RunInfo, timing CallbackTiming) bool
 }
