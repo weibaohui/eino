@@ -158,8 +158,10 @@ type multiQueryRetriever struct {
 }
 
 // Retrieve retrieves documents from the multi-query retriever.
+// Retrieve 从多查询检索器检索文档。
 func (m *multiQueryRetriever) Retrieve(ctx context.Context, query string, opts ...retriever.Option) ([]*schema.Document, error) {
 	// generate queries
+	// 生成查询
 	queries, err := m.queryRunner.Invoke(ctx, query)
 	if err != nil {
 		return nil, err
@@ -169,6 +171,7 @@ func (m *multiQueryRetriever) Retrieve(ctx context.Context, query string, opts .
 	}
 
 	// retrieve
+	// 检索
 	tasks := make([]*utils.RetrieveTask, len(queries))
 	for i := range queries {
 		tasks[i] = &utils.RetrieveTask{Retriever: m.origRetriever, Query: queries[i]}
@@ -183,6 +186,7 @@ func (m *multiQueryRetriever) Retrieve(ctx context.Context, query string, opts .
 	}
 
 	// fusion
+	// 融合
 	ctx = ctxWithFusionRunInfo(ctx)
 	ctx = callbacks.OnStart(ctx, result)
 	fusionDocs, err := m.fusionFunc(ctx, result)
@@ -195,6 +199,7 @@ func (m *multiQueryRetriever) Retrieve(ctx context.Context, query string, opts .
 }
 
 // GetType returns the type of the retriever (MultiQuery).
+// GetType 返回检索器的类型 (MultiQuery)。
 func (m *multiQueryRetriever) GetType() string {
 	return "MultiQuery"
 }

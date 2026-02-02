@@ -16,6 +16,7 @@
 
 // Package router provides retrieval routing helpers that merge results
 // from multiple retrievers and apply ranking strategies.
+// Package router 提供了检索路由助手，用于合并来自多个检索器的结果并应用排序策略。
 package router
 
 import (
@@ -66,6 +67,8 @@ var rrf = func(ctx context.Context, result map[string][]*schema.Document) ([]*sc
 
 // NewRetriever creates a router retriever.
 // router retriever is useful when you want to retrieve documents from multiple retrievers with different queries.
+// NewRetriever 创建一个路由检索器。
+// 路由检索器在需要使用不同的查询从多个检索器检索文档时非常有用。
 // eg.
 //
 //	routerRetriever := router.NewRetriever(ctx, &router.Config{})
@@ -103,12 +106,16 @@ func NewRetriever(ctx context.Context, config *Config) (retriever.Retriever, err
 }
 
 // Config is the config for router retriever.
+// Config 是路由检索器的配置。
 type Config struct {
 	// Retrievers is the retrievers to be used.
+	// Retrievers 是要使用的检索器。
 	Retrievers map[string]retriever.Retriever
 	// Router is the function to route the query to the retrievers.
+	// Router 是将查询路由到检索器的函数。
 	Router func(ctx context.Context, query string) ([]string, error)
 	// FusionFunc is the function to fuse the documents from the retrievers.
+	// FusionFunc 是融合来自检索器的文档的函数。
 	FusionFunc func(ctx context.Context, result map[string][]*schema.Document) ([]*schema.Document, error)
 }
 
@@ -119,6 +126,7 @@ type routerRetriever struct {
 }
 
 // Retrieve retrieves documents from the router retriever.
+// Retrieve 从路由检索器检索文档。
 func (e *routerRetriever) Retrieve(ctx context.Context, query string, opts ...retriever.Option) ([]*schema.Document, error) {
 	routeCtx := ctxWithRouterRunInfo(ctx)
 	routeCtx = callbacks.OnStart(routeCtx, query)
@@ -135,6 +143,7 @@ func (e *routerRetriever) Retrieve(ctx context.Context, query string, opts ...re
 	callbacks.OnEnd(routeCtx, retrieverNames)
 
 	// retrieve
+	// 检索
 	tasks := make([]*utils.RetrieveTask, len(retrieverNames))
 	for i := range retrieverNames {
 		r, ok := e.retrievers[retrieverNames[i]]
@@ -158,6 +167,7 @@ func (e *routerRetriever) Retrieve(ctx context.Context, query string, opts ...re
 	}
 
 	// fusion
+	// 融合
 	fusionCtx := ctxWithFusionRunInfo(ctx)
 	fusionCtx = callbacks.OnStart(fusionCtx, result)
 	fusionDocs, err := e.fusionFunc(fusionCtx, result)
@@ -170,6 +180,7 @@ func (e *routerRetriever) Retrieve(ctx context.Context, query string, opts ...re
 }
 
 // GetType returns the type of the retriever (Router).
+// GetType 返回检索器的类型 (Router)。
 func (e *routerRetriever) GetType() string { return "Router" }
 
 func ctxWithRouterRunInfo(ctx context.Context) context.Context {

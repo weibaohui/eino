@@ -49,12 +49,17 @@ type Config struct {
 
 // NewRetriever creates a new parent retriever that handles retrieving original documents
 // based on sub-document search results.
+// NewRetriever 创建一个新的父文档检索器，用于根据子文档搜索结果检索原始文档。
 //
 // Parameters:
+// 参数：
 //   - ctx: context for the operation
+//   - ctx: 操作的上下文
 //   - config: configuration for the parent retriever
+//   - config: 父文档检索器的配置
 //
 // Example usage:
+// 使用示例：
 //
 //	retriever, err := NewRetriever(ctx, &Config{
 //	    Retriever: milvusRetriever,
@@ -65,8 +70,11 @@ type Config struct {
 //	})
 //
 // Returns:
+// 返回值：
 //   - retriever.Retriever: the created parent retriever
+//   - retriever.Retriever: 创建的父文档检索器
 //   - error: any error encountered during creation
+//   - error: 创建期间遇到的任何错误
 func NewRetriever(ctx context.Context, config *Config) (retriever.Retriever, error) {
 	if config.Retriever == nil {
 		return nil, fmt.Errorf("retriever is required")

@@ -126,6 +126,7 @@ func (p *parentIndexer) Store(ctx context.Context, docs []*schema.Document, opts
 		if subDoc.MetaData == nil {
 			subDoc.MetaData = make(map[string]any)
 		}
+		// 存储父文档 ID
 		subDoc.MetaData[p.parentIDKey] = subDoc.ID
 
 		if subDoc.ID == currentID {
@@ -133,6 +134,7 @@ func (p *parentIndexer) Store(ctx context.Context, docs []*schema.Document, opts
 		}
 
 		// generate new doc id
+		// 生成新的文档 ID
 		subIDs, err_ := p.subIDGenerator(ctx, subDocs[startIdx].ID, i-startIdx)
 		if err_ != nil {
 			return nil, err_
@@ -147,6 +149,7 @@ func (p *parentIndexer) Store(ctx context.Context, docs []*schema.Document, opts
 		currentID = subDoc.ID
 	}
 	// generate new doc id
+	// 生成新的文档 ID
 	subIDs, err := p.subIDGenerator(ctx, subDocs[startIdx].ID, len(subDocs)-startIdx)
 	if err != nil {
 		return nil, err
