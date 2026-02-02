@@ -184,6 +184,8 @@ func defaultBackoff(_ context.Context, attempt int) time.Duration {
 	return delay + jitter
 }
 
+// genErrWrapper 生成一个错误包装函数。
+// 该函数检查错误是否可重试，如果可重试且未达到最大重试次数，则返回 WillRetryError。
 func genErrWrapper(ctx context.Context, config ModelRetryConfig, info streamRetryInfo) func(error) error {
 	return func(err error) error {
 		isRetryAble := config.IsRetryAble == nil || config.IsRetryAble(ctx, err)
@@ -202,6 +204,7 @@ type retryChatModel struct {
 	innerHandlesCallbacks bool
 }
 
+// newRetryChatModel 创建一个新的带有重试逻辑的 ChatModel。
 func newRetryChatModel(inner model.ToolCallingChatModel, config *ModelRetryConfig) *retryChatModel {
 	innerHandlesCallbacks := false
 	if ch, ok := inner.(components.Checker); ok {
@@ -210,6 +213,8 @@ func newRetryChatModel(inner model.ToolCallingChatModel, config *ModelRetryConfi
 	return &retryChatModel{inner: inner, config: config, innerHandlesCallbacks: innerHandlesCallbacks}
 }
 
+// WithTools 为 retryChatModel 绑定工具。
+// 它会同时为内部的 ChatModel 绑定工具，并返回一个新的 retryChatModel 实例。
 func (r *retryChatModel) WithTools(tools []*schema.ToolInfo) (model.ToolCallingChatModel, error) {
 	newInner, err := r.inner.WithTools(tools)
 	if err != nil {

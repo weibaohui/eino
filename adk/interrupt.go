@@ -235,6 +235,8 @@ type serialization struct {
 	InterruptID2State   map[string]core.InterruptState
 }
 
+// loadCheckPoint 从存储中加载 Checkpoint。
+// 它解码序列化的数据，并恢复 RunContext 和 ResumeInfo。
 func (r *Runner) loadCheckPoint(ctx context.Context, checkpointID string) (
 	context.Context, *runContext, *ResumeInfo, error) {
 	data, existed, err := r.store.Get(ctx, checkpointID)
@@ -258,6 +260,8 @@ func (r *Runner) loadCheckPoint(ctx context.Context, checkpointID string) (
 	}, nil
 }
 
+// saveCheckPoint 将 Checkpoint 保存到存储中。
+// 它序列化 RunContext、中断信息和中断信号状态。
 func (r *Runner) saveCheckPoint(
 	ctx context.Context,
 	key string,
@@ -284,10 +288,13 @@ func (r *Runner) saveCheckPoint(
 
 const bridgeCheckpointID = "adk_react_mock_key"
 
+// newBridgeStore 创建一个新的 BridgeStore。
+// BridgeStore 用于在测试或特殊场景中临时存储 Checkpoint 数据。
 func newBridgeStore() *bridgeStore {
 	return &bridgeStore{}
 }
 
+// newResumeBridgeStore 创建一个带有预设数据的 BridgeStore，用于恢复执行。
 func newResumeBridgeStore(data []byte) *bridgeStore {
 	return &bridgeStore{
 		Data:  data,

@@ -210,6 +210,7 @@ type reactConfig struct {
 	modelRetryConfig *ModelRetryConfig
 }
 
+// genToolInfos 根据工具配置生成 ToolInfo 列表。
 func genToolInfos(ctx context.Context, config *compose.ToolsNodeConfig) ([]*schema.ToolInfo, error) {
 	toolInfos := make([]*schema.ToolInfo, 0, len(config.Tools))
 	for _, t := range config.Tools {
@@ -228,6 +229,8 @@ type reactGraph = *compose.Graph[[]Message, Message]
 type sToolNodeOutput = *schema.StreamReader[[]Message]
 type sGraphOutput = MessageStream
 
+// getReturnDirectlyToolCallID 获取触发“直接返回”的工具调用 ID。
+// 检查 State 中是否设置了 ReturnDirectlyToolCallID。
 func getReturnDirectlyToolCallID(ctx context.Context) (string, bool) {
 	var toolCallID string
 	var hasReturnDirectly bool
@@ -242,6 +245,8 @@ func getReturnDirectlyToolCallID(ctx context.Context) (string, bool) {
 	return toolCallID, hasReturnDirectly
 }
 
+// newReact 创建一个新的 ReAct 代理图（Graph）。
+// 它构建了一个包含 ChatModel 和 ToolNode 的循环图，用于执行推理-行动循环。
 func newReact(ctx context.Context, config *reactConfig) (reactGraph, error) {
 	genState := func(ctx context.Context) *State {
 		return &State{

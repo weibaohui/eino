@@ -150,6 +150,9 @@ func GetSessionValue(ctx context.Context, key string) (any, bool) {
 	return session.getValue(key)
 }
 
+// addEvent 向 Session 添加一个 AgentEvent。
+// 如果在并行 Lane 中，则添加到 Lane 本地的事件切片（无锁）。
+// 否则，添加到共享的 Events 切片（需加锁）。
 func (rs *runSession) addEvent(event *AgentEvent) {
 	wrapper := &agentEventWrapper{AgentEvent: event, TS: time.Now().UnixNano()}
 	// If LaneEvents is not nil, we are in a parallel lane.
@@ -165,6 +168,8 @@ func (rs *runSession) addEvent(event *AgentEvent) {
 	rs.mtx.Unlock()
 }
 
+// getEvents 获取当前 Session 中的所有事件。
+// 如果存在并行的 Lane 事件，会合并提交的事件和进行中的 Lane 事件。
 func (rs *runSession) getEvents() []*agentEventWrapper {
 	// If there are no in-flight lane events, we can return the main slice directly.
 	if rs.LaneEvents == nil {
@@ -202,6 +207,7 @@ func (rs *runSession) getEvents() []*agentEventWrapper {
 	return finalEvents
 }
 
+// getValues 获取 Session 中存储的所有值的副本。
 func (rs *runSession) getValues() map[string]any {
 	rs.valuesMtx.Lock()
 	values := make(map[string]any, len(rs.Values))
@@ -213,12 +219,14 @@ func (rs *runSession) getValues() map[string]any {
 	return values
 }
 
+// addValue 向 Session 添加单个键值对。
 func (rs *runSession) addValue(key string, value any) {
 	rs.valuesMtx.Lock()
 	rs.Values[key] = value
 	rs.valuesMtx.Unlock()
 }
 
+// addValues 向 Session 批量添加键值对。
 func (rs *runSession) addValues(kvs map[string]any) {
 	rs.valuesMtx.Lock()
 	for k, v := range kvs {
@@ -227,6 +235,7 @@ func (rs *runSession) addValues(kvs map[string]any) {
 	rs.valuesMtx.Unlock()
 }
 
+// getValue 从 Session 中获取指定键的值。
 func (rs *runSession) getValue(key string) (any, bool) {
 	rs.valuesMtx.Lock()
 	value, ok := rs.Values[key]
@@ -251,6 +260,8 @@ func (rc *runContext) isRoot() bool {
 	return len(rc.RunPath) == 1
 }
 
+// deepCopy 创建 runContext 的深层副本。
+// RunPath 会被复制，但 Session 引用保持不变（Session 是共享的）。
 func (rc *runContext) deepCopy() *runContext {
 	copied := &runContext{
 		RootInput: rc.RootInput,
@@ -265,6 +276,7 @@ func (rc *runContext) deepCopy() *runContext {
 
 type runCtxKey struct{}
 
+// getRunCtx 从 context.Context 中获取 runContext。
 func getRunCtx(ctx context.Context) *runContext {
 	runCtx, ok := ctx.Value(runCtxKey{}).(*runContext)
 	if !ok {
@@ -273,10 +285,14 @@ func getRunCtx(ctx context.Context) *runContext {
 	return runCtx
 }
 
+// setRunCtx 将 runContext 存储到 context.Context 中。
 func setRunCtx(ctx context.Context, runCtx *runContext) context.Context {
 	return context.WithValue(ctx, runCtxKey{}, runCtx)
 }
 
+// initRunCtx 初始化运行上下文。
+// 如果上下文中已存在 runContext，则进行深拷贝；否则创建新的。
+// 它会将当前 Agent 名称添加到 RunPath，并在根节点时设置 RootInput。
 func initRunCtx(ctx context.Context, agentName string, input *AgentInput) (context.Context, *runContext) {
 	runCtx := getRunCtx(ctx)
 	if runCtx != nil {
@@ -293,6 +309,8 @@ func initRunCtx(ctx context.Context, agentName string, input *AgentInput) (conte
 	return setRunCtx(ctx, runCtx), runCtx
 }
 
+// joinRunCtxs 合并多个子上下文的 Session 值到父上下文中。
+// 这在并行执行（如 Parallel Agent）完成后，将子分支的 Session 更新合并回主分支时使用。
 func joinRunCtxs(parentCtx context.Context, childCtxs ...context.Context) {
 	switch len(childCtxs) {
 	case 0:

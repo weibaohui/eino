@@ -203,10 +203,12 @@ func (r *RunStep) String() string {
 	return r.agentName
 }
 
+// Equals 比较两个 RunStep 是否相等。
 func (r *RunStep) Equals(r1 RunStep) bool {
 	return r.agentName == r1.agentName
 }
 
+// GobEncode 实现 Gob 编码接口。
 func (r *RunStep) GobEncode() ([]byte, error) {
 	s := &runStepSerialization{AgentName: r.agentName}
 	buf := &bytes.Buffer{}
@@ -217,6 +219,7 @@ func (r *RunStep) GobEncode() ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
+// GobDecode 实现 Gob 解码接口。
 func (r *RunStep) GobDecode(b []byte) error {
 	s := &runStepSerialization{}
 	err := gob.NewDecoder(bytes.NewReader(b)).Decode(s)

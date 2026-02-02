@@ -38,6 +38,9 @@ import (
 var errRetryAble = errors.New("retry-able error")
 var errNonRetryAble = errors.New("non-retry-able error")
 
+// TestChatModelAgentRetry_NoTools_DirectError_Generate 测试在没有工具调用且直接发生错误时的 Generate 模式重试机制。
+// 场景：模型连续失败两次，第三次成功。
+// 验证：Agent 应该自动重试，最终返回成功结果，且总调用次数为 3。
 func TestChatModelAgentRetry_NoTools_DirectError_Generate(t *testing.T) {
 	ctx := context.Background()
 	ctrl := gomock.NewController(t)
@@ -84,6 +87,9 @@ func TestChatModelAgentRetry_NoTools_DirectError_Generate(t *testing.T) {
 	assert.Equal(t, int32(3), atomic.LoadInt32(&callCount))
 }
 
+// TestChatModelAgentRetry_NoTools_DirectError_Stream 测试在没有工具调用且直接发生错误时的 Stream 模式重试机制。
+// 场景：模型流式输出连续失败两次，第三次成功。
+// 验证：Agent 应该自动重试，最终返回成功结果。
 func TestChatModelAgentRetry_NoTools_DirectError_Stream(t *testing.T) {
 	ctx := context.Background()
 	ctrl := gomock.NewController(t)

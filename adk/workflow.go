@@ -114,6 +114,8 @@ func init() {
 	schema.RegisterName[*loopWorkflowState]("eino_adk_loop_workflow_state")
 }
 
+// Resume 恢复 Workflow Agent 的执行。
+// 它根据 ResumeInfo 中的中断状态，恢复到中断前的状态并继续执行。
 func (a *workflowAgent) Resume(ctx context.Context, info *ResumeInfo, opts ...AgentRunOption) *AsyncIterator[*AgentEvent] {
 	iterator, generator := NewAsyncIteratorPair[*AgentEvent]()
 
@@ -163,6 +165,8 @@ type WorkflowInterruptInfo struct {
 	ParallelInterruptInfo map[int] /*index*/ *InterruptInfo
 }
 
+// runSequential 执行顺序工作流（Sequential Workflow）。
+// 它按顺序执行子 Agent，并处理中断和恢复逻辑。
 func (a *workflowAgent) runSequential(ctx context.Context,
 	generator *AsyncGenerator[*AgentEvent], seqState *sequentialWorkflowState, info *ResumeInfo,
 	opts ...AgentRunOption) (err error) {
@@ -296,6 +300,8 @@ func NewBreakLoopAction(agentName string) *AgentAction {
 	}}
 }
 
+// doBreakLoopIfNeeded 检查是否收到 BreakLoopAction，并决定是否中断循环。
+// 如果收到 BreakLoopAction 且未标记为 Done，则返回 true 并更新 Action 状态。
 func (a *workflowAgent) doBreakLoopIfNeeded(aa *AgentAction, iterations int) bool {
 	if a.mode != workflowAgentModeLoop {
 		return false

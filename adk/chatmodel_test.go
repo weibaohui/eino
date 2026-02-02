@@ -31,22 +31,23 @@ import (
 	"github.com/cloudwego/eino/schema"
 )
 
-// TestChatModelAgentRun tests the Run method of ChatModelAgent
+// TestChatModelAgentRun 测试 ChatModelAgent 的 Run 方法。
 func TestChatModelAgentRun(t *testing.T) {
-	// Basic test for Run method
+	// BasicFunctionality 测试 Run 方法的基本功能。
+	// 验证 Agent 能否正确处理输入消息并返回预期的输出。
 	t.Run("BasicFunctionality", func(t *testing.T) {
 		ctx := context.Background()
 
-		// Create a mock chat model
+		// 创建一个 mock chat model
 		ctrl := gomock.NewController(t)
 		cm := mockModel.NewMockToolCallingChatModel(ctrl)
 
-		// Set up expectations for the mock model
+		// 设置 mock model 的预期行为
 		cm.EXPECT().Generate(gomock.Any(), gomock.Any(), gomock.Any()).
 			Return(schema.AssistantMessage("Hello, I am an AI assistant.", nil), nil).
 			Times(1)
 
-		// Create a ChatModelAgent
+		// 创建 ChatModelAgent
 		agent, err := NewChatModelAgent(ctx, &ChatModelAgentConfig{
 			Name:        "TestAgent",
 			Description: "Test agent for unit testing",
@@ -56,7 +57,7 @@ func TestChatModelAgentRun(t *testing.T) {
 		assert.NoError(t, err)
 		assert.NotNil(t, agent)
 
-		// Run the agent
+		// 运行 Agent
 		input := &AgentInput{
 			Messages: []Message{
 				schema.UserMessage("Hello, who are you?"),
@@ -65,7 +66,7 @@ func TestChatModelAgentRun(t *testing.T) {
 		iterator := agent.Run(ctx, input)
 		assert.NotNil(t, iterator)
 
-		// Get the event from the iterator
+		// 从迭代器获取事件
 		event, ok := iterator.Next()
 		assert.True(t, ok)
 		assert.NotNil(t, event)
@@ -73,16 +74,18 @@ func TestChatModelAgentRun(t *testing.T) {
 		assert.NotNil(t, event.Output)
 		assert.NotNil(t, event.Output.MessageOutput)
 
-		// Verify the message content
+		// 验证消息内容
 		msg := event.Output.MessageOutput.Message
 		assert.NotNil(t, msg)
 		assert.Equal(t, "Hello, I am an AI assistant.", msg.Content)
 
-		// No more events
+		// 确认没有更多事件
 		_, ok = iterator.Next()
 		assert.False(t, ok)
 	})
 
+	// BasicChatModelWithAgentMiddleware 测试带有 Agent 中间件的 ChatModelAgent。
+	// 验证中间件是否按预期执行。
 	t.Run("BasicChatModelWithAgentMiddleware", func(t *testing.T) {
 		ctx := context.Background()
 
