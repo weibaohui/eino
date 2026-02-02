@@ -26,6 +26,7 @@ func TestInMemoryBackend_WriteAndRead(t *testing.T) {
 	ctx := context.Background()
 
 	// Test Write
+	// 测试写入功能
 	err := backend.Write(ctx, &WriteRequest{
 		FilePath: "/test.txt",
 		Content:  "line1\nline2\nline3\nline4\nline5",
@@ -35,6 +36,7 @@ func TestInMemoryBackend_WriteAndRead(t *testing.T) {
 	}
 
 	// Test Read - full content
+	// 测试读取功能 - 读取完整内容
 	content, err := backend.Read(ctx, &ReadRequest{
 		FilePath: "/test.txt",
 		Offset:   0,
@@ -49,6 +51,7 @@ func TestInMemoryBackend_WriteAndRead(t *testing.T) {
 	}
 
 	// Test Read - with offset and limit
+	// 测试读取功能 - 带偏移量和限制
 	content, err = backend.Read(ctx, &ReadRequest{
 		FilePath: "/test.txt",
 		Offset:   1,
@@ -63,6 +66,7 @@ func TestInMemoryBackend_WriteAndRead(t *testing.T) {
 	}
 
 	// Test Read - non-existent file
+	// 测试读取功能 - 读取不存在的文件
 	_, err = backend.Read(ctx, &ReadRequest{
 		FilePath: "/nonexistent.txt",
 		Offset:   0,
@@ -78,6 +82,7 @@ func TestInMemoryBackend_LsInfo(t *testing.T) {
 	ctx := context.Background()
 
 	// Create some files
+	// 创建一些文件
 	backend.Write(ctx, &WriteRequest{
 		FilePath: "/file1.txt",
 		Content:  "content1",
@@ -100,6 +105,7 @@ func TestInMemoryBackend_LsInfo(t *testing.T) {
 	})
 
 	// Test LsInfo - root
+	// 测试 LsInfo - 根目录
 	infos, err := backend.LsInfo(ctx, &LsInfoRequest{Path: "/"})
 	if err != nil {
 		t.Fatalf("LsInfo failed: %v", err)
@@ -109,6 +115,7 @@ func TestInMemoryBackend_LsInfo(t *testing.T) {
 	}
 
 	// Test LsInfo - specific directory
+	// 测试 LsInfo - 指定目录
 	infos, err = backend.LsInfo(ctx, &LsInfoRequest{Path: "/dir1"})
 	if err != nil {
 		t.Fatalf("LsInfo for /dir1 failed: %v", err)
@@ -123,12 +130,14 @@ func TestInMemoryBackend_Edit(t *testing.T) {
 	ctx := context.Background()
 
 	// Create a file
+	// 创建一个文件
 	backend.Write(ctx, &WriteRequest{
 		FilePath: "/edit.txt",
 		Content:  "hello world\nhello again\nhello world",
 	})
 
 	// Test Edit - report error if old string occurs
+	// 测试编辑功能 - 如果旧字符串不存在则报错
 	err := backend.Edit(ctx, &EditRequest{
 		FilePath:   "/edit.txt",
 		OldString:  "hello",
@@ -140,6 +149,7 @@ func TestInMemoryBackend_Edit(t *testing.T) {
 	}
 
 	// Test Edit - replace all occurrences
+	// 测试编辑功能 - 替换所有出现的位置
 	backend.Write(ctx, &WriteRequest{
 		FilePath: "/edit2.txt",
 		Content:  "hello world\nhello again\nhello world",
@@ -165,6 +175,7 @@ func TestInMemoryBackend_Edit(t *testing.T) {
 	}
 
 	// Test Edit - non-existent file
+	// 测试编辑功能 - 编辑不存在的文件
 	err = backend.Edit(ctx, &EditRequest{
 		FilePath:   "/nonexistent.txt",
 		OldString:  "old",
@@ -176,6 +187,7 @@ func TestInMemoryBackend_Edit(t *testing.T) {
 	}
 
 	// Test Edit - empty oldString
+	// 测试编辑功能 - 旧字符串为空
 	err = backend.Edit(ctx, &EditRequest{
 		FilePath:   "/edit.txt",
 		OldString:  "",
@@ -192,6 +204,7 @@ func TestInMemoryBackend_GrepRaw(t *testing.T) {
 	ctx := context.Background()
 
 	// Create some files
+	// 创建一些文件
 	backend.Write(ctx, &WriteRequest{
 		FilePath: "/file1.txt",
 		Content:  "hello world\nfoo bar\nhello again",
@@ -206,6 +219,7 @@ func TestInMemoryBackend_GrepRaw(t *testing.T) {
 	})
 
 	// Test GrepRaw - search all files
+	// 测试 GrepRaw - 搜索所有文件
 	matches, err := backend.GrepRaw(ctx, &GrepRequest{
 		Pattern: "hello",
 		Path:    "",
@@ -219,6 +233,7 @@ func TestInMemoryBackend_GrepRaw(t *testing.T) {
 	}
 
 	// Test GrepRaw - with glob filter
+	// 测试 GrepRaw - 带 glob 过滤
 	glob := "*.py"
 	matches, err = backend.GrepRaw(ctx, &GrepRequest{
 		Pattern: "hello",
@@ -233,6 +248,7 @@ func TestInMemoryBackend_GrepRaw(t *testing.T) {
 	}
 
 	// Test GrepRaw - with path filter
+	// 测试 GrepRaw - 带路径过滤
 	path := "/dir1"
 	matches, err = backend.GrepRaw(ctx, &GrepRequest{
 		Pattern: "hello",
@@ -252,6 +268,7 @@ func TestInMemoryBackend_GlobInfo(t *testing.T) {
 	ctx := context.Background()
 
 	// Create some files
+	// 创建一些文件
 	backend.Write(ctx, &WriteRequest{
 		FilePath: "/file1.txt",
 		Content:  "content1",
@@ -270,6 +287,7 @@ func TestInMemoryBackend_GlobInfo(t *testing.T) {
 	})
 
 	// Test GlobInfo - match all .txt files
+	// 测试 GlobInfo - 匹配所有 .txt 文件
 	infos, err := backend.GlobInfo(ctx, &GlobInfoRequest{
 		Pattern: "*.txt",
 		Path:    "/",
@@ -282,6 +300,7 @@ func TestInMemoryBackend_GlobInfo(t *testing.T) {
 	}
 
 	// Test GlobInfo - match all .py files in dir1
+	// 测试 GlobInfo - 匹配 dir1 中的所有 .py 文件
 	infos, err = backend.GlobInfo(ctx, &GlobInfoRequest{
 		Pattern: "*.py",
 		Path:    "/dir1",
@@ -299,6 +318,7 @@ func TestInMemoryBackend_Concurrent(t *testing.T) {
 	ctx := context.Background()
 
 	// Test concurrent writes and reads
+	// 测试并发写入和读取
 	done := make(chan bool)
 	for i := 0; i < 10; i++ {
 		go func(n int) {

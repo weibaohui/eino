@@ -431,6 +431,8 @@ func TestToolResultOffloading_StreamError(t *testing.T) {
 	}
 }
 
+// TestFormatToolMessage 测试工具消息格式化
+// 验证工具输出内容被正确添加行号
 func TestFormatToolMessage(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -479,6 +481,8 @@ func TestFormatToolMessage(t *testing.T) {
 	}
 }
 
+// TestConcatString 测试字符串拼接
+// 验证流式读取器中的内容能被正确拼接成完整字符串
 func TestConcatString(t *testing.T) {
 	tests := []struct {
 		name        string
@@ -531,6 +535,7 @@ func TestConcatString(t *testing.T) {
 	}
 
 	// Test nil stream
+	// 测试 nil 流
 	t.Run("nil stream", func(t *testing.T) {
 		_, err := concatString(nil)
 		if err == nil {
@@ -542,10 +547,13 @@ func TestConcatString(t *testing.T) {
 	})
 }
 
+// TestToolResultOffloading_BackendWriteError 测试后端写入错误
+// 验证当文件写入失败时，中间件能够正确返回错误
 func TestToolResultOffloading_BackendWriteError(t *testing.T) {
 	ctx := context.Background()
 
 	// Create a backend that fails on write
+	// 创建一个写入失败的后端
 	backend := &failingBackend{
 		writeErr: errors.New("write failed"),
 	}
@@ -580,10 +588,13 @@ func TestToolResultOffloading_BackendWriteError(t *testing.T) {
 }
 
 // failingBackend is a mock backend that can be configured to fail
+// failingBackend 是一个可配置为失败的模拟后端
 type failingBackend struct {
 	writeErr error
 }
 
+// Write 实现 Backend 接口的 Write 方法
+// 根据配置返回错误或成功
 func (f *failingBackend) Write(ctx context.Context, req *WriteRequest) error {
 	if f.writeErr != nil {
 		return f.writeErr
@@ -591,22 +602,32 @@ func (f *failingBackend) Write(ctx context.Context, req *WriteRequest) error {
 	return nil
 }
 
+// Read 实现 Backend 接口的 Read 方法
+// 总是返回空字符串和 nil error
 func (f *failingBackend) Read(ctx context.Context, req *ReadRequest) (string, error) {
 	return "", nil
 }
 
+// LsInfo 实现 Backend 接口的 LsInfo 方法
+// 总是返回 nil
 func (f *failingBackend) LsInfo(ctx context.Context, _ *LsInfoRequest) ([]FileInfo, error) {
 	return nil, nil
 }
 
+// GrepRaw 实现 Backend 接口的 GrepRaw 方法
+// 总是返回 nil
 func (f *failingBackend) GrepRaw(ctx context.Context, _ *GrepRequest) ([]GrepMatch, error) {
 	return nil, nil
 }
 
+// GlobInfo 实现 Backend 接口的 GlobInfo 方法
+// 总是返回 nil
 func (f *failingBackend) GlobInfo(ctx context.Context, _ *GlobInfoRequest) ([]FileInfo, error) {
 	return nil, nil
 }
 
+// Edit 实现 Backend 接口的 Edit 方法
+// 总是返回 nil
 func (f *failingBackend) Edit(ctx context.Context, _ *EditRequest) error {
 	return nil
 }
