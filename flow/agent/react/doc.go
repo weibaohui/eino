@@ -14,4 +14,8 @@
  * limitations under the License.
  */
 
+/*
+Package react implements the ReAct agent.
+Package react 实现了 ReAct 代理。
+*/
 package react

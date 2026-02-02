@@ -225,10 +225,15 @@ func SetReturnDirectly(ctx context.Context) error {
 }
 
 // Agent is the ReAct agent.
+// Agent 是 ReAct Agent。
 // ReAct agent is a simple agent that handles user messages with a chat model and tools.
+// ReAct Agent 是一个简单的 Agent，使用聊天模型和工具处理用户消息。
 // ReAct will call the chat model, if the message contains tool calls, it will call the tools.
+// ReAct 会调用聊天模型，如果消息包含工具调用，它将调用工具。
 // if the tool is configured to return directly, ReAct will return directly.
+// 如果工具配置为直接返回，ReAct 将直接返回。
 // otherwise, ReAct will continue to call the chat model until the message contains no tool calls.
+// 否则，ReAct 将继续调用聊天模型，直到消息不包含工具调用。
 // e.g.
 //
 //	agent, err := ReAct.NewAgent(ctx, &react.AgentConfig{})
@@ -243,10 +248,14 @@ type Agent struct {
 }
 
 // NewAgent creates a ReAct agent that feeds tool response into next round of Chat Model generation.
+// NewAgent 创建一个 ReAct Agent，将工具响应反馈到下一轮聊天模型生成中。
 //
 // IMPORTANT!! For models that don't output tool calls in the first streaming chunk (e.g. Claude)
+// 重要！！对于不在第一个流块中输出工具调用的模型（例如 Claude）
 // the default StreamToolCallChecker may not work properly since it only checks the first chunk for tool calls.
+// 默认的 StreamToolCallChecker 可能无法正常工作，因为它只检查第一个块中的工具调用。
 // In such cases, you need to implement a custom StreamToolCallChecker that can properly detect tool calls.
+// 在这种情况下，您需要实现一个自定义的 StreamToolCallChecker，以便正确检测工具调用。
 func NewAgent(ctx context.Context, config *AgentConfig) (_ *Agent, err error) {
 	var (
 		chatModel       model.BaseChatModel
@@ -443,11 +452,13 @@ func getReturnDirectlyToolCallID(input *schema.Message, toolReturnDirectly map[s
 }
 
 // Generate generates a response from the agent.
+// Generate 生成 Agent 的响应。
 func (r *Agent) Generate(ctx context.Context, input []*schema.Message, opts ...agent.AgentOption) (*schema.Message, error) {
 	return r.runnable.Invoke(ctx, input, agent.GetComposeOptions(opts...)...)
 }
 
 // Stream calls the agent and returns a stream response.
+// Stream 调用 Agent 并返回流式响应。
 func (r *Agent) Stream(ctx context.Context, input []*schema.Message, opts ...agent.AgentOption) (output *schema.StreamReader[*schema.Message], err error) {
 	return r.runnable.Stream(ctx, input, agent.GetComposeOptions(opts...)...)
 }
