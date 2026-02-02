@@ -39,6 +39,9 @@ type mergeOptions struct {
 	names                    []string
 }
 
+// mergeOptions is the options for merging values.
+// mergeOptions 是合并值的选项。
+
 // the caller should ensure len(vs) > 1
 // mergeValues merges values from multiple branches.
 // mergeValues 合并来自多个分支的值。

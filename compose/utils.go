@@ -27,6 +27,8 @@ import (
 	"github.com/cloudwego/eino/schema"
 )
 
+// on is a generic callback function type.
+// on 是一个泛型回调函数类型。
 type on[T any] func(context.Context, T) (context.Context, T)
 
 // onStart invokes the OnStart callbacks.
@@ -137,6 +139,8 @@ func runWithCallbacks[I, O, TOption any](r func(context.Context, I, ...TOption) 
 	}
 }
 
+// invokeWithCallbacks wraps an Invoke function with callbacks.
+// invokeWithCallbacks 使用回调包装 Invoke 函数。
 func invokeWithCallbacks[I, O, TOption any](i Invoke[I, O, TOption]) Invoke[I, O, TOption] {
 	return runWithCallbacks(i, onStart[I], onEnd[O], onError)
 }
@@ -165,14 +169,20 @@ func onGraphError(ctx context.Context, err error) (context.Context, error) {
 	return onError(ctx, err)
 }
 
+// streamWithCallbacks wraps a Stream function with callbacks.
+// streamWithCallbacks 使用回调包装 Stream 函数。
 func streamWithCallbacks[I, O, TOption any](s Stream[I, O, TOption]) Stream[I, O, TOption] {
 	return runWithCallbacks(s, onStart[I], onEndWithStreamOutput[O], onError)
 }
 
+// collectWithCallbacks wraps a Collect function with callbacks.
+// collectWithCallbacks 使用回调包装 Collect 函数。
 func collectWithCallbacks[I, O, TOption any](c Collect[I, O, TOption]) Collect[I, O, TOption] {
 	return runWithCallbacks(c, onStartWithStreamInput[I], onEnd[O], onError)
 }
 
+// transformWithCallbacks wraps a Transform function with callbacks.
+// transformWithCallbacks 使用回调包装 Transform 函数。
 func transformWithCallbacks[I, O, TOption any](t Transform[I, O, TOption]) Transform[I, O, TOption] {
 	return runWithCallbacks(t, onStartWithStreamInput[I], onEndWithStreamOutput[O], onError)
 }
@@ -260,6 +270,8 @@ func toAnyList[T any](in []T) []any {
 	return ret
 }
 
+// assignableType represents the assignability of types.
+// assignableType 表示类型的可赋值性。
 type assignableType uint8
 
 const (
@@ -268,6 +280,8 @@ const (
 	assignableTypeMay
 )
 
+// checkAssignable checks if the input type is assignable to the argument type.
+// checkAssignable 检查输入类型是否可赋值给参数类型。
 func checkAssignable(input, arg reflect.Type) assignableType {
 	if arg == nil || input == nil {
 		return assignableTypeMustNot
@@ -290,6 +304,8 @@ func checkAssignable(input, arg reflect.Type) assignableType {
 	return assignableTypeMustNot
 }
 
+// extractOption extracts options for nodes from the provided options.
+// extractOption 从提供的选项中提取节点的选项。
 func extractOption(nodes map[string]*chanCall, opts ...Option) (map[string][]any, error) {
 	optMap := map[string][]any{}
 	for _, opt := range opts {
@@ -353,6 +369,8 @@ func extractOption(nodes map[string]*chanCall, opts ...Option) (map[string][]any
 	return optMap, nil
 }
 
+// mapToList converts a map to a list of its values.
+// mapToList 将 map 转换为其值的列表。
 func mapToList(m map[string]any) []any {
 	ret := make([]any, 0, len(m))
 	for _, v := range m {

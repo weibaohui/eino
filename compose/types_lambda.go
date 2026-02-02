@@ -77,6 +77,8 @@ type Lambda struct {
 	executor *composableRunnable
 }
 
+// lambdaOpts is the options for lambda.
+// lambdaOpts 是 lambda 的选项。
 type lambdaOpts struct {
 	// same as executorMeta.isComponentCallbackEnabled
 	// indicates whether the executable lambda user provided could execute the callback aspect itself.
@@ -206,6 +208,8 @@ func AnyLambda[I, O, TOption any](i Invoke[I, O, TOption], s Stream[I, O, TOptio
 	return anyLambda(i, s, c, t, opts...), nil
 }
 
+// anyLambda creates a Lambda with provided functions.
+// anyLambda 使用提供的函数创建 Lambda。
 func anyLambda[I, O, TOption any](i Invoke[I, O, TOption], s Stream[I, O, TOption],
 	c Collect[I, O, TOption], t Transform[I, O, TOption], opts ...LambdaOpt) *Lambda {
 
@@ -225,6 +229,8 @@ func anyLambda[I, O, TOption any](i Invoke[I, O, TOption], s Stream[I, O, TOptio
 	}
 }
 
+// getLambdaOpt returns the lambda options.
+// getLambdaOpt 返回 lambda 选项。
 func getLambdaOpt(opts ...LambdaOpt) *lambdaOpts {
 	opt := &lambdaOpts{
 		enableComponentCallback: false,

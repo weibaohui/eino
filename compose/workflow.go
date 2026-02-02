@@ -211,14 +211,19 @@ type workflowAddInputOpts struct {
 	// noDirectDependency indicates whether to create a data mapping without establishing
 	// a direct execution dependency. When true, the current node can access data from
 	// the predecessor node but its execution is not directly blocked by it.
+	// noDirectDependency 指示是否创建数据映射而不建立直接执行依赖关系。
+	// 当为 true 时，当前节点可以从前驱节点访问数据，但其执行不会被前驱节点直接阻塞。
 	noDirectDependency bool
 	// dependencyWithoutInput indicates whether to create an execution dependency
 	// without any data mapping. When true, the current node will wait for the
 	// predecessor node to complete but won't receive any data from it.
+	// dependencyWithoutInput 指示是否创建没有数据映射的执行依赖关系。
+	// 当为 true 时，当前节点将等待前驱节点完成，但不会从中接收任何数据。
 	dependencyWithoutInput bool
 }
 
 // WorkflowAddInputOpt configures behavior of AddInputWithOptions.
+// WorkflowAddInputOpt 配置 AddInputWithOptions 的行为。
 type WorkflowAddInputOpt func(*workflowAddInputOpts)
 
 func getAddInputOpts(opts []WorkflowAddInputOpt) *workflowAddInputOpts {
@@ -242,6 +247,17 @@ func getAddInputOpts(opts []WorkflowAddInputOpt) *workflowAddInputOpts {
 //   - Relying on the predecessor's path to reach the current node through other nodes
 //     that have direct execution dependencies
 //
+// WithNoDirectDependency 创建数据映射而不建立直接执行依赖关系。
+// 前驱节点仍将在当前节点执行之前完成，但通过间接执行路径而不是直接依赖关系。
+//
+// 在工作流图中，节点依赖关系通常有两个目的：
+// 1. 执行顺序：确定节点何时运行
+// 2. 数据流：指定数据如何在节点之间传递
+//
+// 此选项通过以下方式分离这些关注点：
+//   - 创建从前驱节点到当前节点的数据映射
+//   - 依赖前驱节点的路径通过具有直接执行依赖关系的其他节点到达当前节点
+//
 // Example:
 //
 //	node.AddInputWithOptions("dataNode", mappings, WithNoDirectDependency())
@@ -251,18 +267,26 @@ func getAddInputOpts(opts []WorkflowAddInputOpt) *workflowAddInputOpts {
 //  1. Branch scenarios: When connecting nodes on different sides of a branch,
 //     WithNoDirectDependency MUST be used to let the branch itself handle the
 //     execution order, preventing incorrect dependencies that could bypass the branch.
+//     分支场景：连接分支不同侧的节点时，必须使用 WithNoDirectDependency 让分支本身处理执行顺序，
+//     防止可能绕过分支的不正确依赖关系。
 //
 //  2. Execution guarantee: The predecessor will still complete before the current
 //     node executes because the predecessor must have a path (through other nodes)
 //     that eventually reaches the current node.
+//     执行保证：前驱节点仍将在当前节点执行之前完成，因为前驱节点必须有一条路径（通过其他节点）最终到达当前节点。
 //
 //  3. Graph validity: There MUST be a path from the predecessor that eventually
 //     reaches the current node through other nodes with direct dependencies.
 //     This ensures the execution order while avoiding redundant direct dependencies.
+//     图有效性：必须有一条从前驱节点出发，通过其他具有直接依赖关系的节点最终到达当前节点的路径。
+//     这确保了执行顺序，同时避免了冗余的直接依赖关系。
 //
 // Common use cases:
 // - Cross-branch data access where the branch handles execution order
 // - Avoiding redundant dependencies when a path already exists
+// 常见用例：
+// - 分支处理执行顺序时的跨分支数据访问
+// - 当路径已存在时避免冗余依赖关系
 func WithNoDirectDependency() WorkflowAddInputOpt {
 	return func(opt *workflowAddInputOpts) {
 		opt.noDirectDependency = true
@@ -271,12 +295,19 @@ func WithNoDirectDependency() WorkflowAddInputOpt {
 
 // AddInputWithOptions creates a dependency between nodes with custom configuration options.
 // It allows fine-grained control over both data flow and execution dependencies.
+// AddInputWithOptions 使用自定义配置选项创建节点间的依赖关系。
+// 它允许对数据流和执行依赖关系进行细粒度控制。
 //
 // Parameters:
+// 参数：
 //   - fromNodeKey: the key of the predecessor node
+//     前驱节点的键
 //   - inputs: field mappings that specify how data flows from the predecessor to the current node.
 //     If no mappings are provided, the entire output of the predecessor will be used as input.
+//     字段映射，指定数据如何从前驱节点流向当前节点。
+//     如果未提供映射，则前驱节点的整个输出将用作输入。
 //   - opts: configuration options that control how the dependency is established
+//     配置选项，控制如何建立依赖关系
 //
 // Example:
 //
@@ -284,6 +315,7 @@ func WithNoDirectDependency() WorkflowAddInputOpt {
 //	node.AddInputWithOptions("dataNode", mappings, WithNoDirectDependency())
 //
 // Returns the current node for method chaining.
+// 返回当前节点以进行方法链式调用。
 func (n *WorkflowNode) AddInputWithOptions(fromNodeKey string, inputs []*FieldMapping, opts ...WorkflowAddInputOpt) *WorkflowNode {
 	return n.addDependencyRelation(fromNodeKey, inputs, getAddInputOpts(opts))
 }
@@ -325,6 +357,8 @@ func (n *WorkflowNode) SetStaticValue(path FieldPath, value any) *WorkflowNode {
 	return n
 }
 
+// addDependencyRelation adds a dependency relation between nodes.
+// addDependencyRelation 添加节点间的依赖关系。
 func (n *WorkflowNode) addDependencyRelation(fromNodeKey string, inputs []*FieldMapping, options *workflowAddInputOpts) *WorkflowNode {
 	for _, input := range inputs {
 		input.fromNodeKey = fromNodeKey
@@ -378,6 +412,8 @@ func (n *WorkflowNode) addDependencyRelation(fromNodeKey string, inputs []*Field
 	return n
 }
 
+// checkAndAddMappedPath checks and adds mapped field paths.
+// checkAndAddMappedPath 检查并添加映射的字段路径。
 func (n *WorkflowNode) checkAndAddMappedPath(paths []FieldPath) error {
 	if v, ok := n.mappedFieldPath[""]; ok {
 		if _, ok = v.(struct{}); ok {
@@ -423,12 +459,18 @@ type WorkflowBranch struct {
 }
 
 // AddBranch adds a branch to the workflow.
+// AddBranch 向工作流添加一个分支。
 //
 // End Nodes Field Mappings:
 // End nodes of the branch are required to define their own field mappings.
 // This is a key distinction between Graph's Branch and Workflow's Branch:
 // - Graph's Branch: Automatically passes its input to the selected node.
 // - Workflow's Branch: Does not pass its input to the selected node.
+// 结束节点字段映射：
+// 分支的结束节点需要定义自己的字段映射。
+// 这是 Graph 分支和 Workflow 分支的一个关键区别：
+// - Graph 的分支：自动将其输入传递给选定的节点。
+// - Workflow 的分支：不将其输入传递给选定的节点。
 func (wf *Workflow[I, O]) AddBranch(fromNodeKey string, branch *GraphBranch) *WorkflowBranch {
 	wb := &WorkflowBranch{
 		fromNodeKey: fromNodeKey,
@@ -449,6 +491,8 @@ func (wf *Workflow[I, O]) AddEnd(fromNodeKey string, inputs ...*FieldMapping) *W
 	return wf
 }
 
+// compile compiles the workflow into a runnable.
+// compile 将工作流编译为可运行对象。
 func (wf *Workflow[I, O]) compile(ctx context.Context, options *graphCompileOptions) (*composableRunnable, error) {
 	if wf.g.buildError != nil {
 		return nil, wf.g.buildError
@@ -523,6 +567,8 @@ func (wf *Workflow[I, O]) compile(ctx context.Context, options *graphCompileOpti
 	return wf.g.compile(ctx, options)
 }
 
+// initNode initializes a new workflow node.
+// initNode 初始化一个新的工作流节点。
 func (wf *Workflow[I, O]) initNode(key string) *WorkflowNode {
 	n := &WorkflowNode{
 		g:            wf.g,
@@ -540,18 +586,26 @@ func (wf *Workflow[I, O]) initNode(key string) *WorkflowNode {
 	return n
 }
 
+// getGenericHelper returns the generic helper for the workflow.
+// getGenericHelper 返回工作流的泛型辅助函数。
 func (wf *Workflow[I, O]) getGenericHelper() *genericHelper {
 	return wf.g.getGenericHelper()
 }
 
+// inputType returns the input type of the workflow.
+// inputType 返回工作流的输入类型。
 func (wf *Workflow[I, O]) inputType() reflect.Type {
 	return wf.g.inputType()
 }
 
+// outputType returns the output type of the workflow.
+// outputType 返回工作流的输出类型。
 func (wf *Workflow[I, O]) outputType() reflect.Type {
 	return wf.g.outputType()
 }
 
+// component returns the component type of the workflow.
+// component 返回工作流的组件类型。
 func (wf *Workflow[I, O]) component() component {
 	return wf.g.component()
 }

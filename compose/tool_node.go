@@ -30,6 +30,8 @@ import (
 	"github.com/cloudwego/eino/schema"
 )
 
+// toolsNodeOptions is the options for ToolsNode.
+// toolsNodeOptions 是 ToolsNode 的选项。
 type toolsNodeOptions struct {
 	ToolOptions []tool.Option
 	ToolList    []tool.BaseTool
@@ -397,6 +399,8 @@ func (s *streamableToolWithCallback) StreamableRun(ctx context.Context, argument
 	return streamWithCallbacks(s.st.StreamableRun)(ctx, argumentsInJSON, opts...)
 }
 
+// streamableToInvokable converts a StreamableToolEndpoint to an InvokableToolEndpoint.
+// streamableToInvokable 将 StreamableToolEndpoint 转换为 InvokableToolEndpoint。
 func streamableToInvokable(e StreamableToolEndpoint) InvokableToolEndpoint {
 	return func(ctx context.Context, input *ToolInput) (*ToolOutput, error) {
 		so, err := e(ctx, input)
@@ -411,6 +415,8 @@ func streamableToInvokable(e StreamableToolEndpoint) InvokableToolEndpoint {
 	}
 }
 
+// invokableToStreamable converts an InvokableToolEndpoint to a StreamableToolEndpoint.
+// invokableToStreamable 将 InvokableToolEndpoint 转换为 StreamableToolEndpoint。
 func invokableToStreamable(e InvokableToolEndpoint) StreamableToolEndpoint {
 	return func(ctx context.Context, input *ToolInput) (*StreamToolOutput, error) {
 		o, err := e(ctx, input)
@@ -421,6 +427,8 @@ func invokableToStreamable(e InvokableToolEndpoint) StreamableToolEndpoint {
 	}
 }
 
+// toolCallTask represents a task to execute a tool call.
+// toolCallTask 表示执行工具调用的任务。
 type toolCallTask struct {
 	// in
 	endpoint       InvokableToolEndpoint
@@ -437,6 +445,8 @@ type toolCallTask struct {
 	err      error
 }
 
+// genToolCallTasks generates tool call tasks from the input message.
+// genToolCallTasks 从输入消息生成工具调用任务。
 func (tn *ToolsNode) genToolCallTasks(ctx context.Context, tuple *toolsTuple,
 	input *schema.Message, executedTools map[string]string, isStream bool) ([]toolCallTask, error) {
 
@@ -571,6 +581,8 @@ func runToolCallTaskByStream(ctx context.Context, task *toolCallTask, opts ...to
 	}
 }
 
+// sequentialRunToolCall runs tool call tasks sequentially.
+// sequentialRunToolCall 顺序运行工具调用任务。
 func sequentialRunToolCall(ctx context.Context,
 	run func(ctx2 context.Context, callTask *toolCallTask, opts ...tool.Option),
 	tasks []toolCallTask, opts ...tool.Option) {
@@ -583,6 +595,8 @@ func sequentialRunToolCall(ctx context.Context,
 	}
 }
 
+// parallelRunToolCall runs tool call tasks in parallel.
+// parallelRunToolCall 并行运行工具调用任务。
 func parallelRunToolCall(ctx context.Context,
 	run func(ctx2 context.Context, callTask *toolCallTask, opts ...tool.Option),
 	tasks []toolCallTask, opts ...tool.Option) {
@@ -619,6 +633,8 @@ func parallelRunToolCall(ctx context.Context,
 
 // Invoke calls the tools and collects the results of invokable tools.
 // it's parallel if there are multiple tool calls in the input message.
+// Invoke 调用工具并收集可调用工具的结果。
+// 如果输入消息中有多个工具调用，则是并行的。
 func (tn *ToolsNode) Invoke(ctx context.Context, input *schema.Message,
 	opts ...ToolsNodeOption) ([]*schema.Message, error) {
 
@@ -700,6 +716,8 @@ func (tn *ToolsNode) Invoke(ctx context.Context, input *schema.Message,
 
 // Stream calls the tools and collects the results of stream readers.
 // it's parallel if there are multiple tool calls in the input message.
+// Stream 调用工具并收集流读取器的结果。
+// 如果输入消息中有多个工具调用，则是并行的。
 func (tn *ToolsNode) Stream(ctx context.Context, input *schema.Message,
 	opts ...ToolsNodeOption) (*schema.StreamReader[[]*schema.Message], error) {
 
@@ -817,6 +835,8 @@ type toolCallInfo struct {
 	toolCallID string
 }
 
+// setToolCallInfo sets the tool call info in the context.
+// setToolCallInfo 在上下文中设置工具调用信息。
 func setToolCallInfo(ctx context.Context, toolCallInfo *toolCallInfo) context.Context {
 	return context.WithValue(ctx, toolCallInfoKey{}, toolCallInfo)
 }

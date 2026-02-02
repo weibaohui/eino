@@ -54,14 +54,20 @@ func (srp streamReaderPacker[T]) copy(n int) []streamReader {
 	return ret
 }
 
+// getType returns the type of the stream reader.
+// getType 返回流读取器的类型。
 func (srp streamReaderPacker[T]) getType() reflect.Type {
 	return reflect.TypeOf(srp.sr)
 }
 
+// getChunkType returns the type of the stream chunk.
+// getChunkType 返回流块的类型。
 func (srp streamReaderPacker[T]) getChunkType() reflect.Type {
 	return generic.TypeOf[T]()
 }
 
+// toStreamReaders converts the streamReaderPacker to a slice of *schema.StreamReader[T].
+// toStreamReaders 将 streamReaderPacker 转换为 *schema.StreamReader[T] 切片。
 func (srp streamReaderPacker[T]) toStreamReaders(srs []streamReader) []*schema.StreamReader[T] {
 	ret := make([]*schema.StreamReader[T], len(srs)+1)
 	ret[0] = srp.sr
