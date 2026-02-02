@@ -43,6 +43,8 @@ func dagChannelBuilder(controlDependencies []string, dataDependencies []string, 
 	}
 }
 
+// dependencyState represents the state of a dependency.
+// dependencyState 表示依赖项的状态。
 type dependencyState uint8
 
 const (

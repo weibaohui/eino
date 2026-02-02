@@ -47,7 +47,7 @@ func NewParallel() *Parallel {
 //
 //	parallel := NewParallel()
 //	parallel.AddChatModel("output_key01", chat01)
-//	parallel.AddChatModel("output_key01", chat02)
+//	parallel.AddChatModel("output_key02", chat02)
 //
 //	chain := NewChain[any,any]()
 //	chain.AppendParallel(parallel)

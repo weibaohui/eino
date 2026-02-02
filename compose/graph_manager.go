@@ -226,6 +226,8 @@ func (c *channelManager) getFromReadyChannels(_ context.Context) (map[string]any
 	return result, nil
 }
 
+// updateAndGet updates the channel values and dependencies, then retrieves data from ready channels.
+// updateAndGet 更新通道值和依赖项，然后从准备好的通道中检索数据。
 func (c *channelManager) updateAndGet(ctx context.Context, values map[string]map[string]any, dependencies map[string][]string) (map[string]any, error) {
 	err := c.updateValues(ctx, values)
 	if err != nil {

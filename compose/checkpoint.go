@@ -133,6 +133,8 @@ type checkpoint struct {
 type stateModifierKey struct{}
 type checkPointKey struct{} // *checkpoint
 
+// getStateModifier gets the state modifier from the context.
+// getStateModifier 从上下文中获取状态修改器。
 func getStateModifier(ctx context.Context) StateModifier {
 	if sm, ok := ctx.Value(stateModifierKey{}).(StateModifier); ok {
 		return sm
@@ -140,10 +142,14 @@ func getStateModifier(ctx context.Context) StateModifier {
 	return nil
 }
 
+// setStateModifier sets the state modifier to the context.
+// setStateModifier 将状态修改器设置到上下文中。
 func setStateModifier(ctx context.Context, modifier StateModifier) context.Context {
 	return context.WithValue(ctx, stateModifierKey{}, modifier)
 }
 
+// getCheckPointFromStore gets the checkpoint from the store.
+// getCheckPointFromStore 从存储中获取检查点。
 func getCheckPointFromStore(ctx context.Context, id string, cpr *checkPointer) (cp *checkpoint, err error) {
 	cp, existed, err := cpr.get(ctx, id)
 	if err != nil {
@@ -156,11 +162,15 @@ func getCheckPointFromStore(ctx context.Context, id string, cpr *checkPointer) (
 	return cp, nil
 }
 
+// setCheckPointToCtx sets the checkpoint to the context.
+// setCheckPointToCtx 将检查点设置到上下文中。
 func setCheckPointToCtx(ctx context.Context, cp *checkpoint) context.Context {
 	ctx = core.PopulateInterruptState(ctx, cp.InterruptID2Addr, cp.InterruptID2State)
 	return context.WithValue(ctx, checkPointKey{}, cp)
 }
 
+// getCheckPointFromCtx gets the checkpoint from the context.
+// getCheckPointFromCtx 从上下文中获取检查点。
 func getCheckPointFromCtx(ctx context.Context) *checkpoint {
 	if cp, ok := ctx.Value(checkPointKey{}).(*checkpoint); ok {
 		return cp
@@ -168,6 +178,8 @@ func getCheckPointFromCtx(ctx context.Context) *checkpoint {
 	return nil
 }
 
+// forwardCheckPoint forwards the checkpoint to the next node (subgraph).
+// forwardCheckPoint 将检查点转发到下一个节点（子图）。
 func forwardCheckPoint(ctx context.Context, nodeKey string) context.Context {
 	cp := getCheckPointFromCtx(ctx)
 	if cp == nil {
@@ -181,6 +193,8 @@ func forwardCheckPoint(ctx context.Context, nodeKey string) context.Context {
 	return context.WithValue(ctx, checkPointKey{}, (*checkpoint)(nil))
 }
 
+// newCheckPointer creates a new checkPointer.
+// newCheckPointer 创建一个新的 checkPointer。
 func newCheckPointer(
 	inputPairs, outputPairs map[string]streamConvertPair,
 	store CheckPointStore,
@@ -202,6 +216,8 @@ type checkPointer struct {
 	serializer Serializer
 }
 
+// get retrieves a checkpoint by ID.
+// get 根据 ID 检索检查点。
 func (c *checkPointer) get(ctx context.Context, id string) (*checkpoint, bool, error) {
 	data, existed, err := c.store.Get(ctx, id)
 	if err != nil || existed == false {
@@ -217,6 +233,8 @@ func (c *checkPointer) get(ctx context.Context, id string) (*checkpoint, bool, e
 	return cp, true, nil
 }
 
+// set saves a checkpoint with ID.
+// set 保存带有 ID 的检查点。
 func (c *checkPointer) set(ctx context.Context, id string, cp *checkpoint) error {
 	data, err := c.serializer.Marshal(cp)
 	if err != nil {
@@ -227,6 +245,7 @@ func (c *checkPointer) set(ctx context.Context, id string, cp *checkpoint) error
 }
 
 // convertCheckPoint if value in checkpoint is streamReader, convert it to non-stream
+// convertCheckPoint 如果检查点中的值是 streamReader，则将其转换为非流式
 func (c *checkPointer) convertCheckPoint(cp *checkpoint, isStream bool) (err error) {
 	for _, ch := range cp.Channels {
 		err = ch.convertValues(func(m map[string]any) error {
@@ -246,6 +265,7 @@ func (c *checkPointer) convertCheckPoint(cp *checkpoint, isStream bool) (err err
 }
 
 // convertCheckPoint convert values in checkpoint to streamReader if needed
+// restoreCheckPoint 如果需要，将检查点中的值转换为 streamReader
 func (c *checkPointer) restoreCheckPoint(cp *checkpoint, isStream bool) (err error) {
 	for _, ch := range cp.Channels {
 		err = ch.convertValues(func(m map[string]any) error {
@@ -264,6 +284,8 @@ func (c *checkPointer) restoreCheckPoint(cp *checkpoint, isStream bool) (err err
 	return nil
 }
 
+// newStreamConverter creates a new streamConverter.
+// newStreamConverter 创建一个新的 streamConverter。
 func newStreamConverter(inputPairs, outputPairs map[string]streamConvertPair) *streamConverter {
 	return &streamConverter{
 		inputPairs:  inputPairs,
@@ -275,22 +297,32 @@ type streamConverter struct {
 	inputPairs, outputPairs map[string]streamConvertPair
 }
 
+// convertInputs converts input values.
+// convertInputs 转换输入值。
 func (s *streamConverter) convertInputs(isStream bool, values map[string]any) error {
 	return convert(values, s.inputPairs, isStream)
 }
 
+// restoreInputs restores input values.
+// restoreInputs 恢复输入值。
 func (s *streamConverter) restoreInputs(isStream bool, values map[string]any) error {
 	return restore(values, s.inputPairs, isStream)
 }
 
+// convertOutputs converts output values.
+// convertOutputs 转换输出值。
 func (s *streamConverter) convertOutputs(isStream bool, values map[string]any) error {
 	return convert(values, s.outputPairs, isStream)
 }
 
+// restoreOutputs restores output values.
+// restoreOutputs 恢复输出值。
 func (s *streamConverter) restoreOutputs(isStream bool, values map[string]any) error {
 	return restore(values, s.outputPairs, isStream)
 }
 
+// convert converts values using conversion pairs.
+// convert 使用转换对转换值。
 func convert(values map[string]any, convPairs map[string]streamConvertPair, isStream bool) error {
 	if !isStream {
 		return nil
@@ -313,6 +345,8 @@ func convert(values map[string]any, convPairs map[string]streamConvertPair, isSt
 	return nil
 }
 
+// restore restores values using conversion pairs.
+// restore 使用转换对恢复值。
 func restore(values map[string]any, convPairs map[string]streamConvertPair, isStream bool) error {
 	if !isStream {
 		return nil

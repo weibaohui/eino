@@ -129,6 +129,8 @@ func (gn *graphNode) outputType() reflect.Type {
 	return nil
 }
 
+// compileIfNeeded compiles the node if it's a graph, otherwise returns the component.
+// compileIfNeeded 如果节点是图，则编译它，否则返回组件。
 func (gn *graphNode) compileIfNeeded(ctx context.Context) (*composableRunnable, error) {
 	var r *composableRunnable
 	if gn.g != nil {
@@ -159,6 +161,8 @@ func (gn *graphNode) compileIfNeeded(ctx context.Context) (*composableRunnable, 
 	return r, nil
 }
 
+// parseExecutorInfoFromComponent parses executor information from a component.
+// parseExecutorInfoFromComponent 从组件中解析执行器信息。
 func parseExecutorInfoFromComponent(c component, executor any) *executorMeta {
 
 	componentImplType, ok := components.GetType(executor)
@@ -173,6 +177,8 @@ func parseExecutorInfoFromComponent(c component, executor any) *executorMeta {
 	}
 }
 
+// getNodeInfo gets node information from options.
+// getNodeInfo 从选项中获取节点信息。
 func getNodeInfo(opts ...GraphAddNodeOpt) (*nodeInfo, *graphAddNodeOpts) {
 
 	opt := getGraphAddNodeOpts(opts...)

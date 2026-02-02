@@ -81,6 +81,8 @@ type graph struct {
 
 	*genericHelper
 
+	// fieldMappingRecords stores the field mapping records for validation.
+	// fieldMappingRecords 存储用于验证的字段映射记录。
 	fieldMappingRecords map[string][]*FieldMapping
 
 	buildError error
@@ -103,6 +105,8 @@ type newGraphConfig struct {
 	newOpts               []NewGraphOption
 }
 
+// newGraphFromGeneric creates a new graph from generic types.
+// newGraphFromGeneric 从泛型类型创建新图。
 func newGraphFromGeneric[I, O any](
 	cmp component,
 	stateGenerator func(ctx context.Context) any,
@@ -120,6 +124,8 @@ func newGraphFromGeneric[I, O any](
 	})
 }
 
+// newGraph creates a new graph with configuration.
+// newGraph 使用配置创建新图。
 func newGraph(cfg *newGraphConfig) *graph {
 	return &graph{
 		nodes:        make(map[string]*graphNode),
@@ -163,8 +169,11 @@ func isWorkflow(cmp component) bool {
 }
 
 // ErrGraphCompiled is returned when attempting to modify a graph after it has been compiled
+// ErrGraphCompiled 当尝试在图编译后修改图时返回
 var ErrGraphCompiled = errors.New("graph has been compiled, cannot be modified")
 
+// addNode adds a node to the graph.
+// addNode 向图中添加一个节点。
 func (g *graph) addNode(key string, node *graphNode, options *graphAddNodeOpts) (err error) {
 	if g.buildError != nil {
 		return g.buildError
@@ -235,6 +244,8 @@ func (g *graph) addNode(key string, node *graphNode, options *graphAddNodeOpts) 
 	return nil
 }
 
+// addEdgeWithMappings adds an edge with field mappings to the graph.
+// addEdgeWithMappings 向图中添加带有字段映射的边。
 func (g *graph) addEdgeWithMappings(startNode, endNode string, noControl bool, noData bool, mappings ...*FieldMapping) (err error) {
 	if g.buildError != nil {
 		return g.buildError

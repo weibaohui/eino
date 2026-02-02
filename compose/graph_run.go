@@ -170,12 +170,18 @@ func (r *runner) transform(ctx context.Context, input streamReader, opts ...Opti
 	return s.(streamReader), nil
 }
 
+// runnableCallWrapper is a wrapper for running a composable runnable.
+// runnableCallWrapper 是用于运行可组合可运行对象的包装器。
 type runnableCallWrapper func(context.Context, *composableRunnable, any, ...any) (any, error)
 
+// runnableInvoke invokes a composable runnable.
+// runnableInvoke 调用可组合可运行对象。
 func runnableInvoke(ctx context.Context, r *composableRunnable, input any, opts ...any) (any, error) {
 	return r.i(ctx, input, opts...)
 }
 
+// runnableTransform transforms a composable runnable.
+// runnableTransform 转换可组合可运行对象。
 func runnableTransform(ctx context.Context, r *composableRunnable, input any, opts ...any) (any, error) {
 	return r.t(ctx, input.(streamReader), opts...)
 }

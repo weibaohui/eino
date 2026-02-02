@@ -48,10 +48,14 @@ const (
 	actionTransformByInvoke  defaultImplAction = "TransformByInvoke"
 )
 
+// newStreamReadError creates a new stream read error.
+// newStreamReadError 创建一个新的流读取错误。
 func newStreamReadError(err error) error {
 	return fmt.Errorf("failed to read from stream. error: %w", err)
 }
 
+// newGraphRunError creates a new graph run error.
+// newGraphRunError 创建一个新的图运行错误。
 func newGraphRunError(err error) error {
 	return &internalError{
 		typ:       internalErrorTypeGraphRun,
@@ -60,6 +64,8 @@ func newGraphRunError(err error) error {
 	}
 }
 
+// wrapGraphNodeError wraps a graph node error.
+// wrapGraphNodeError 包装图节点错误。
 func wrapGraphNodeError(nodeKey string, err error) error {
 	if ok := isInterruptError(err); ok {
 		return err

@@ -102,7 +102,10 @@ type Chain[I, O any] struct {
 // ErrChainCompiled 当尝试在链编译后修改链时返回
 var ErrChainCompiled = errors.New("chain has been compiled, cannot be modified")
 
+// compile compiles the chain to a composable runnable.
 // implements AnyGraph.
+// compile 将链编译为可组合可运行对象。
+// 实现 AnyGraph。
 func (c *Chain[I, O]) compile(ctx context.Context, option *graphCompileOptions) (*composableRunnable, error) {
 	if err := c.addEndIfNeeded(); err != nil {
 		return nil, err
@@ -113,6 +116,8 @@ func (c *Chain[I, O]) compile(ctx context.Context, option *graphCompileOptions) 
 
 // addEndIfNeeded add END edge of the chain/graph.
 // only run once when compiling.
+// addEndIfNeeded 添加链/图的结束边。
+// 仅在编译时运行一次。
 func (c *Chain[I, O]) addEndIfNeeded() error {
 	if c.hasEnd {
 		return nil
@@ -144,18 +149,24 @@ func (c *Chain[I, O]) getGenericHelper() *genericHelper {
 
 // inputType returns the input type of the chain.
 // implements AnyGraph.
+// inputType 返回链的输入类型。
+// 实现 AnyGraph。
 func (c *Chain[I, O]) inputType() reflect.Type {
 	return generic.TypeOf[I]()
 }
 
 // outputType returns the output type of the chain.
 // implements AnyGraph.
+// outputType 返回链的输出类型。
+// 实现 AnyGraph。
 func (c *Chain[I, O]) outputType() reflect.Type {
 	return generic.TypeOf[O]()
 }
 
-// compositeType returns the composite type of the chain.
+// component returns the component of the chain.
 // implements AnyGraph.
+// component 返回链的组件。
+// 实现 AnyGraph。
 func (c *Chain[I, O]) component() component {
 	return c.gg.component()
 }

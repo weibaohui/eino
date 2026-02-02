@@ -35,9 +35,6 @@ type nodeOptionsPair generic.Pair[*graphNode, *graphAddNodeOpts]
 // ChainBranch represents a conditional branch in a chain of operations.
 // It allows for dynamic routing of execution based on a condition.
 // All branches within ChainBranch are expected to either end the Chain, or converge to another node in the Chain.
-// ChainBranch 表示操作链中的条件分支。
-// 它允许基于条件动态路由执行。
-// ChainBranch 内的所有分支都应结束链，或汇聚到链中的另一个节点。
 type ChainBranch struct {
 	internalBranch *GraphBranch
 	key2BranchNode map[string]nodeOptionsPair
