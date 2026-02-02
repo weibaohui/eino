@@ -28,24 +28,30 @@ import (
 )
 
 // MultiAgentCallback is the callback interface for host multi-agent.
+// MultiAgentCallback 是 host multi-agent 的回调接口。
 type MultiAgentCallback interface {
 	OnHandOff(ctx context.Context, info *HandOffInfo) context.Context
 }
 
 // HandOffInfo is the info which will be passed to MultiAgentCallback.OnHandOff, representing a hand off event.
+// HandOffInfo 是传递给 MultiAgentCallback.OnHandOff 的信息，表示一个 hand off 事件。
 type HandOffInfo struct {
 	ToAgentName string
 	Argument    string
 }
 
 // ConvertCallbackHandlers converts []host.MultiAgentCallback to callbacks.Handler.
+// ConvertCallbackHandlers 将 []host.MultiAgentCallback 转换为 callbacks.Handler。
 func ConvertCallbackHandlers(handlers ...MultiAgentCallback) callbacks.Handler {
+	// onChatModelEnd 处理非流式输出的 ChatModel 结束事件
 	onChatModelEnd := func(ctx context.Context, info *callbacks.RunInfo, output *model.CallbackOutput) context.Context {
 		msg := output.Message
+		// 如果消息为空，或者不是助手角色的消息，或者没有工具调用，则不处理
 		if msg == nil || msg.Role != schema.Assistant || len(msg.ToolCalls) == 0 {
 			return ctx
 		}
 
+		// 遍历所有回调处理器，触发 OnHandOff 事件
 		for _, cb := range handlers {
 			for _, toolCall := range msg.ToolCalls {
 				ctx = cb.OnHandOff(ctx, &HandOffInfo{
@@ -58,8 +64,11 @@ func ConvertCallbackHandlers(handlers ...MultiAgentCallback) callbacks.Handler {
 		return ctx
 	}
 
+	// onChatModelEndWithStreamOutput 处理流式输出的 ChatModel 结束事件
 	onChatModelEndWithStreamOutput := func(ctx context.Context, info *callbacks.RunInfo, output *schema.StreamReader[*model.CallbackOutput]) context.Context {
+		// 启动一个新的 goroutine 来处理流式输出，避免阻塞主流程
 		go func() {
+			// 拼接流式消息
 			msg, err := schema.ConcatMessageStream(schema.StreamReaderWithConvert(output,
 				func(m *model.CallbackOutput) (*schema.Message, error) {
 					return m.Message, nil
@@ -69,6 +78,7 @@ func ConvertCallbackHandlers(handlers ...MultiAgentCallback) callbacks.Handler {
 				return
 			}
 
+			// 遍历所有回调处理器，触发 OnHandOff 事件
 			for _, cb := range handlers {
 				for _, tc := range msg.ToolCalls {
 					_ = cb.OnHandOff(ctx, &HandOffInfo{
@@ -89,6 +99,7 @@ func ConvertCallbackHandlers(handlers ...MultiAgentCallback) callbacks.Handler {
 }
 
 // convertCallbacks reads graph call options, extract host.MultiAgentCallback and convert it to callbacks.Handler.
+// convertCallbacks 读取图调用选项，提取 host.MultiAgentCallback 并将其转换为 callbacks.Handler。
 func convertCallbacks(opts ...agent.AgentOption) callbacks.Handler {
 	agentOptions := agent.GetImplSpecificOptions(&options{}, opts...)
 	if len(agentOptions.agentCallbacks) == 0 {

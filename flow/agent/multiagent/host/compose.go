@@ -42,10 +42,14 @@ type state struct {
 }
 
 // NewMultiAgent creates a new host multi-agent system.
+// NewMultiAgent 创建一个新的 host multi-agent 系统。
 //
 // IMPORTANT!! For models that don't output tool calls in the first streaming chunk (e.g. Claude)
 // the default StreamToolCallChecker may not work properly since it only checks the first chunk for tool calls.
 // In such cases, you need to implement a custom StreamToolCallChecker that can properly detect tool calls.
+// 重要！！对于不在第一个流式块中输出工具调用的模型（例如 Claude），
+// 默认的 StreamToolCallChecker 可能无法正常工作，因为它只检查第一个块是否有工具调用。
+// 在这种情况下，您需要实现一个自定义的 StreamToolCallChecker，以便正确检测工具调用。
 func NewMultiAgent(ctx context.Context, config *MultiAgentConfig) (*MultiAgent, error) {
 	if err := config.validate(); err != nil {
 		return nil, err
@@ -74,9 +78,11 @@ func NewMultiAgent(ctx context.Context, config *MultiAgentConfig) (*MultiAgent, 
 		toolCallChecker = firstChunkStreamToolCallChecker
 	}
 
+	// 初始化图，并设置生成本地状态的函数
 	g := compose.NewGraph[[]*schema.Message, *schema.Message](
 		compose.WithGenLocalState(func(context.Context) *state { return &state{} }))
 
+	// 添加透传节点，用于收集专家的回答
 	if err := g.AddPassthroughNode(specialistsAnswersCollectorNodeKey); err != nil {
 		return nil, err
 	}
@@ -86,6 +92,7 @@ func NewMultiAgent(ctx context.Context, config *MultiAgentConfig) (*MultiAgent, 
 	for i := range config.Specialists {
 		specialist := config.Specialists[i]
 
+		// 为每个专家生成工具定义
 		agentTools = append(agentTools, &schema.ToolInfo{
 			Name: specialist.Name,
 			Desc: specialist.IntendedUse,
@@ -97,6 +104,7 @@ func NewMultiAgent(ctx context.Context, config *MultiAgentConfig) (*MultiAgent, 
 			}),
 		})
 
+		// 添加专家代理节点
 		if err := addSpecialistAgent(specialist, g); err != nil {
 			return nil, err
 		}
@@ -104,36 +112,44 @@ func NewMultiAgent(ctx context.Context, config *MultiAgentConfig) (*MultiAgent, 
 		agentMap[specialist.Name] = true
 	}
 
+	// 使用专家工具配置 Host ChatModel
 	chatModel, err := agent.ChatModelWithTools(config.Host.ChatModel, config.Host.ToolCallingModel, agentTools)
 	if err != nil {
 		return nil, err
 	}
 
+	// 添加 Host 代理节点
 	if err = addHostAgent(chatModel, hostPrompt, g, hostKeyName); err != nil {
 		return nil, err
 	}
 
 	const convertorName = "msg2MsgList"
+	// 添加转换节点，将消息转换为消息列表
 	if err = g.AddLambdaNode(convertorName, compose.ToList[*schema.Message](), compose.WithNodeName("converter")); err != nil {
 		return nil, err
 	}
 
+	// 添加直接回答分支（当 Host 不调用工具时）
 	if err = addDirectAnswerBranch(convertorName, g, toolCallChecker); err != nil {
 		return nil, err
 	}
 
+	// 添加多专家分支（当 Host 调用工具时）
 	if err = addMultiSpecialistsBranch(convertorName, agentMap, g); err != nil {
 		return nil, err
 	}
 
+	// 添加单意图回答节点
 	if err = addSingleIntentAnswerNode(g); err != nil {
 		return nil, err
 	}
 
+	// 添加多意图总结节点
 	if err = addMultiIntentsSummarizeNode(config.Summarizer, g); err != nil {
 		return nil, err
 	}
 
+	// 添加专家执行后的分支
 	if err = addAfterSpecialistsBranch(g); err != nil {
 		return nil, err
 	}
@@ -157,6 +173,7 @@ func addSpecialistAgent(specialist *Specialist, g *compose.Graph[[]*schema.Messa
 		if err != nil {
 			return err
 		}
+		// preHandler 将工具调用消息替换为状态中存储的原始输入消息
 		preHandler := func(_ context.Context, input []*schema.Message, state *state) ([]*schema.Message, error) {
 			return state.msgs, nil // replace the tool call message with input msgs stored in state
 		}
@@ -181,15 +198,18 @@ func addSpecialistAgent(specialist *Specialist, g *compose.Graph[[]*schema.Messa
 		}
 	}
 
+	// 将专家节点连接到结果收集节点
 	return g.AddEdge(specialist.Name, specialistsAnswersCollectorNodeKey)
 }
 
 func addHostAgent(model model.BaseChatModel, prompt string, g *compose.Graph[[]*schema.Message, *schema.Message], hostNodeName string) error {
 	preHandler := func(_ context.Context, input []*schema.Message, state *state) ([]*schema.Message, error) {
+		// 保存原始输入消息到状态中
 		state.msgs = input
 		if len(prompt) == 0 {
 			return input, nil
 		}
+		// 添加系统提示词
 		return append([]*schema.Message{{
 			Role:    schema.System,
 			Content: prompt,
@@ -205,6 +225,7 @@ func addHostAgent(model model.BaseChatModel, prompt string, g *compose.Graph[[]*
 func addDirectAnswerBranch(convertorName string, g *compose.Graph[[]*schema.Message, *schema.Message],
 	toolCallChecker func(ctx context.Context, modelOutput *schema.StreamReader[*schema.Message]) (bool, error)) error {
 	// handles the case where the host agent returns a direct answer, instead of handling off to any specialist
+	// 处理 host agent 返回直接回答的情况，而不是移交给任何专家
 	branch := compose.NewStreamGraphBranch(func(ctx context.Context, sr *schema.StreamReader[*schema.Message]) (endNode string, err error) {
 		isToolCall, err := toolCallChecker(ctx, sr)
 		if err != nil {
