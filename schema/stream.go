@@ -51,9 +51,15 @@ var ErrNoValue = errors.New("no value")
 // This error should not occur during normal use of StreamReader.Recv. If it does, please check your application code.
 var ErrRecvAfterClosed = errors.New("recv after stream closed")
 
+const maxSelectNum = 5
+
 // SourceEOF represents an EOF error from a specific source stream.
 // It is only returned by the method Recv() of StreamReader created
 // with MergeNamedStreamReaders when one of its source streams reaches EOF.
+//
+// SourceEOF 表示来自特定源流的 EOF 错误。
+// 仅当使用 MergeNamedStreamReaders 创建的 StreamReader 的其中一个源流达到 EOF 时，
+// 由其 Recv() 方法返回。
 type SourceEOF struct {
 	sourceName string
 }
@@ -93,6 +99,9 @@ func GetSourceName(err error) (string, bool) {
 //		}
 //		fmt.Println(chunk)
 //	}
+//
+// Pipe 创建一个具有给定容量的新流，由 StreamWriter 和 StreamReader 表示。
+// 容量是流中可以缓冲的最大项目数。
 func Pipe[T any](cap int) (*StreamReader[T], *StreamWriter[T]) {
 	stm := newStream[T](cap)
 	return stm.asReader(), &StreamWriter[T]{stm: stm}
@@ -539,6 +548,8 @@ func newMultiStreamReader[T any](sts []*stream[T]) *multiStreamReader[T] {
 	}
 }
 
+// recv receives a value from one of the streams.
+// recv 从其中一个流接收值。
 func (msr *multiStreamReader[T]) recv() (T, error) {
 	for len(msr.nonClosed) > 0 {
 		var chosen int
@@ -577,6 +588,8 @@ func (msr *multiStreamReader[T]) recv() (T, error) {
 	return t, io.EOF
 }
 
+// nonClosedStreams returns the list of non-closed streams.
+// nonClosedStreams 返回未关闭的流列表。
 func (msr *multiStreamReader[T]) nonClosedStreams() []*stream[T] {
 	ret := make([]*stream[T], len(msr.nonClosed))
 
@@ -587,16 +600,22 @@ func (msr *multiStreamReader[T]) nonClosedStreams() []*stream[T] {
 	return ret
 }
 
+// close closes all streams.
+// close 关闭所有流。
 func (msr *multiStreamReader[T]) close() {
 	for _, s := range msr.sts {
 		s.closeRecv()
 	}
 }
 
+// toStream converts the multiStreamReader to a single stream.
+// toStream 将 multiStreamReader 转换为单个流。
 func (msr *multiStreamReader[T]) toStream() *stream[T] {
 	return toStream[T, *multiStreamReader[T]](msr)
 }
 
+// streamReaderWithConvert reads from a stream and converts the value.
+// streamReaderWithConvert 从流中读取并转换值。
 type streamReaderWithConvert[T any] struct {
 	sr iStreamReader
 
@@ -661,6 +680,8 @@ func StreamReaderWithConvert[T, D any](sr *StreamReader[T], convert func(T) (D, 
 	return newStreamReaderWithConvert(sr, c, opts...)
 }
 
+// recv receives a value from the stream and converts it.
+// recv 从流中接收值并进行转换。
 func (srw *streamReaderWithConvert[T]) recv() (T, error) {
 	for {
 		out, err := srw.sr.recvAny()
@@ -691,6 +712,8 @@ func (srw *streamReaderWithConvert[T]) recv() (T, error) {
 	}
 }
 
+// close closes the underlying stream.
+// close 关闭底层流。
 func (srw *streamReaderWithConvert[T]) close() {
 	srw.sr.Close()
 }
@@ -700,6 +723,8 @@ type reader[T any] interface {
 	close()
 }
 
+// toStream converts a reader to a stream.
+// toStream 将读取器转换为流。
 func toStream[T any, Reader reader[T]](r Reader) *stream[T] {
 	ret := newStream[T](5)
 
@@ -733,6 +758,8 @@ func toStream[T any, Reader reader[T]](r Reader) *stream[T] {
 	return ret
 }
 
+// toStream converts the streamReaderWithConvert to a single stream.
+// toStream 将 streamReaderWithConvert 转换为单个流。
 func (srw *streamReaderWithConvert[T]) toStream() *stream[T] {
 	return toStream[T, *streamReaderWithConvert[T]](srw)
 }
@@ -745,6 +772,8 @@ type cpStreamElement[T any] struct {
 
 // copyStreamReaders creates multiple independent StreamReaders from a single StreamReader.
 // Each child StreamReader can read from the original stream independently.
+// copyStreamReaders 从单个 StreamReader 创建多个独立的 StreamReader。
+// 每个子 StreamReader 可以独立地从原始流中读取。
 func copyStreamReaders[T any](sr *StreamReader[T], n int) []*StreamReader[T] {
 	cpsr := &parentStreamReader[T]{
 		sr:            sr,
@@ -776,6 +805,8 @@ func copyStreamReaders[T any](sr *StreamReader[T], n int) []*StreamReader[T] {
 	return ret
 }
 
+// parentStreamReader manages the original stream and children streams.
+// parentStreamReader 管理原始流和子流。
 type parentStreamReader[T any] struct {
 	// sr is the original StreamReader.
 	sr *StreamReader[T]
@@ -823,6 +854,8 @@ func (p *parentStreamReader[T]) peek(idx int) (t T, err error) {
 	return t, err
 }
 
+// close closes a specific child.
+// close 关闭特定子项。
 func (p *parentStreamReader[T]) close(idx int) {
 	if p.subStreamList[idx] == nil {
 		return // avoid close multiple times
@@ -838,19 +871,27 @@ func (p *parentStreamReader[T]) close(idx int) {
 	}
 }
 
+// childStreamReader reads from a parent stream reader.
+// childStreamReader 从父流读取器读取。
 type childStreamReader[T any] struct {
 	parent *parentStreamReader[T]
 	index  int
 }
 
+// recv receives a value from the parent.
+// recv 从父项接收值。
 func (csr *childStreamReader[T]) recv() (T, error) {
 	return csr.parent.peek(csr.index)
 }
 
+// toStream converts the childStreamReader to a single stream.
+// toStream 将 childStreamReader 转换为单个流。
 func (csr *childStreamReader[T]) toStream() *stream[T] {
 	return toStream[T, *childStreamReader[T]](csr)
 }
 
+// close closes the child stream.
+// close 关闭子流。
 func (csr *childStreamReader[T]) close() {
 	csr.parent.close(csr.index)
 }

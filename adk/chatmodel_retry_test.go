@@ -689,6 +689,8 @@ func TestRetryExhaustedError_ErrorString(t *testing.T) {
 	assert.Equal(t, "exceeds max retries", errWithoutLast.Error())
 }
 
+// TestWillRetryError_ErrorString 测试 WillRetryError 的 Error 方法。
+// 验证错误信息字符串的格式是否正确。
 func TestWillRetryError_ErrorString(t *testing.T) {
 	willRetry := &WillRetryError{ErrStr: "transient error", RetryAttempt: 1}
 	assert.Equal(t, "transient error", willRetry.Error())

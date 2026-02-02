@@ -44,16 +44,34 @@ Here are the first 10 lines of the result:
 
 // toolResultOffloadingConfig defines the configuration for tool result offloading.
 // toolResultOffloadingConfig 定义工具结果卸载的配置。
+// 用于配置如何将过大的工具执行结果保存到文件系统，而不是直接返回给模型。
 type toolResultOffloadingConfig struct {
-	Backend          Backend
+	// Backend is the storage backend for offloaded tool results.
+	// Backend 是卸载工具结果的存储后端。
+	Backend Backend
+	// ReadFileToolName is the name of the tool to read offloaded files.
+	// ReadFileToolName 是用于读取卸载文件的工具名称。
 	ReadFileToolName string
-	TokenLimit       int
-	PathGenerator    func(ctx context.Context, input *compose.ToolInput) (string, error)
-	TokenCounter     func(msg *schema.Message) int
+	// TokenLimit is the threshold for triggering offloading.
+	// TokenLimit 是触发卸载的 token 阈值。
+	TokenLimit int
+	// PathGenerator generates the file path for offloaded results.
+	// PathGenerator 生成卸载结果的文件路径。
+	PathGenerator func(ctx context.Context, input *compose.ToolInput) (string, error)
+	// TokenCounter estimates the token count of a message.
+	// TokenCounter 估算消息的 token 数量。
+	TokenCounter func(msg *schema.Message) int
 }
 
 // newToolResultOffloading creates a new tool result offloading middleware.
 // newToolResultOffloading 创建一个新的工具结果卸载中间件。
+//
+// 参数:
+//   - ctx: 上下文。
+//   - config: 中间件配置。
+//
+// 返回:
+//   - compose.ToolMiddleware: 构建好的工具中间件。
 func newToolResultOffloading(ctx context.Context, config *toolResultOffloadingConfig) compose.ToolMiddleware {
 	offloading := &toolResultOffloading{
 		backend:       config.Backend,
@@ -89,6 +107,8 @@ func newToolResultOffloading(ctx context.Context, config *toolResultOffloadingCo
 
 // toolResultOffloading implements the tool result offloading logic.
 // toolResultOffloading 实现工具结果卸载逻辑。
+// 当工具执行结果过大时，将结果写入文件系统，并返回文件路径及提示信息，
+// 避免 Agent 上下文过长导致 Token 溢出或模型性能下降。
 type toolResultOffloading struct {
 	backend       Backend
 	tokenLimit    int
@@ -138,6 +158,15 @@ func (t *toolResultOffloading) stream(endpoint compose.StreamableToolEndpoint) c
 // and returns a summary message with the file path.
 // handleResult 处理工具执行结果。
 // 如果结果超过 token 限制，则将结果写入文件系统并返回包含文件路径的摘要消息。
+//
+// 参数:
+//   - ctx: 上下文。
+//   - result: 工具执行的原始结果字符串。
+//   - input: 工具调用的输入信息。
+//
+// 返回:
+//   - string: 处理后的结果（可能是原始结果或卸载提示信息）。
+//   - error: 如果写入文件失败或格式化失败，返回错误。
 func (t *toolResultOffloading) handleResult(ctx context.Context, result string, input *compose.ToolInput) (string, error) {
 	if t.counter(schema.ToolMessage(result, input.CallID, schema.WithToolName(input.Name))) > t.tokenLimit*4 {
 		path, err := t.pathGenerator(ctx, input)

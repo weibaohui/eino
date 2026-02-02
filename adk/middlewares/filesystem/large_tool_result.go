@@ -31,17 +31,23 @@ import (
 	"github.com/cloudwego/eino/schema"
 )
 
-// toolResultOffloadingConfig 定义工具结果卸载的配置
+// toolResultOffloadingConfig 定义工具结果卸载的配置。
+// 用于配置如何将过大的工具执行结果保存到文件系统，而不是直接返回给模型。
 type toolResultOffloadingConfig struct {
-	// Backend 文件系统后端，用于存储过大的工具结果
+	// Backend 文件系统后端，用于存储过大的工具结果。
+	// 必填。
 	Backend Backend
-	// TokenLimit 触发卸载的 Token 数量阈值
+	// TokenLimit 触发卸载的 Token 数量阈值。
+	// 当结果的 Token 估算值超过此阈值时，将触发卸载。
+	// 可选，默认为 20000。
 	TokenLimit int
-	// PathGenerator 生成卸载文件路径的函数
+	// PathGenerator 生成卸载文件路径的函数。
+	// 根据上下文和工具输入生成唯一的文件路径。
+	// 可选，默认为 "/large_tool_result/{ToolCallID}"。
 	PathGenerator func(ctx context.Context, input *compose.ToolInput) (string, error)
 }
 
-// toolResultOffloading 实现工具结果卸载的中间件结构
+// toolResultOffloading 实现工具结果卸载的中间件结构。
 // 当工具执行结果过大时，将结果写入文件系统，并返回文件路径及提示信息，
 // 避免 Agent 上下文过长导致 Token 溢出或模型性能下降。
 type toolResultOffloading struct {
@@ -50,8 +56,15 @@ type toolResultOffloading struct {
 	pathGenerator func(ctx context.Context, input *compose.ToolInput) (string, error)
 }
 
-// newToolResultOffloading 创建一个新的工具结果卸载中间件
+// newToolResultOffloading 创建一个新的工具结果卸载中间件。
 // 初始化配置，设置默认的 TokenLimit (20000) 和 PathGenerator。
+//
+// 参数:
+//   - ctx: 上下文。
+//   - config: 中间件配置。
+//
+// 返回:
+//   - compose.ToolMiddleware: 构建好的工具中间件。
 func newToolResultOffloading(ctx context.Context, config *toolResultOffloadingConfig) compose.ToolMiddleware {
 	offloading := &toolResultOffloading{
 		backend:       config.Backend,
@@ -91,8 +104,9 @@ func (t *toolResultOffloading) invoke(endpoint compose.InvokableToolEndpoint) co
 	}
 }
 
-// stream 处理流式工具调用
+// stream 处理流式工具调用。
 // 目前流式调用会先聚合结果，然后进行卸载检查。
+// 如果结果被卸载，将返回一个新的流，其中包含卸载提示信息。
 func (t *toolResultOffloading) stream(endpoint compose.StreamableToolEndpoint) compose.StreamableToolEndpoint {
 	return func(ctx context.Context, input *compose.ToolInput) (*compose.StreamToolOutput, error) {
 		output, err := endpoint(ctx, input)
@@ -131,8 +145,8 @@ func (t *toolResultOffloading) handleResult(ctx context.Context, result string, 
 		}
 
 		err = t.backend.Write(ctx, &WriteRequest{
-			FilePath:    path,
-			Content: result,
+			FilePath: path,
+			Content:  result,
 		})
 		if err != nil {
 			return "", err

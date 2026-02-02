@@ -961,6 +961,13 @@ func formatContent(content string, vs map[string]any, formatType FormatType) (st
 //	msg := schema.UserMessage("hello world, {name}")
 //	msgs, err := msg.Format(ctx, map[string]any{"name": "eino"}, schema.FString) // <= this will render the content of msg by pyfmt
 //	// msgs[0].Content will be "hello world, eino"
+//
+// Format 返回按给定 formatType 渲染后的消息。
+// 例如：
+//
+//	msg := schema.UserMessage("hello world, {name}")
+//	msgs, err := msg.Format(ctx, map[string]any{"name": "eino"}, schema.FString) // <= 这将使用 pyfmt 渲染 msg 的内容
+//	// msgs[0].Content 将是 "hello world, eino"
 func (m *Message) Format(_ context.Context, vs map[string]any, formatType FormatType) ([]*Message, error) {
 	c, err := formatContent(m.Content, vs, formatType)
 	if err != nil {

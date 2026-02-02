@@ -561,6 +561,8 @@ func TestReplannerRunWithRespond(t *testing.T) {
 }
 
 // TestNewPlanExecuteAgent tests the New function
+// TestNewPlanExecuteAgent 测试 New 函数。
+// 验证 PlanExecute Agent 的创建过程，包括子 Agent 的初始化。
 func TestNewPlanExecuteAgent(t *testing.T) {
 	ctx := context.Background()
 

@@ -900,6 +900,9 @@ func TestChatModelAgentOutputKey(t *testing.T) {
 	})
 }
 
+// TestConcurrentSameStreamToolSendToolGenActionUsesToolCallID tests that concurrent tool generation actions use the correct tool call ID.
+// TestConcurrentSameStreamToolSendToolGenActionUsesToolCallID 测试并发工具生成动作是否使用正确的工具调用 ID。
+// 验证在同一流中并发发送工具生成动作时，能够正确关联到对应的 ToolCallID。
 func TestConcurrentSameStreamToolSendToolGenActionUsesToolCallID(t *testing.T) {
 	ctx := context.Background()
 	ctrl := gomock.NewController(t)
@@ -950,6 +953,9 @@ func TestConcurrentSameStreamToolSendToolGenActionUsesToolCallID(t *testing.T) {
 	assert.True(t, seen["SB"])
 }
 
+// TestStreamToolLegacyNameKeyFallback tests the fallback mechanism for legacy stream tools.
+// TestStreamToolLegacyNameKeyFallback 测试旧版流式工具的降级机制。
+// 验证当工具使用旧版命名键时，Agent 能否正确识别并处理。
 func TestStreamToolLegacyNameKeyFallback(t *testing.T) {
 	ctx := context.Background()
 	ctrl := gomock.NewController(t)
@@ -995,6 +1001,9 @@ func TestStreamToolLegacyNameKeyFallback(t *testing.T) {
 	assert.True(t, found)
 }
 
+// TestChatModelAgent_ToolResultMiddleware_EmitsFinalResult tests that tool result middleware can modify results.
+// TestChatModelAgent_ToolResultMiddleware_EmitsFinalResult 测试工具结果中间件修改结果的功能。
+// 验证中间件修改后的工具执行结果能够被正确传递和处理，覆盖 Invoke 和 Stream 两种模式。
 func TestChatModelAgent_ToolResultMiddleware_EmitsFinalResult(t *testing.T) {
 	originalResult := "original_result"
 	modifiedResult := "modified_by_middleware"
@@ -1175,6 +1184,8 @@ func TestChatModelAgent_ToolResultMiddleware_EmitsFinalResult(t *testing.T) {
 	})
 }
 
+// simpleToolForMiddlewareTest is a simple tool for testing middleware.
+// simpleToolForMiddlewareTest 用于测试中间件的简单工具。
 type simpleToolForMiddlewareTest struct {
 	name   string
 	result string

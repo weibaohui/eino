@@ -182,6 +182,8 @@ func reduceByTokens(state *adk.ChatModelAgentState, toolResultTokenThreshold, ke
 	return nil
 }
 
+// excluded checks if a tool name is in the excluded list.
+// excluded 检查工具名称是否在排除列表中。
 func excluded(name string, exclude []string) bool {
 	for _, ex := range exclude {
 		if name == ex {

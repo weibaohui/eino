@@ -88,7 +88,17 @@ func (c *Config) Validate() error {
 	return nil
 }
 
-// NewMiddleware 构建并返回文件系统中间件
+// NewMiddleware 构建并返回文件系统中间件。
+// 该中间件提供了一组文件系统操作工具（如 ls, read_file, write_file 等），
+// 并可选地支持将大工具结果卸载到文件系统中以减少 Token 消耗。
+//
+// 参数:
+//   - ctx: 上下文，用于控制操作的超时和取消。
+//   - config: 中间件配置，包含后端存储、工具描述覆盖和卸载策略等。
+//
+// 返回:
+//   - adk.AgentMiddleware: 构建好的 Agent 中间件。
+//   - error: 如果配置验证失败或工具创建失败，返回错误。
 func NewMiddleware(ctx context.Context, config *Config) (adk.AgentMiddleware, error) {
 	err := config.Validate()
 	if err != nil {
@@ -127,7 +137,8 @@ func NewMiddleware(ctx context.Context, config *Config) (adk.AgentMiddleware, er
 	return m, nil
 }
 
-// getFilesystemTools 获取文件系统工具列表
+// getFilesystemTools 获取文件系统工具列表。
+// 根据配置创建并返回一组文件系统操作工具。
 func getFilesystemTools(_ context.Context, validatedConfig *Config) ([]tool.BaseTool, error) {
 	var tools []tool.BaseTool
 
@@ -197,8 +208,16 @@ type lsArgs struct {
 	Path string `json:"path"`
 }
 
-// newLsTool 创建 ls 工具
-// 用于列出指定目录下的文件和子目录
+// newLsTool 创建 ls 工具。
+// 该工具用于列出指定目录下的文件和子目录。
+//
+// 参数:
+//   - fs: 文件系统后端，用于执行实际的列出操作。
+//   - desc: 可选的工具描述覆盖。
+//
+// 返回:
+//   - tool.BaseTool: 构建好的 ls 工具。
+//   - error: 如果工具创建失败，返回错误。
 func newLsTool(fs filesystem.Backend, desc *string) (tool.BaseTool, error) {
 	d := ListFilesToolDesc
 	if desc != nil {
@@ -223,8 +242,16 @@ type readFileArgs struct {
 	Limit    int    `json:"limit"`
 }
 
-// newReadFileTool 创建 read_file 工具
-// 用于读取文件内容，支持分页读取
+// newReadFileTool 创建 read_file 工具。
+// 该工具用于读取文件内容，支持指定读取范围（偏移量和限制）。
+//
+// 参数:
+//   - fs: 文件系统后端，用于执行实际的读取操作。
+//   - desc: 可选的工具描述覆盖。
+//
+// 返回:
+//   - tool.BaseTool: 构建好的 read_file 工具。
+//   - error: 如果工具创建失败，返回错误。
 func newReadFileTool(fs filesystem.Backend, desc *string) (tool.BaseTool, error) {
 	d := ReadFileToolDesc
 	if desc != nil {
@@ -250,8 +277,16 @@ type writeFileArgs struct {
 	Content  string `json:"content"`
 }
 
-// newWriteFileTool 创建 write_file 工具
-// 用于写入文件内容
+// newWriteFileTool 创建 write_file 工具。
+// 该工具用于将内容写入指定文件。如果文件不存在则创建，如果存在则覆盖。
+//
+// 参数:
+//   - fs: 文件系统后端，用于执行实际的写入操作。
+//   - desc: 可选的工具描述覆盖。
+//
+// 返回:
+//   - tool.BaseTool: 构建好的 write_file 工具。
+//   - error: 如果工具创建失败，返回错误。
 func newWriteFileTool(fs filesystem.Backend, desc *string) (tool.BaseTool, error) {
 	d := WriteFileToolDesc
 	if desc != nil {
@@ -276,8 +311,16 @@ type editFileArgs struct {
 	ReplaceAll bool   `json:"replace_all"`
 }
 
-// newEditFileTool 创建 edit_file 工具
-// 用于编辑文件内容，支持字符串替换
+// newEditFileTool 创建 edit_file 工具。
+// 该工具用于编辑文件内容，支持将指定的旧字符串替换为新字符串。
+//
+// 参数:
+//   - fs: 文件系统后端，用于执行实际的编辑操作。
+//   - desc: 可选的工具描述覆盖。
+//
+// 返回:
+//   - tool.BaseTool: 构建好的 edit_file 工具。
+//   - error: 如果工具创建失败，返回错误。
 func newEditFileTool(fs filesystem.Backend, desc *string) (tool.BaseTool, error) {
 	d := EditFileToolDesc
 	if desc != nil {
@@ -302,8 +345,16 @@ type globArgs struct {
 	Path    string `json:"path"`
 }
 
-// newGlobTool 创建 glob 工具
-// 用于根据 Glob 模式查找文件
+// newGlobTool 创建 glob 工具。
+// 该工具用于根据 Glob 模式（如 "*.go"）查找匹配的文件。
+//
+// 参数:
+//   - fs: 文件系统后端，用于执行实际的查找操作。
+//   - desc: 可选的工具描述覆盖。
+//
+// 返回:
+//   - tool.BaseTool: 构建好的 glob 工具。
+//   - error: 如果工具创建失败，返回错误。
 func newGlobTool(fs filesystem.Backend, desc *string) (tool.BaseTool, error) {
 	d := GlobToolDesc
 	if desc != nil {
@@ -408,8 +459,16 @@ func newExecuteTool(sb filesystem.ShellBackend, desc *string) (tool.BaseTool, er
 	})
 }
 
-// newStreamingExecuteTool 创建 execute 工具（流式）
-// 用于执行 Shell 命令并实时流式返回输出
+// newStreamingExecuteTool 创建 execute 工具（流式）。
+// 该工具用于执行 Shell 命令并实时流式返回输出结果。
+//
+// 参数:
+//   - sb: 支持流式输出的 Shell 后端。
+//   - desc: 可选的工具描述覆盖。
+//
+// 返回:
+//   - tool.BaseTool: 构建好的流式 execute 工具。
+//   - error: 如果工具创建失败，返回错误。
 func newStreamingExecuteTool(sb filesystem.StreamingShellBackend, desc *string) (tool.BaseTool, error) {
 	d := ExecuteToolDesc
 	if desc != nil {

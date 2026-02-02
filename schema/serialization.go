@@ -25,6 +25,8 @@ import (
 )
 
 func init() {
+	// Register core Eino schema types for serialization.
+	// 注册核心 Eino 模式类型以进行序列化。
 	RegisterName[Message]("_eino_message")
 	RegisterName[[]*Message]("_eino_message_slice")
 	RegisterName[Document]("_eino_document")
@@ -78,6 +80,28 @@ func init() {
 //   - Functions and channels are not supported and will be ignored.
 //
 // This function panics if registration fails.
+//
+// RegisterName 使用特定名称注册一个类型以进行序列化。这是您打算在图或 ADK 检查点中持久化的任何类型所必需的。
+// 使用此函数可以通过将类型映射到以前使用的名称来保持向后兼容性。对于新类型，首选 `Register`。
+//
+// 建议在声明类型的文件的 `init()` 函数中调用此函数。
+//
+// 要注册的内容：
+//   - 用作状态的顶级类型（例如，结构体）。
+//   - 分配给接口字段的具体类型。
+//
+// 不需要注册的内容：
+//   - 具有具体类型的结构体字段（例如，`string`，`int`，其他结构体）。
+//     这些是通过反射推断的。
+//
+// 序列化规则：
+//
+// 序列化行为基于 Go 的标准 `encoding/gob` 包。
+// 有关详细规则，请参阅 https://pkg.go.dev/encoding/gob。
+//   - 仅序列化导出的结构体字段。
+//   - 不支持函数和通道，将被忽略。
+//
+// 如果注册失败，此函数将 panic。
 func RegisterName[T any](name string) {
 	gob.RegisterName(name, generic.NewInstance[T]())
 

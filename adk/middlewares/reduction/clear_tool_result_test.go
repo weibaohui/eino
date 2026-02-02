@@ -44,6 +44,7 @@ func Test_reduceByTokens(t *testing.T) {
 	}{
 		{
 			name: "no reduction when tool result tokens under threshold",
+			// 当工具结果 token 未超过阈值时不进行缩减
 			args: args{
 				state: &adk.ChatModelAgentState{
 					Messages: []adk.Message{
@@ -64,6 +65,7 @@ func Test_reduceByTokens(t *testing.T) {
 		},
 		{
 			name: "clear old tool results when total exceeds threshold",
+			// 当总 token 超过阈值时清除旧的工具结果
 			args: args{
 				state: &adk.ChatModelAgentState{
 					Messages: []adk.Message{
@@ -89,6 +91,7 @@ func Test_reduceByTokens(t *testing.T) {
 		},
 		{
 			name: "protect recent messages even when tool results exceed threshold",
+			// 即使工具结果超过阈值，也要保护最近的消息
 			args: args{
 				state: &adk.ChatModelAgentState{
 					Messages: []adk.Message{
@@ -108,12 +111,16 @@ func Test_reduceByTokens(t *testing.T) {
 				// Total tool result tokens = 50, exceeds threshold of 10
 				// But last 200 tokens are protected (includes last 2 messages)
 				// So only the first tool result should be cleared
+				// 总工具结果 token = 50，超过阈值 10
+				// 但最后 200 个 token 受保护（包括最后 2 条消息）
+				// 因此只有第一个工具结果应该被清除
 				assert.Equal(t, "[Old tool result content cleared]", state.Messages[1].Content)
 				assert.Equal(t, strings.Repeat("x", 100), state.Messages[3].Content)
 			},
 		},
 		{
 			name: "custom placeholder text",
+			// 自定义占位符文本
 			args: args{
 				state: &adk.ChatModelAgentState{
 					Messages: []adk.Message{
@@ -134,6 +141,7 @@ func Test_reduceByTokens(t *testing.T) {
 		},
 		{
 			name: "no tool messages",
+			// 没有工具消息
 			args: args{
 				state: &adk.ChatModelAgentState{
 					Messages: []adk.Message{
@@ -151,6 +159,7 @@ func Test_reduceByTokens(t *testing.T) {
 			wantErr: assert.NoError,
 			validateState: func(t *testing.T, state *adk.ChatModelAgentState) {
 				// All messages should remain unchanged
+				// 所有消息应保持不变
 				assert.Equal(t, "msg 1", state.Messages[0].Content)
 				assert.Equal(t, "response 1", state.Messages[1].Content)
 				assert.Equal(t, "msg 2", state.Messages[2].Content)
@@ -159,6 +168,7 @@ func Test_reduceByTokens(t *testing.T) {
 		},
 		{
 			name: "empty messages",
+			// 空消息列表
 			args: args{
 				state: &adk.ChatModelAgentState{
 					Messages: []adk.Message{},
@@ -175,6 +185,7 @@ func Test_reduceByTokens(t *testing.T) {
 		},
 		{
 			name: "custom token estimator - word count",
+			// 自定义 token 估算器 - 单词计数
 			args: args{
 				state: &adk.ChatModelAgentState{
 					Messages: []adk.Message{
@@ -208,6 +219,7 @@ func Test_reduceByTokens(t *testing.T) {
 		},
 		{
 			name: "already cleared results are not counted",
+			// 已清除的结果不计入统计
 			args: args{
 				state: &adk.ChatModelAgentState{
 					Messages: []adk.Message{
@@ -226,12 +238,15 @@ func Test_reduceByTokens(t *testing.T) {
 			validateState: func(t *testing.T, state *adk.ChatModelAgentState) {
 				// Only the new long result counts toward the threshold
 				// Both should have placeholder
+				// 只有新的长结果计入阈值
+				// 两者都应有占位符
 				assert.Equal(t, "[Old tool result content cleared]", state.Messages[1].Content)
 				assert.Equal(t, strings.Repeat("a", 100), state.Messages[3].Content)
 			},
 		},
 		{
 			name: "all tool results within protected range",
+			// 所有工具结果都在保护范围内
 			args: args{
 				state: &adk.ChatModelAgentState{
 					Messages: []adk.Message{
@@ -249,6 +264,7 @@ func Test_reduceByTokens(t *testing.T) {
 			wantErr: assert.NoError,
 			validateState: func(t *testing.T, state *adk.ChatModelAgentState) {
 				// All messages are within protected range, nothing should be cleared
+				// 所有消息都在保护范围内，不应清除任何内容
 				assert.Equal(t, strings.Repeat("a", 40), state.Messages[1].Content)
 				assert.Equal(t, strings.Repeat("b", 40), state.Messages[3].Content)
 			},
