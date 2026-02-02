@@ -30,18 +30,23 @@ import (
 )
 
 // WithToolOptions returns an agent option that specifies tool.Option for the tools in agent.
+// WithToolOptions 返回一个 Agent 选项，用于指定 Agent 中工具的 tool.Option。
 func WithToolOptions(opts ...tool.Option) agent.AgentOption {
 	return agent.WithComposeOptions(compose.WithToolsNodeOption(compose.WithToolOption(opts...)))
 }
 
 // WithChatModelOptions returns an agent option that specifies model.Option for the chat model in agent.
+// WithChatModelOptions 返回一个 Agent 选项，用于指定 Agent 中聊天模型的 model.Option。
 func WithChatModelOptions(opts ...model.Option) agent.AgentOption {
 	return agent.WithComposeOptions(compose.WithChatModelOption(opts...))
 }
 
 // WithToolList returns an agent option that specifies compose.ToolsNodeOption for ToolsNode in agent.
+// WithToolList 返回一个 Agent 选项，用于指定 Agent 中 ToolsNode 的 compose.ToolsNodeOption。
 // If you also need to pass ToolInfo to the chat model, use WithTools instead.
+// 如果你还需要将 ToolInfo 传递给聊天模型，请改用 WithTools。
 // Deprecated: This changes tool list for ToolsNode ONLY.
+// 已弃用：这仅更改 ToolsNode 的工具列表。
 func WithToolList(tools ...tool.BaseTool) agent.AgentOption {
 	return agent.WithComposeOptions(compose.WithToolsNodeOption(compose.WithToolList(tools...)))
 }
@@ -132,17 +137,23 @@ func (iter *Iterator[T]) Next() (T, bool, error) {
 
 // MessageFuture exposes asynchronous accessors for messages produced
 // by Generate and Stream calls.
+// MessageFuture 暴露了对 Generate 和 Stream 调用产生的消息的异步访问器。
 type MessageFuture interface {
 	// GetMessages returns an iterator for retrieving messages generated during "agent.Generate" calls.
+	// GetMessages 返回一个迭代器，用于检索 "agent.Generate" 调用期间生成的消息。
 	GetMessages() *Iterator[*schema.Message]
 
 	// GetMessageStreams returns an iterator for retrieving streaming messages generated during "agent.Stream" calls.
+	// GetMessageStreams 返回一个迭代器，用于检索 "agent.Stream" 调用期间生成的流式消息。
 	GetMessageStreams() *Iterator[*schema.StreamReader[*schema.Message]]
 }
 
 // WithMessageFuture returns an agent option and a MessageFuture interface instance.
+// WithMessageFuture 返回一个 Agent 选项和一个 MessageFuture 接口实例。
 // The option configures the agent to collect messages generated during execution,
+// 该选项配置 Agent 以收集执行期间生成的消息，
 // while the MessageFuture interface allows users to asynchronously retrieve these messages.
+// 而 MessageFuture 接口允许用户异步检索这些消息。
 func WithMessageFuture() (agent.AgentOption, MessageFuture) {
 	h := &cbHandler{started: make(chan struct{})}
 
