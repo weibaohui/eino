@@ -315,6 +315,9 @@ func (n *WorkflowNode) AddDependency(fromNodeKey string) *WorkflowNode {
 // Example:
 //
 //	node.SetStaticValue(FieldPath{"query"}, "static query")
+//
+// SetStaticValue 为字段路径设置一个静态值，该值将在工作流执行期间可用。
+// 这些值在编译时确定，并在整个工作流生命周期中保持不变。
 func (n *WorkflowNode) SetStaticValue(path FieldPath, value any) *WorkflowNode {
 	n.staticValues[path.join()] = value
 	return n

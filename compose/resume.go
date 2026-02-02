@@ -29,6 +29,14 @@ import (
 //   - wasInterrupted (bool): True if the node was part of a previous interruption, regardless of whether state was provided.
 //   - state (T): The typed state object, if it was provided and matches type `T`.
 //   - hasState (bool): True if state was provided during the original interrupt and successfully cast to type `T`.
+//
+// GetInterruptState 提供了一种类型安全的方式来检查和检索先前中断的持久化状态。
+// 它是组件了解其过去状态的主要函数。
+//
+// 它返回三个值：
+//   - wasInterrupted (bool): 如果节点是先前中断的一部分，则为 True，无论是否提供了状态。
+//   - state (T): 类型化的状态对象，如果已提供并匹配类型 `T`。
+//   - hasState (bool): 如果在原始中断期间提供了状态并成功转换为类型 `T`，则为 True。
 func GetInterruptState[T any](ctx context.Context) (wasInterrupted bool, hasState bool, state T) {
 	return core.GetInterruptState[T](ctx)
 }
@@ -74,6 +82,41 @@ func GetInterruptState[T any](ctx context.Context) (wasInterrupted bool, hasStat
 //  2. Act as a Conduit: After checking for itself, its primary role is to re-execute its children,
 //     allowing the resume context to flow down to them. It must not consume a resume signal
 //     intended for one of its descendants.
+//
+// GetResumeContext 检查当前组件是否为恢复操作的目标，并检索用户为该恢复提供的任何数据。
+//
+// 此函数通常在组件通过调用 GetInterruptState 确定其处于恢复状态 *之后* 调用。
+//
+// 它返回三个值：
+//   - isResumeFlow: 如果当前组件的地址是通过调用 Resume() 或 ResumeWithData() 显式定位的，则为 true。
+//   - hasData: 如果为此组件提供了数据（即不为 nil），则为 true。
+//   - data: 用户提供的类型化数据。
+//
+// ### 如何使用此函数：决策框架
+//
+// 正确的使用模式取决于应用程序所需的恢复策略。
+//
+// #### 策略 1：隐式“全部恢复”
+// 在某些用例中，任何恢复操作都意味着 *所有* 中断点都应继续。
+// 例如，如果应用程序的 UI 仅为一组中断提供单个“继续”按钮。
+// 在这种模式下，组件通常只需使用 `GetInterruptState` 查看 `wasInterrupted` 是否为 true，
+// 然后继续其逻辑，因为它可以假设它是预期目标。
+// 它仍然可以调用 `GetResumeContext` 来检查可选数据，但 `isResumeFlow` 标志不太关键。
+//
+// #### 策略 2：显式“定向恢复”（最常见）
+// 对于具有必须独立恢复的多个不同中断点的应用程序，区分正在恢复哪个点至关重要。
+// 这是 `isResumeFlow` 标志的主要用例。
+//   - 如果 `isResumeFlow` 为 `true`：您的组件是显式目标。您应该使用 `data`（如果有）并完成您的工作。
+//   - 如果 `isResumeFlow` 为 `false`：另一个组件是目标。您必须重新中断（例如，通过返回 `StatefulInterrupt(...)`）
+//     以保留您的状态并允许恢复信号传播。
+//
+// ### 复合组件指南
+//
+// 复合组件（如 `Graph` 或包含子进程的其他 `Runnable`）具有双重角色：
+//  1. 检查自身目标：复合组件本身可以是恢复操作的目标，例如，修改其内部状态。
+//     它可以调用 `GetResumeContext` 来检查针对其自身地址的数据。
+//  2. 充当管道：在检查自身后，其主要作用是重新执行其子组件，允许恢复上下文向下流向它们。
+//     它不得使用用于其后代之一的恢复信号。
 func GetResumeContext[T any](ctx context.Context) (isResumeFlow bool, hasData bool, data T) {
 	return core.GetResumeContext[T](ctx)
 }
@@ -81,6 +124,9 @@ func GetResumeContext[T any](ctx context.Context) (isResumeFlow bool, hasData bo
 // GetCurrentAddress returns the hierarchical address of the currently executing component.
 // The address is a sequence of segments, each identifying a structural part of the execution
 // like an agent, a graph node, or a tool call. This can be useful for logging or debugging.
+// GetCurrentAddress 返回当前正在执行的组件的分层地址。
+// 地址是一系列片段，每个片段标识执行的结构部分，如代理、图节点或工具调用。
+// 这对于日志记录或调试非常有用。
 func GetCurrentAddress(ctx context.Context) Address {
 	return core.GetCurrentAddress(ctx)
 }
@@ -91,6 +137,12 @@ func GetCurrentAddress(ctx context.Context) Address {
 // This is useful when the act of resuming is itself the signal, and no extra data is needed.
 // The components at the provided addresses (interrupt IDs) will receive `isResumeFlow = true`
 // when they call `GetResumeContext`.
+//
+// Resume 准备一个上下文，用于通过定位一个或多个组件而不提供数据来进行“显式定向恢复”操作。
+// 它是 BatchResumeWithData 的便捷包装器。
+//
+// 当恢复行为本身就是信号且不需要额外数据时，这很有用。
+// 提供的地址（中断 ID）处的组件在调用 `GetResumeContext` 时将收到 `isResumeFlow = true`。
 func Resume(ctx context.Context, interruptIDs ...string) context.Context {
 	resumeData := make(map[string]any, len(interruptIDs))
 	for _, addr := range interruptIDs {
