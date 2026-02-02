@@ -52,6 +52,8 @@ type Workflow[I, O any] struct {
 	dependencies     map[string]map[string]dependencyType
 }
 
+// dependencyType is the type of dependency between nodes.
+// dependencyType 是节点间的依赖类型。
 type dependencyType int
 
 const (
