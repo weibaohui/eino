@@ -354,6 +354,8 @@ func (et ExitTool) Info(_ context.Context) (*schema.ToolInfo, error) {
 	return ToolInfoExit, nil
 }
 
+// InvokableRun 执行退出工具的逻辑。
+// 它会发送一个 ExitAction，并返回最终结果。
 func (et ExitTool) InvokableRun(ctx context.Context, argumentsInJSON string, _ ...tool.Option) (string, error) {
 	type exitParams struct {
 		FinalResult string `json:"final_result"`
@@ -384,6 +386,8 @@ func transferToAgentToolOutput(destName string) string {
 	return fmt.Sprintf("successfully transferred to agent [%s]", destName)
 }
 
+// InvokableRun 执行转移工具的逻辑。
+// 它会发送一个 TransferToAgentAction，指示将对话转移给另一个 Agent。
 func (tta transferToAgent) InvokableRun(ctx context.Context, argumentsInJSON string, _ ...tool.Option) (string, error) {
 	type transferParams struct {
 		AgentName string `json:"agent_name"`
@@ -403,14 +407,18 @@ func (tta transferToAgent) InvokableRun(ctx context.Context, argumentsInJSON str
 	return transferToAgentToolOutput(params.AgentName), nil
 }
 
+// Name 返回 Agent 的名称。
 func (a *ChatModelAgent) Name(_ context.Context) string {
 	return a.name
 }
 
+// Description 返回 Agent 的描述。
 func (a *ChatModelAgent) Description(_ context.Context) string {
 	return a.description
 }
 
+// OnSetSubAgents 设置子 Agent 列表。
+// 如果 Agent 已经被冻结（已运行过），则返回错误。
 func (a *ChatModelAgent) OnSetSubAgents(_ context.Context, subAgents []Agent) error {
 	if atomic.LoadUint32(&a.frozen) == 1 {
 		return errors.New("agent has been frozen after run")
@@ -424,6 +432,7 @@ func (a *ChatModelAgent) OnSetSubAgents(_ context.Context, subAgents []Agent) er
 	return nil
 }
 
+// OnSetAsSubAgent 将当前 Agent 设置为另一个 Agent 的子 Agent。
 func (a *ChatModelAgent) OnSetAsSubAgent(_ context.Context, parent Agent) error {
 	if atomic.LoadUint32(&a.frozen) == 1 {
 		return errors.New("agent has been frozen after run")
@@ -437,6 +446,7 @@ func (a *ChatModelAgent) OnSetAsSubAgent(_ context.Context, parent Agent) error 
 	return nil
 }
 
+// OnDisallowTransferToParent 禁止转接到父 Agent。
 func (a *ChatModelAgent) OnDisallowTransferToParent(_ context.Context) error {
 	if atomic.LoadUint32(&a.frozen) == 1 {
 		return errors.New("agent has been frozen after run")
@@ -532,6 +542,8 @@ func init() {
 	schema.RegisterName[*ChatModelAgentInterruptInfo]("_eino_adk_chat_model_agent_interrupt_info")
 }
 
+// onGraphError 处理图执行错误时的回调。
+// 特别是处理中断（Interrupt）情况。
 func (h *cbHandler) onGraphError(ctx context.Context,
 	_ *callbacks.RunInfo, err error) context.Context {
 	addr := core.GetCurrentAddress(ctx)
