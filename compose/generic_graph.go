@@ -30,6 +30,7 @@ type newGraphOptions struct {
 
 // NewGraphOption configures behavior when creating a new graph, such as
 // providing local state generation.
+// NewGraphOption 配置新建图时的行为，例如提供本地状态生成。
 type NewGraphOption func(ngo *newGraphOptions)
 
 // WithGenLocalState registers a function to generate per-run local state
@@ -47,6 +48,10 @@ func WithGenLocalState[S any](gls GenLocalState[S]) NewGraphOption {
 // simultaneously provide flexible and multi-granular aspect governance capabilities.
 // I: the input type of graph compiled product
 // O: the output type of graph compiled product
+// NewGraph 创建一个可组合组件、Lambda、链、并行等的有向图，
+// 同时提供灵活、细粒度的切面治理能力。
+// I：编译后产物的输入类型
+// O：编译后产物的输出类型
 //
 // To share state between nodes, use WithGenLocalState option:
 //
@@ -97,6 +102,9 @@ type Graph[I, O any] struct {
 // AddEdge adds an edge to the graph, edge means a data flow from startNode to endNode.
 // the previous node's output type must be set to the next node's input type.
 // NOTE: startNode and endNode must have been added to the graph before adding edge.
+// AddEdge 向图中添加一条边，表示数据从 startNode 流向 endNode。
+// 前驱节点的输出类型必须能赋值给后继节点的输入类型。
+// 注意：添加边之前，startNode 和 endNode 必须已经添加到图中。
 // e.g.
 //
 //	graph.AddNode("start_node_key", compose.NewPassthroughNode())
@@ -108,6 +116,7 @@ func (g *Graph[I, O]) AddEdge(startNode, endNode string) (err error) {
 }
 
 // Compile take the raw graph and compile it into a form ready to be run.
+// Compile 将原始图编译为可运行的形式。
 // e.g.
 //
 //	graph, err := compose.NewGraph[string, string]()
@@ -124,6 +133,8 @@ func (g *Graph[I, O]) Compile(ctx context.Context, opts ...GraphCompileOption) (
 	return compileAnyGraph[I, O](ctx, g, opts...)
 }
 
+// compileAnyGraph compiles the given AnyGraph into Runnable[I, O], wiring metadata and callbacks.
+// compileAnyGraph 将给定的 AnyGraph 编译为 Runnable[I, O]，并装配元信息与回调。
 func compileAnyGraph[I, O any](ctx context.Context, g AnyGraph, opts ...GraphCompileOption) (Runnable[I, O], error) {
 	if len(globalGraphCompileCallbacks) > 0 {
 		opts = append([]GraphCompileOption{WithGraphCompileCallbacks(globalGraphCompileCallbacks...)}, opts...)

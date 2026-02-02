@@ -262,6 +262,8 @@ func defaultStreamConverter[T any](reader streamReader) streamReader {
 	}))
 }
 
+// defaultValueChecker validates that v is of type T and returns the cast value.
+// defaultValueChecker 校验 v 是否为类型 T，并返回转换后的值。
 func defaultValueChecker[T any](v any) (any, error) {
 	nValue, ok := v.(T)
 	if !ok {
