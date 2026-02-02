@@ -247,11 +247,15 @@ func ToFieldPath(toFieldPath FieldPath, opts ...FieldMappingOption) *FieldMappin
 //	)
 //
 // 注意：字段路径元素不得包含内部路径分隔符 ('\x1F')。
-func MapFieldPaths(fromFieldPath, toFieldPath FieldPath) *FieldMapping {
-	return &FieldMapping{
+func MapFieldPaths(fromFieldPath, toFieldPath FieldPath, opts ...FieldMappingOption) *FieldMapping {
+	fm := &FieldMapping{
 		from: fromFieldPath.join(),
 		to:   toFieldPath.join(),
 	}
+	for _, opt := range opts {
+		opt(fm)
+	}
+	return fm
 }
 
 // FieldMappingOption is a functional option for configuring a FieldMapping.

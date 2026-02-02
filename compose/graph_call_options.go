@@ -41,10 +41,13 @@ type graphInterruptOptions struct {
 }
 
 // GraphInterruptOption configures behavior when interrupting a running graph.
+// GraphInterruptOption 配置中断运行图时的行为。
 type GraphInterruptOption func(o *graphInterruptOptions)
 
 // WithGraphInterruptTimeout specifies the max waiting time before generating an interrupt.
 // After the max waiting time, the graph will force an interrupt. Any unfinished tasks will be re-run when the graph is resumed.
+// WithGraphInterruptTimeout 指定生成中断前的最大等待时间。
+// 超过最大等待时间后，图将强制中断。任何未完成的任务将在图恢复时重新运行。
 func WithGraphInterruptTimeout(timeout time.Duration) GraphInterruptOption {
 	return func(o *graphInterruptOptions) {
 		o.timeout = &timeout
@@ -69,6 +72,21 @@ func WithGraphInterruptTimeout(timeout time.Duration) GraphInterruptOption {
 // existing code that relies on checking "input == nil" to determine whether the node is running for the first time
 // or resuming from an interrupt. The recommended approach is to use compose.GetInterruptState() to explicitly
 // determine whether the current execution is a first run or a resume.
+//
+// WithGraphInterrupt 创建一个支持图取消的上下文。
+// 当返回的上下文用于调用图或工作流时，调用 interrupt 函数将触发中断。
+// 默认情况下，图将等待当前任务完成。
+//
+// 输入持久化：使用 WithGraphInterrupt 时，所有节点（在根图和子图中）都将在执行前自动持久化其输入（包括流式和非流式）。
+// 如果图被中断，这些输入将在图从检查点恢复时恢复，确保被中断的节点收到其原始输入。
+//
+// 此行为不同于在节点函数体内通过 compose.Interrupt() 触发的内部中断。
+// 内部中断不会自动持久化输入 - 节点作者必须手动管理输入持久化，
+// 方法是将其保存在全局图状态中，或使用 compose.StatefulInterrupt() 将其存储在本地中断状态中。
+// WithGraphInterrupt 启用自动输入持久化，因为外部中断可能在节点执行期间的任何时间发生，导致节点无法为中断做好准备。
+//
+// 为什么内部中断默认不启用输入持久化：普遍启用它会破坏依赖检查 "input == nil" 来确定节点是首次运行还是从中断恢复的现有代码。
+// 推荐的方法是使用 compose.GetInterruptState() 显式确定当前执行是首次运行还是恢复。
 func WithGraphInterrupt(parent context.Context) (ctx context.Context, interrupt func(opts ...GraphInterruptOption)) {
 	ch := make(chan *time.Duration, 1)
 	ctx = context.WithValue(parent, graphCancelChanKey{}, &graphCancelChanVal{
@@ -93,6 +111,7 @@ func getGraphCancel(ctx context.Context) *graphCancelChanVal {
 }
 
 // Option is a functional option type for calling a graph.
+// Option 是用于调用图的函数选项类型。
 type Option struct {
 	options []any
 	handler []callbacks.Handler
@@ -130,6 +149,13 @@ func (o Option) deepCopy() Option {
 //
 // embeddingOption := compose.WithEmbeddingOption(embedding.WithModel("text-embedding-3-small"))
 // runnable.Invoke(ctx, "input", embeddingOption.DesignateNode("embedding_node_key"))
+//
+// DesignateNode 设置选项将应用到的节点的键。
+// 注意：仅在顶层图有效。
+// 例如：
+//
+// embeddingOption := compose.WithEmbeddingOption(embedding.WithModel("text-embedding-3-small"))
+// runnable.Invoke(ctx, "input", embeddingOption.DesignateNode("embedding_node_key"))
 func (o Option) DesignateNode(nodeKey ...string) Option {
 	nKeys := make([]*NodePath, len(nodeKey))
 	for i, k := range nodeKey {
@@ -144,6 +170,13 @@ func (o Option) DesignateNode(nodeKey ...string) Option {
 // e.g.
 // nodePath := NewNodePath("sub_graph_node_key", "node_key_within_sub_graph")
 // DesignateNodeWithPath(nodePath)
+//
+// DesignateNodeWithPath 设置选项将应用到的节点的路径。
+// 您可以通过 `NodePath` 指定子图中的节点，使选项仅在该节点生效。
+//
+// 例如：
+// nodePath := NewNodePath("sub_graph_node_key", "node_key_within_sub_graph")
+// DesignateNodeWithPath(nodePath)
 func (o Option) DesignateNodeWithPath(path ...*NodePath) Option {
 	o.paths = append(o.paths, path...)
 	return o
@@ -151,6 +184,12 @@ func (o Option) DesignateNodeWithPath(path ...*NodePath) Option {
 
 // WithEmbeddingOption is a functional option type for embedding component.
 // e.g.
+//
+//	embeddingOption := compose.WithEmbeddingOption(embedding.WithModel("text-embedding-3-small"))
+//	runnable.Invoke(ctx, "input", embeddingOption)
+//
+// WithEmbeddingOption 是 Embedding 组件的函数选项类型。
+// 例如：
 //
 //	embeddingOption := compose.WithEmbeddingOption(embedding.WithModel("text-embedding-3-small"))
 //	runnable.Invoke(ctx, "input", embeddingOption)
@@ -163,6 +202,12 @@ func WithEmbeddingOption(opts ...embedding.Option) Option {
 //
 //	retrieverOption := compose.WithRetrieverOption(retriever.WithIndex("my_index"))
 //	runnable.Invoke(ctx, "input", retrieverOption)
+//
+// WithRetrieverOption 是 Retriever 组件的函数选项类型。
+// 例如：
+//
+//	retrieverOption := compose.WithRetrieverOption(retriever.WithIndex("my_index"))
+//	runnable.Invoke(ctx, "input", retrieverOption)
 func WithRetrieverOption(opts ...retriever.Option) Option {
 	return withComponentOption(opts...)
 }
@@ -172,11 +217,18 @@ func WithRetrieverOption(opts ...retriever.Option) Option {
 //
 //	loaderOption := compose.WithLoaderOption(document.WithCollection("my_collection"))
 //	runnable.Invoke(ctx, "input", loaderOption)
+//
+// WithLoaderOption 是 Loader 组件的函数选项类型。
+// 例如：
+//
+//	loaderOption := compose.WithLoaderOption(document.WithCollection("my_collection"))
+//	runnable.Invoke(ctx, "input", loaderOption)
 func WithLoaderOption(opts ...document.LoaderOption) Option {
 	return withComponentOption(opts...)
 }
 
 // WithDocumentTransformerOption is a functional option type for document transformer component.
+// WithDocumentTransformerOption 是 DocumentTransformer 组件的函数选项类型。
 func WithDocumentTransformerOption(opts ...document.TransformerOption) Option {
 	return withComponentOption(opts...)
 }
@@ -186,12 +238,24 @@ func WithDocumentTransformerOption(opts ...document.TransformerOption) Option {
 //
 //	indexerOption := compose.WithIndexerOption(indexer.WithSubIndexes([]string{"my_sub_index"}))
 //	runnable.Invoke(ctx, "input", indexerOption)
+//
+// WithIndexerOption 是 Indexer 组件的函数选项类型。
+// 例如：
+//
+//	indexerOption := compose.WithIndexerOption(indexer.WithSubIndexes([]string{"my_sub_index"}))
+//	runnable.Invoke(ctx, "input", indexerOption)
 func WithIndexerOption(opts ...indexer.Option) Option {
 	return withComponentOption(opts...)
 }
 
 // WithChatModelOption is a functional option type for chat model component.
 // e.g.
+//
+//	chatModelOption := compose.WithChatModelOption(model.WithTemperature(0.7))
+//	runnable.Invoke(ctx, "input", chatModelOption)
+//
+// WithChatModelOption 是 ChatModel 组件的函数选项类型。
+// 例如：
 //
 //	chatModelOption := compose.WithChatModelOption(model.WithTemperature(0.7))
 //	runnable.Invoke(ctx, "input", chatModelOption)
