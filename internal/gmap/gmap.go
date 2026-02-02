@@ -31,6 +31,9 @@ package gmap
 //	Concat(m, map[int]{2: -1}) ⏩ map[int]int{1: 1, 2: -1} // "2:2" is replaced by the newer "2:-1"
 //
 // 💡 AKA: Merge, Union, Combine
+// Concat 将多个 map 的键值合并为一个新 map（后者覆盖前者）
+// - 用户：通用集合操作的使用者
+// - 用法：Concat(m1, m2, m3...)，当键冲突时以“后出现”的值为准
 func Concat[K comparable, V any](ms ...map[K]V) map[K]V {
 	// FastPath: no map or only one map given.
 	if len(ms) == 0 {
@@ -69,6 +72,8 @@ func Concat[K comparable, V any](ms ...map[K]V) map[K]V {
 //	f := func(k, v int) (string, string) { return strconv.Itoa(k), strconv.Itoa(v) }
 //	Map(map[int]int{1: 1}, f) ⏩ map[string]string{"1": "1"}
 //	Map(map[int]int{}, f)     ⏩ map[string]string{}
+// Map 对输入 map 的每个键值应用转换函数，返回新 map
+// - 用户：需要进行键值类型映射/变换的使用者
 func Map[K1, K2 comparable, V1, V2 any](m map[K1]V1, f func(K1, V1) (K2, V2)) map[K2]V2 {
 	r := make(map[K2]V2, len(m))
 	for k, v := range m {
@@ -86,6 +91,8 @@ func Map[K1, K2 comparable, V1, V2 any](m map[K1]V1, f func(K1, V1) (K2, V2)) ma
 //	Values(m) ⏩ []string{"1", "4", "2", "3"} //⚠️INDETERMINATE ORDER⚠️
 //
 // ⚠️  WARNING: The keys values be in an indeterminate order,
+// Values 返回 map 的所有值（顺序不确定）
+// - 用户：需要收集值集合的使用者
 func Values[K comparable, V any](m map[K]V) []V {
 	r := make([]V, 0, len(m))
 	for _, v := range m {
@@ -105,6 +112,8 @@ func Values[K comparable, V any](m map[K]V) []V {
 //
 // 💡 HINT: Both keys and values are copied using assignment (=), so this is a shallow clone.
 // 💡 AKA: Copy
+// Clone 进行浅拷贝，返回新 map；nil 输入返回 nil
+// - 用户：需要安全复制原始 map 的使用者
 func Clone[K comparable, V any, M ~map[K]V](m M) M {
 	if m == nil {
 		return nil

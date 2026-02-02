@@ -18,7 +18,10 @@ package internal
 
 import "sync"
 
-// UnboundedChan represents a channel with unlimited capacity
+// UnboundedChan 表示一个“无限缓冲”的通道实现
+// - 适用用户：框架内部并发通信，或用户在需要非阻塞写入、阻塞读取的队列场景
+// - 使用方式：NewUnboundedChan[T]() 创建实例，Send 写入，Receive 阻塞读取，Close 关闭
+// - 注意：关闭后写入将触发 panic；读取在空且未关闭时阻塞，在空且已关闭时返回 (零值,false)
 type UnboundedChan[T any] struct {
 	buffer   []T        // Internal buffer to store data
 	mutex    sync.Mutex // Mutex to protect buffer access
@@ -26,14 +29,17 @@ type UnboundedChan[T any] struct {
 	closed   bool       // Indicates if the channel has been closed
 }
 
-// NewUnboundedChan initializes and returns an UnboundedChan
+// NewUnboundedChan 初始化并返回一个 UnboundedChan
+// - 初始化条件变量，并将其与互斥锁绑定
 func NewUnboundedChan[T any]() *UnboundedChan[T] {
 	ch := &UnboundedChan[T]{}
 	ch.notEmpty = sync.NewCond(&ch.mutex)
 	return ch
 }
 
-// Send puts an item into the channel
+// Send 将一个元素放入通道
+// - 写入后通过 Signal 唤醒一个等待接收的协程
+// - 若通道已关闭则触发 panic
 func (ch *UnboundedChan[T]) Send(value T) {
 	ch.mutex.Lock()
 	defer ch.mutex.Unlock()
@@ -46,7 +52,10 @@ func (ch *UnboundedChan[T]) Send(value T) {
 	ch.notEmpty.Signal() // Wake up one goroutine waiting to receive
 }
 
-// Receive gets an item from the channel (blocks if empty)
+// Receive 从通道取出一个元素（在为空时阻塞）
+// - 当缓冲区为空且未关闭时，使用条件变量等待
+// - 当缓冲区为空且已关闭时，返回 (零值,false)
+// - 正常读取路径返回 (val,true)
 func (ch *UnboundedChan[T]) Receive() (T, bool) {
 	ch.mutex.Lock()
 	defer ch.mutex.Unlock()
@@ -66,7 +75,8 @@ func (ch *UnboundedChan[T]) Receive() (T, bool) {
 	return val, true
 }
 
-// Close marks the channel as closed
+// Close 将通道标记为已关闭
+// - 广播唤醒所有等待接收的协程，避免永久阻塞
 func (ch *UnboundedChan[T]) Close() {
 	ch.mutex.Lock()
 	defer ch.mutex.Unlock()

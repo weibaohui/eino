@@ -37,6 +37,10 @@ var (
 // named function: xxx/utils.ParseTypeName
 // method: xxx/utils.(*MyStruct).Method
 // anonymous function: xxx/utils.TestParseTypeName.func6.1
+// ParseTypeName 返回值的“类型名称”（指针会被解引用）
+// - 指针：逐层解引用后返回底层类型名
+// - 函数：通过 PC 查找函数名，过滤匿名函数/纯数字占位
+// - 示例：ParseTypeName(reflect.ValueOf(&&MyStruct{})) => "MyStruct"
 func ParseTypeName(val reflect.Value) string {
 	typ := val.Type()
 

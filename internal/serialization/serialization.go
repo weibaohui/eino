@@ -27,6 +27,9 @@ import (
 var m = map[string]reflect.Type{}
 var rm = map[reflect.Type]string{}
 
+// init 预注册常用基础类型的序列化键
+// - 用户：框架内部；普通用户可用 GenericRegister 扩展自定义类型
+// - 目的：为内部序列化协议建立键到类型的映射，便于运行时恢复
 func init() {
 	_ = GenericRegister[int]("_eino_int")
 	_ = GenericRegister[int8]("_eino_int8")
@@ -48,6 +51,9 @@ func init() {
 	_ = GenericRegister[any]("_eino_any")
 }
 
+// GenericRegister 为类型 T 注册一个字符串键
+// - 用途：在内部序列化结构中用键表示具体类型，支持运行时恢复
+// - 限制：键唯一、类型唯一，重复注册将返回错误
 func GenericRegister[T any](key string) error {
 	t := reflect.TypeOf((*T)(nil)).Elem()
 	for t.Kind() == reflect.Ptr {
@@ -66,6 +72,9 @@ func GenericRegister[T any](key string) error {
 
 type InternalSerializer struct{}
 
+// Marshal 使用内部协议将任意值编码为字节
+// - 流程：构建内部结构 -> 使用 sonic Marshal
+// - 适用：框架内部检查点落盘、跨层数据传输
 func (i *InternalSerializer) Marshal(v any) ([]byte, error) {
 	is, err := internalMarshal(v, nil)
 	if err != nil {
@@ -75,6 +84,9 @@ func (i *InternalSerializer) Marshal(v any) ([]byte, error) {
 	return sonic.Marshal(is)
 }
 
+// Unmarshal 将字节按内部协议解码到 v（指针）
+// - 逻辑：解析内部结构 -> 依据目标类型进行可赋值/可转换的写入
+// - 要求：v 必须为非 nil 的可写指针
 func (i *InternalSerializer) Unmarshal(data []byte, v any) error {
 	val, err := unmarshal(data, reflect.TypeOf(v))
 	if err != nil {
@@ -142,6 +154,7 @@ func (i *InternalSerializer) Unmarshal(data []byte, v any) error {
 	return fmt.Errorf("failed to unmarshal: cannot assign %s to %s", reflect.TypeOf(val), target.Type())
 }
 
+// unmarshal 解析字节为内部结构并按给定类型还原为具体值
 func unmarshal(data []byte, t reflect.Type) (any, error) {
 	is := &internalStruct{}
 	err := sonic.Unmarshal(data, is)
@@ -178,6 +191,8 @@ type valueType struct {
 	SliceValueType *valueType `json:",omitempty"`
 }
 
+// extractType 将反射类型拆解为内部 valueType 描述
+// - 处理指针层数、Map 键/值类型、Slice 元素类型、以及已注册的简单/结构类型
 func extractType(t reflect.Type) (*valueType, error) {
 	ret := &valueType{}
 	for t.Kind() == reflect.Ptr {
@@ -209,6 +224,8 @@ func extractType(t reflect.Type) (*valueType, error) {
 	return ret, nil
 }
 
+// restoreType 将内部 valueType 恢复为反射类型
+// - 根据注册键恢复简单/结构类型；递归恢复 Map/Slice 的子类型；并重建指针层数
 func restoreType(vt *valueType) (reflect.Type, error) {
 	if vt.SimpleType != "" {
 		rt, ok := m[vt.SimpleType]
@@ -245,6 +262,9 @@ func restoreType(vt *valueType) (reflect.Type, error) {
 	return nil, fmt.Errorf("empty value")
 }
 
+// internalMarshal 将任意值编码为内部结构表示
+// - 针对指针、结构、Map、Slice、基础类型分别处理
+// - 在类型不明确（接口或 nil）的情况下，需依据注册表写入类型描述
 func internalMarshal(v any, fieldType reflect.Type) (*internalStruct, error) {
 	if v == nil ||
 		(reflect.ValueOf(v).IsZero() && fieldType != nil && fieldType.Kind() != reflect.Interface) {
@@ -415,6 +435,9 @@ func internalMarshal(v any, fieldType reflect.Type) (*internalStruct, error) {
 	}
 }
 
+// internalUnmarshal 将内部结构还原为具体值
+// - 若无类型信息则按具体目标类型解析（结构/Map/Slice/基础类型）
+// - 若带类型信息则依据注册表与描述恢复具体值
 func internalUnmarshal(v *internalStruct, typ reflect.Type) (any, error) {
 	if v == nil {
 		return nil, nil
@@ -496,6 +519,8 @@ func internalUnmarshal(v *internalStruct, typ reflect.Type) (any, error) {
 	return result.Interface(), nil
 }
 
+// internalSpecificTypeUnmarshal 在具体目标类型已知的情况下进行还原
+// - 支持结构、Map、Slice/Array、基础类型
 func internalSpecificTypeUnmarshal(is *internalStruct, typ reflect.Type) (any, error) {
 	_, dtyp := derefPointerNum(typ)
 	result, dResult := createValueFromType(typ)
@@ -528,6 +553,9 @@ func internalSpecificTypeUnmarshal(is *internalStruct, typ reflect.Type) (any, e
 	return v.Elem().Interface(), nil
 }
 
+// setSliceElems 还原切片/数组元素
+// - 数组：按索引写入，需边界检查
+// - 切片：使用 Append 动态追加
 func setSliceElems(dResult reflect.Value, values []*internalStruct) error {
 	t := dResult.Type()
 
@@ -567,6 +595,9 @@ func setSliceElems(dResult reflect.Value, values []*internalStruct) error {
 	return nil
 }
 
+// setMapKVs 还原 Map 键值
+// - 键：从内部字符串反序列化为具体键类型
+// - 值：递归还原并写入
 func setMapKVs(dResult reflect.Value, values map[string]*internalStruct) error {
 	t := dResult.Type()
 	for marshaledMapKey, internalValue := range values {
@@ -589,6 +620,8 @@ func setMapKVs(dResult reflect.Value, values map[string]*internalStruct) error {
 	return nil
 }
 
+// setStructFields 还原结构体字段
+// - 查找导出字段，按类型递归还原并写入
 func setStructFields(dResult reflect.Value, values map[string]*internalStruct) error {
 	t := dResult.Type()
 	for k, internalValue := range values {
@@ -608,6 +641,8 @@ func setStructFields(dResult reflect.Value, values map[string]*internalStruct) e
 	return nil
 }
 
+// setStructField 设置结构体单字段
+// - 若值为 nil，写入该字段类型的零值（避免不可设置或缺失）
 func setStructField(t reflect.Type, s reflect.Value, fieldName string, val any) error {
 	field := s.FieldByName(fieldName)
 	if !field.CanSet() {
@@ -625,6 +660,7 @@ func setStructField(t reflect.Type, s reflect.Value, fieldName string, val any) 
 	return nil
 }
 
+// resolvePointerNum 根据指针层数包装类型
 func resolvePointerNum(pointerNum uint32, t reflect.Type) reflect.Type {
 	for i := uint32(0); i < pointerNum; i++ {
 		t = reflect.PointerTo(t)
@@ -632,6 +668,7 @@ func resolvePointerNum(pointerNum uint32, t reflect.Type) reflect.Type {
 	return t
 }
 
+// derefPointerNum 解引用指针层数并返回最终元素类型
 func derefPointerNum(t reflect.Type) (uint32, reflect.Type) {
 	var ptrCount uint32 = 0
 
@@ -643,6 +680,10 @@ func derefPointerNum(t reflect.Type) (uint32, reflect.Type) {
 	return ptrCount, t
 }
 
+// createValueFromType 根据类型创建值，并递归初始化其可写子结构
+// - 指针：逐层分配
+// - Map：创建空 map
+// - Slice：创建空切片（避免 IsNil panic）
 func createValueFromType(t reflect.Type) (value reflect.Value, derefValue reflect.Value) {
 	value = reflect.New(t).Elem()
 
@@ -673,6 +714,7 @@ func createValueFromType(t reflect.Type) (value reflect.Value, derefValue reflec
 var marshalerType = reflect.TypeOf((*json.Marshaler)(nil)).Elem()
 var unmarshalerType = reflect.TypeOf((*json.Unmarshaler)(nil)).Elem()
 
+// checkMarshaler 判断类型是否同时实现 json.Marshaler 与 json.Unmarshaler
 func checkMarshaler(t reflect.Type) bool {
 	for t.Kind() == reflect.Ptr {
 		t = t.Elem()

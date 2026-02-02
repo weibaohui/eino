@@ -46,10 +46,16 @@ var (
 	}
 )
 
+// useLast 将切片的最后一个非空值作为合并结果返回
+// - 适用用户：框架内部默认策略，也可供高级用户理解/扩展
+// - 使用说明：用于数值、时间等标量类型的流块合并，直接取最新值
 func useLast[T any](s []T) (T, error) {
 	return s[len(s)-1], nil
 }
 
+// concatStrings 高效拼接字符串切片
+// - 逻辑：预先计算总长度，并使用 strings.Builder 进行一次性分配以提升性能
+// - 注意：若中途 WriteString 发生错误，直接返回该错误
 func concatStrings(ss []string) (string, error) {
 	var n int
 	for _, s := range ss {
@@ -68,13 +74,20 @@ func concatStrings(ss []string) (string, error) {
 	return b.String(), nil
 }
 
+// RegisterStreamChunkConcatFunc 注册指定类型的流块拼接函数
+// - 适用用户：框架内部与高级用户，为自定义类型提供合并策略
+// - 示例：RegisterStreamChunkConcatFunc[[]byte](func(bs [][]byte) ([]byte, error) { ... })
 func RegisterStreamChunkConcatFunc[T any](fn func([]T) (T, error)) {
 	concatFuncs[generic.TypeOf[T]()] = fn
 }
 
+// GetConcatFunc 获取指定元素类型的拼接函数
+// - 返回函数签名：func(reflect.Value) (reflect.Value, error)
+// - 若已注册则返回对应函数，否则返回 nil
 func GetConcatFunc(typ reflect.Type) func(reflect.Value) (reflect.Value, error) {
 	if fn, ok := concatFuncs[typ]; ok {
 		return func(a reflect.Value) (reflect.Value, error) {
+			// 通过反射调用已注册的合并函数
 			rvs := reflect.ValueOf(fn).Call([]reflect.Value{a})
 			var err error
 			if !rvs[1].IsNil() {
@@ -88,6 +101,11 @@ func GetConcatFunc(typ reflect.Type) func(reflect.Value) (reflect.Value, error) 
 }
 
 // ConcatItems the caller should ensure len(items) > 1
+// ConcatItems 合并同类型切片中的元素为一个值
+// - 前置条件：调用方需保证 len(items) > 1
+// - 处理策略：
+//   1) 若元素类型为 map：递归合并 map（键不可重复）
+//   2) 否则使用已注册的类型拼接函数；未注册时按“单非空值”策略处理
 func ConcatItems[T any](items []T) (T, error) {
 	typ := generic.TypeOf[T]()
 	v := reflect.ValueOf(items)
@@ -110,6 +128,9 @@ func ConcatItems[T any](items []T) (T, error) {
 	return cv.Interface().(T), nil
 }
 
+// concatMaps 合并若干同类型 map 的所有键值
+// - 对每个键聚合其出现的所有值，随后对每个键对应的值切片进行递归合并
+// - 注意：当切片仅包含一个元素且该元素为 nil 时，使用类型零值写入（避免 SetMapIndex 删除键）
 func concatMaps(ms reflect.Value) (reflect.Value, error) {
 	typ := ms.Type().Elem()
 
@@ -171,6 +192,9 @@ func concatMaps(ms reflect.Value) (reflect.Value, error) {
 	return ret, nil
 }
 
+// concatSliceValue 合并非 map 类型的切片值
+// - 优先使用已注册的类型拼接函数
+// - 未注册时：若切片全空返回该类型零值；若恰有一个非空元素则返回该元素；否则报错
 func concatSliceValue(val reflect.Value) (reflect.Value, error) {
 	elmType := val.Type().Elem()
 
@@ -204,6 +228,8 @@ func concatSliceValue(val reflect.Value) (reflect.Value, error) {
 	return filtered, nil
 }
 
+// toSliceValue 将 []any 转换为具体类型的切片 reflect.Value
+// - 保证所有元素类型一致，否则返回错误
 func toSliceValue(vs []any) (reflect.Value, error) {
 	typ := reflect.TypeOf(vs[0])
 
