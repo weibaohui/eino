@@ -17,24 +17,31 @@
 package deep
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/cloudwego/eino/components/tool"
 )
 
 const (
+	// generalAgentName 是通用 Agent 的类型标识。
 	generalAgentName = "general-purpose"
-	taskToolName     = "task"
+	// taskToolName 是 task 工具的名称标识。
+	taskToolName = "task"
 )
 
 const (
+	// SessionKeyTodos 是在 Session 中存储 TODO 列表的键名。
 	SessionKeyTodos = "deep_agent_session_key_todos"
 )
 
+// assertAgentTool 将一个通用工具转换为可调用的 InvokableTool。
+// 这里的工具实际上是封装了 Agent 的工具。
 func assertAgentTool(t tool.BaseTool) (tool.InvokableTool, error) {
 	it, ok := t.(tool.InvokableTool)
 	if !ok {
-		return nil, fmt.Errorf("failed to assert agent tool type: %T", t)
+		info, _ := t.Info(context.Background())
+		return nil, fmt.Errorf("agent tool %s is not invokable", info.Name)
 	}
 	return it, nil
 }

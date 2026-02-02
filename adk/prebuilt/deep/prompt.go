@@ -25,6 +25,8 @@ package deep
 // When using this code in your own open source project, ensure compliance with the original license requirements.
 
 const (
+	// writeTodosPrompt 是关于 write_todos 工具的系统提示词。
+	// 它指导 Agent 频繁使用 write_todos 工具来管理任务，确保任务进度对用户可见。
 	writeTodosPrompt = `
 # 'write_todos'
 You have access to the 'write_todos' tools to help you manage and plan tasks. Use these tools VERY frequently to ensure that you are tracking your tasks and giving the user visibility into your progress.
@@ -74,6 +76,8 @@ I've found some existing telemetry code. Let me mark the first todo as in_progre
 [Assistant continues implementing the feature step by step, marking todos as in_progress and completed as they go]
 </example>
 `
+	// taskPrompt 是关于 task 工具的系统提示词。
+	// 它解释了 task 工具的用途：启动短生命周期的子 Agent 来处理隔离的任务。
 	taskPrompt = `
 # 'task' (subagent spawner)
 
@@ -105,6 +109,8 @@ When NOT to use the task tool:
 - You should use the 'task' tool whenever you have a complex task that will take multiple steps, and is independent from other tasks that the agent needs to complete. These agents are highly competent and efficient.
 `
 
+	// baseAgentInstruction 是 Deep Agent 的基础指令。
+	// 它强调 Agent 应该是一个乐于助人且无害的 AI 助手，并定义了行为准则、安全策略、编码风格和工具使用规范。
 	baseAgentInstruction = `
 You are a helpful assistant. Use the instructions below and the tools available to you to assist the user.
 
@@ -157,7 +163,11 @@ user: Where are errors from the client handled?
 assistant: Clients are marked as failed in the 'connectToServer' function in src/services/process.ts:712.
 </example>
 `
+	// generalAgentDescription 是通用 Agent 的描述。
+	// 当没有其他 Agent 匹配时，使用此 Agent 来执行搜索、代码查找和多步骤任务。
 	generalAgentDescription = `general-purpose agent for researching complex questions, searching for code, and executing multi-step tasks. When you are searching for a keyword or file and are not confident that you will find the right match in the first few tries use this agent to perform the search for you. (Tools: *)`
+	// taskToolDescription 是 task 工具的默认描述模板。
+	// 它列出了可用的子 Agent，并指导模型如何根据用户需求选择合适的子 Agent。
 	taskToolDescription     = `Launch a new agent to handle complex, multi-step tasks autonomously. 
 
 The Task tool launches specialized agents (subprocesses) that autonomously handle complex tasks. Each agent type has specific capabilities and tools available to it.
@@ -219,6 +229,8 @@ Since the user is greeting, use the greeting-responder agent to respond with a f
 assistant: "I'm going to use the Task tool to launch the greeting-responder agent"
 </example>
 `
+	// writeTodosToolDescription 是 write_todos 工具的描述。
+	// 它解释了何时使用该工具（复杂任务、多步骤任务）以及如何使用它来管理任务进度。
 	writeTodosToolDescription = `Use this tool to create and manage a structured task list for your current coding session. This helps you track progress, organize complex tasks, and demonstrate thoroughness to the user.
 It also helps the user understand the progress of the task and overall progress of their requests.
 

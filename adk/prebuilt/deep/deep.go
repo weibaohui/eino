@@ -72,9 +72,9 @@ type Config struct {
 	OutputKey string
 }
 
-// New creates a new Deep agent instance with the provided configuration.
-// This function initializes built-in tools, creates a task tool for subagent orchestration,
-// and returns a fully configured ChatModelAgent ready for execution.
+// New 创建一个新的 Deep Agent 实例。
+// 该函数初始化内置工具，创建用于子 Agent 编排的 task 工具，
+// 并返回一个配置好的 ChatModelAgent 准备执行。
 func New(ctx context.Context, cfg *Config) (adk.ResumableAgent, error) {
 	middlewares, err := buildBuiltinAgentMiddlewares(cfg.WithoutWriteTodos)
 	if err != nil {
@@ -145,10 +145,14 @@ func buildBuiltinAgentMiddlewares(withoutWriteTodos bool) ([]adk.AgentMiddleware
 	return ms, nil
 }
 
+// TODO 表示任务列表中的一个待办事项。
 type TODO struct {
-	Content    string `json:"content"`
+	// Content 是待办事项的具体内容描述。
+	Content string `json:"content"`
+	// ActiveForm 描述了当前事项的活动形式或上下文。
 	ActiveForm string `json:"activeForm"`
-	Status     string `json:"status" jsonschema:"enum=pending,enum=in_progress,enum=completed"`
+	// Status 是事项的当前状态：pending(待处理), in_progress(进行中), completed(已完成)。
+	Status string `json:"status" jsonschema:"enum=pending,enum=in_progress,enum=completed"`
 }
 
 type writeTodosArguments struct {

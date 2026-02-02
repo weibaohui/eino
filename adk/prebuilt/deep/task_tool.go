@@ -31,6 +31,8 @@ import (
 	"github.com/cloudwego/eino/schema"
 )
 
+// newTaskToolMiddleware 创建一个中间件，将 task 工具注入到 Agent 的上下文中。
+// 这使得 Agent 可以在运行时访问和使用 task 工具。
 func newTaskToolMiddleware(
 	ctx context.Context,
 	taskToolDescriptionGenerator func(ctx context.Context, subAgents []adk.Agent) (string, error),
@@ -53,6 +55,9 @@ func newTaskToolMiddleware(
 	}, nil
 }
 
+// newTaskTool 创建一个新的 task 工具实例。
+// subAgents: 可供调用的子 Agent 列表。
+// descGen: 可选的描述生成函数，用于自定义工具描述。
 func newTaskTool(
 	ctx context.Context,
 	taskToolDescriptionGenerator func(ctx context.Context, subAgents []adk.Agent) (string, error),
@@ -109,12 +114,18 @@ func newTaskTool(
 	return t, nil
 }
 
+// taskTool 实现了允许 Deep Agent 调度子 Agent 的工具。
 type taskTool struct {
-	subAgents     map[string]tool.InvokableTool
+	// subAgents 是 Agent 名称到可调用工具的映射。
+	subAgents map[string]tool.InvokableTool
+	// subAgentSlice 保持子 Agent 的原始列表顺序。
 	subAgentSlice []adk.Agent
-	descGen       func(ctx context.Context, subAgents []adk.Agent) (string, error)
+	// descGen 用于动态生成工具描述。
+	descGen func(ctx context.Context, subAgents []adk.Agent) (string, error)
 }
 
+// Info 返回 task 工具的定义信息，包括名称、描述和参数模式。
+// 描述中会包含所有可用子 Agent 的信息。
 func (t *taskTool) Info(ctx context.Context) (*schema.ToolInfo, error) {
 	desc, err := t.descGen(ctx, t.subAgentSlice)
 	if err != nil {
@@ -139,6 +150,8 @@ type taskToolArgument struct {
 	Description  string `json:"description"`
 }
 
+// InvokableRun 执行 task 工具。
+// 它根据参数中指定的 subagent_type 查找对应的子 Agent，并使用 description 作为输入调用它。
 func (t *taskTool) InvokableRun(ctx context.Context, argumentsInJSON string, opts ...tool.Option) (string, error) {
 	input := &taskToolArgument{}
 	err := json.Unmarshal([]byte(argumentsInJSON), input)
@@ -150,6 +163,7 @@ func (t *taskTool) InvokableRun(ctx context.Context, argumentsInJSON string, opt
 		return "", fmt.Errorf("subagent type %s not found", input.SubagentType)
 	}
 
+	// 构造子 Agent 的输入参数
 	params, err := sonic.MarshalString(map[string]string{
 		"request": input.Description,
 	})
@@ -157,9 +171,12 @@ func (t *taskTool) InvokableRun(ctx context.Context, argumentsInJSON string, opt
 		return "", err
 	}
 
+	// 调用子 Agent
 	return a.InvokableRun(ctx, params, opts...)
 }
 
+// defaultTaskToolDescription 是默认的 task 工具描述生成函数。
+// 它会列出所有可用子 Agent 的名称和描述。
 func defaultTaskToolDescription(ctx context.Context, subAgents []adk.Agent) (string, error) {
 	subAgentsDescBuilder := strings.Builder{}
 	for _, a := range subAgents {
