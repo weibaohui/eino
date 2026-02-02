@@ -41,6 +41,12 @@ import (
 //			field2: items[0].field2 + items[1].field2,
 //		}, nil
 //	})
+//
+// RegisterStreamChunkConcatFunc 注册一个函数用于连接流分片。
+// 当您想要连接特定类型的流分片时，它是必需的。
+// 例如，您调用 Invoke() 但节点仅实现 Stream()。
+// 在进程初始化时调用。
+// 非线程安全。
 func RegisterStreamChunkConcatFunc[T any](fn func([]T) (T, error)) {
 	internal.RegisterStreamChunkConcatFunc(fn)
 }

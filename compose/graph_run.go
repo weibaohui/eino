@@ -29,64 +29,138 @@ import (
 )
 
 type chanCall struct {
-	action          *composableRunnable
-	writeTo         []string
+	// action is the runnable component to be executed.
+	// action 是要执行的可运行组件。
+	action *composableRunnable
+	// writeTo specifies the names of the nodes to write the output to.
+	// writeTo 指定将输出写入的节点名称。
+	writeTo []string
+	// writeToBranches specifies the branches to write the output to.
+	// writeToBranches 指定将输出写入的分支。
 	writeToBranches []*GraphBranch
 
+	// controls specifies the control dependencies.
+	// controls 指定控制依赖关系。
 	controls []string // branch must control
 
-	preProcessor, postProcessor *composableRunnable
+	// preProcessor is the pre-processor for the node.
+	// preProcessor 是节点的预处理器。
+	preProcessor *composableRunnable
+	// postProcessor is the post-processor for the node.
+	// postProcessor 是节点的后处理器。
+	postProcessor *composableRunnable
 }
 
+// chanBuilder creates a new channel.
+// chanBuilder 创建一个新的通道。
 type chanBuilder func(dependencies []string, indirectDependencies []string, zeroValue func() any, emptyStream func() streamReader) channel
 
+// runner is the graph execution runner.
+// runner 是图执行运行器。
 type runner struct {
+	// chanSubscribeTo maps node keys to their channel call configurations.
+	// chanSubscribeTo 将节点键映射到其通道调用配置。
 	chanSubscribeTo map[string]*chanCall
 
-	successors          map[string][]string
-	dataPredecessors    map[string][]string
+	// successors maps node keys to their successor node keys.
+	// successors 将节点键映射到其后继节点键。
+	successors map[string][]string
+	// dataPredecessors maps node keys to their data predecessor node keys.
+	// dataPredecessors 将节点键映射到其数据前驱节点键。
+	dataPredecessors map[string][]string
+	// controlPredecessors maps node keys to their control predecessor node keys.
+	// controlPredecessors 将节点键映射到其控制前驱节点键。
 	controlPredecessors map[string][]string
 
+	// inputChannels is the configuration for input channels.
+	// inputChannels 是输入通道的配置。
 	inputChannels *chanCall
 
+	// chanBuilder is the function to create channels.
+	// chanBuilder 是创建通道的函数。
 	chanBuilder chanBuilder // could be nil
-	eager       bool
-	dag         bool
+	// eager indicates whether to execute eagerly.
+	// eager 指示是否急切执行。
+	eager bool
+	// dag indicates whether the graph is a DAG.
+	// dag 指示图是否为 DAG。
+	dag bool
 
+	// runCtx modifies the context before running.
+	// runCtx 在运行前修改上下文。
 	runCtx func(ctx context.Context) context.Context
 
+	// options contains graph compilation options.
+	// options 包含图编译选项。
 	options graphCompileOptions
 
-	inputType  reflect.Type
+	// inputType is the type of the input.
+	// inputType 是输入的类型。
+	inputType reflect.Type
+	// outputType is the type of the output.
+	// outputType 是输出的类型。
 	outputType reflect.Type
 
 	// take effect as a subgraph through toComposableRunnable
-	inputStreamFilter                               streamMapFilter
-	inputConverter                                  handlerPair
-	inputFieldMappingConverter                      handlerPair
-	inputConvertStreamPair, outputConvertStreamPair streamConvertPair
+	// inputStreamFilter filters the input stream.
+	// inputStreamFilter 过滤输入流。
+	inputStreamFilter streamMapFilter
+	// inputConverter converts the input.
+	// inputConverter 转换输入。
+	inputConverter handlerPair
+	// inputFieldMappingConverter handles input field mapping.
+	// inputFieldMappingConverter 处理输入字段映射。
+	inputFieldMappingConverter handlerPair
+	// inputConvertStreamPair converts the input stream.
+	// inputConvertStreamPair 转换输入流。
+	inputConvertStreamPair streamConvertPair
+	// outputConvertStreamPair converts the output stream.
+	// outputConvertStreamPair 转换输出流。
+	outputConvertStreamPair streamConvertPair
 
 	*genericHelper
 
 	// checks need to do because cannot check at compile
-	runtimeCheckEdges    map[string]map[string]bool
+	// runtimeCheckEdges checks edges at runtime.
+	// runtimeCheckEdges 在运行时检查边。
+	runtimeCheckEdges map[string]map[string]bool
+	// runtimeCheckBranches checks branches at runtime.
+	// runtimeCheckBranches 在运行时检查分支。
 	runtimeCheckBranches map[string][]bool
 
-	edgeHandlerManager      *edgeHandlerManager
-	preNodeHandlerManager   *preNodeHandlerManager
+	// edgeHandlerManager manages edge handlers.
+	// edgeHandlerManager 管理边处理程序。
+	edgeHandlerManager *edgeHandlerManager
+	// preNodeHandlerManager manages pre-node handlers.
+	// preNodeHandlerManager 管理节点前处理程序。
+	preNodeHandlerManager *preNodeHandlerManager
+	// preBranchHandlerManager manages pre-branch handlers.
+	// preBranchHandlerManager 管理分支前处理程序。
 	preBranchHandlerManager *preBranchHandlerManager
 
-	checkPointer         *checkPointer
+	// checkPointer manages checkpoints.
+	// checkPointer 管理检查点。
+	checkPointer *checkPointer
+	// interruptBeforeNodes specifies nodes to interrupt before execution.
+	// interruptBeforeNodes 指定在执行前中断的节点。
 	interruptBeforeNodes []string
-	interruptAfterNodes  []string
+	// interruptAfterNodes specifies nodes to interrupt after execution.
+	// interruptAfterNodes 指定在执行后中断的节点。
+	interruptAfterNodes []string
 
+	// mergeConfigs contains merge configurations for fan-in nodes.
+	// mergeConfigs 包含扇入节点的合并配置。
 	mergeConfigs map[string]FanInMergeConfig
 }
 
+// invoke executes the graph with the given input and options.
+// invoke 使用给定的输入和选项执行图。
 func (r *runner) invoke(ctx context.Context, input any, opts ...Option) (any, error) {
 	return r.run(ctx, false, input, opts...)
 }
 
+// transform executes the graph with the given input stream and options.
+// transform 使用给定的输入流和选项执行图。
 func (r *runner) transform(ctx context.Context, input streamReader, opts ...Option) (streamReader, error) {
 	s, err := r.run(ctx, true, input, opts...)
 	if err != nil {
@@ -106,6 +180,8 @@ func runnableTransform(ctx context.Context, r *composableRunnable, input any, op
 	return r.t(ctx, input.(streamReader), opts...)
 }
 
+// run executes the graph logic.
+// run 执行图逻辑。
 func (r *runner) run(ctx context.Context, isStream bool, input any, opts ...Option) (result any, err error) {
 	haveOnStart := false // delay triggering onGraphStart until state initialization is complete, so that the state can be accessed within onGraphStart.
 	defer func() {
@@ -359,6 +435,8 @@ func (r *runner) run(ctx context.Context, isStream bool, input any, opts ...Opti
 	}
 }
 
+// resolveMaxSteps resolves the maximum number of run steps.
+// resolveMaxSteps 解析最大运行步骤数。
 func (r *runner) resolveMaxSteps(maxSteps int, opts []Option) (int, error) {
 	if r.dag {
 		for i := range opts {
@@ -379,6 +457,8 @@ func (r *runner) resolveMaxSteps(maxSteps int, opts []Option) (int, error) {
 	return maxSteps, nil
 }
 
+// restoreCheckPointState restores the state from a checkpoint.
+// restoreCheckPointState 从检查点恢复状态。
 func (r *runner) restoreCheckPointState(
 	ctx context.Context,
 	path NodePath,
@@ -421,6 +501,8 @@ func (r *runner) restoreCheckPointState(
 	return ctx, nil
 }
 
+// newInterruptTempInfo creates a new interruptTempInfo.
+// newInterruptTempInfo 创建一个新的 interruptTempInfo。
 func newInterruptTempInfo() *interruptTempInfo {
 	return &interruptTempInfo{
 		subGraphInterrupts:  map[string]*subGraphInterruptError{},
@@ -428,6 +510,8 @@ func newInterruptTempInfo() *interruptTempInfo {
 	}
 }
 
+// interruptTempInfo holds temporary information for interruption.
+// interruptTempInfo 保存中断的临时信息。
 type interruptTempInfo struct {
 	subGraphInterrupts   map[string]*subGraphInterruptError
 	interruptRerunNodes  []string
@@ -438,6 +522,8 @@ type interruptTempInfo struct {
 	signals []*core.InterruptSignal
 }
 
+// collectCanceledInfo collects information about canceled tasks.
+// collectCanceledInfo 收集有关已取消任务的信息。
 func (ti *interruptTempInfo) collectCanceledInfo(canceled bool, canceledTasks, completedTasks []*task) {
 	if !canceled {
 		return
@@ -453,6 +539,8 @@ func (ti *interruptTempInfo) collectCanceledInfo(canceled bool, canceledTasks, c
 	}
 }
 
+// resolveInterruptCompletedTasks resolves completed tasks during interruption.
+// resolveInterruptCompletedTasks 在中断期间解决已完成的任务。
 func (r *runner) resolveInterruptCompletedTasks(tempInfo *interruptTempInfo, completedTasks []*task) (err error) {
 	for _, completedTask := range completedTasks {
 		if completedTask.err != nil {
@@ -486,6 +574,8 @@ func (r *runner) resolveInterruptCompletedTasks(tempInfo *interruptTempInfo, com
 	return nil
 }
 
+// getHitKey returns keys that exist in both tasks and keys.
+// getHitKey 返回同时存在于 tasks 和 keys 中的键。
 func getHitKey(tasks []*task, keys []string) []string {
 	var ret []string
 	for _, t := range tasks {
@@ -498,6 +588,8 @@ func getHitKey(tasks []*task, keys []string) []string {
 	return ret
 }
 
+// handleInterrupt handles graph interruption.
+// handleInterrupt 处理图中断。
 func (r *runner) handleInterrupt(
 	ctx context.Context,
 	tempInfo *interruptTempInfo,
@@ -705,6 +797,8 @@ func (r *runner) handleInterruptWithSubGraphAndRerunNodes(
 	return &interruptError{Info: intInfo}
 }
 
+// calculateNextTasks calculates the next tasks to be executed.
+// calculateNextTasks 计算接下来要执行的任务。
 func (r *runner) calculateNextTasks(ctx context.Context, completedTasks []*task, isStream bool, cm *channelManager, optMap map[string][]any) ([]*task, any, bool, error) {
 	writeChannelValues, controls, err := r.resolveCompletedTasks(ctx, completedTasks, isStream, cm)
 	if err != nil {

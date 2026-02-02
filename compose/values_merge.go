@@ -26,6 +26,10 @@ import (
 // RegisterValuesMergeFunc registers a function to merge outputs from multiple nodes when fan-in.
 // It's used to define how to merge for a specific type.
 // For maps that already have a default merge function, you don't need to register a new one unless you want to customize the merge logic.
+//
+// RegisterValuesMergeFunc 注册一个函数，用于在扇入（fan-in）时合并来自多个节点的输出。
+// 它用于定义如何合并特定类型。
+// 对于已经具有默认合并功能的 map，除非您想要自定义合并逻辑，否则无需注册新的合并功能。
 func RegisterValuesMergeFunc[T any](fn func([]T) (T, error)) {
 	internal.RegisterValuesMergeFunc(fn)
 }

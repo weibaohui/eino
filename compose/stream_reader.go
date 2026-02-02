@@ -23,6 +23,7 @@ import (
 	"github.com/cloudwego/eino/schema"
 )
 
+// streamReader 定义了流读取器的接口。
 type streamReader interface {
 	copy(n int) []streamReader
 	getType() reflect.Type

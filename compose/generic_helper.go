@@ -73,6 +73,8 @@ type genericHelper struct {
 }
 
 func (g *genericHelper) forMapInput() *genericHelper {
+	// forMapInput returns a new genericHelper configured for map input.
+	// forMapInput 返回配置为 map 输入的新 genericHelper。
 	return &genericHelper{
 		outputStreamFilter:          g.outputStreamFilter,
 		outputConverter:             g.outputConverter,
@@ -97,6 +99,8 @@ func (g *genericHelper) forMapInput() *genericHelper {
 }
 
 func (g *genericHelper) forMapOutput() *genericHelper {
+	// forMapOutput returns a new genericHelper configured for map output.
+	// forMapOutput 返回配置为 map 输出的新 genericHelper。
 	return &genericHelper{
 		inputStreamFilter:          g.inputStreamFilter,
 		inputConverter:             g.inputConverter,
@@ -121,6 +125,8 @@ func (g *genericHelper) forMapOutput() *genericHelper {
 }
 
 func (g *genericHelper) forPredecessorPassthrough() *genericHelper {
+	// forPredecessorPassthrough returns a new genericHelper configured for predecessor passthrough.
+	// forPredecessorPassthrough 返回配置为前驱透传的新 genericHelper。
 	return &genericHelper{
 		inputStreamFilter:           g.inputStreamFilter,
 		outputStreamFilter:          g.inputStreamFilter,
@@ -138,6 +144,8 @@ func (g *genericHelper) forPredecessorPassthrough() *genericHelper {
 }
 
 func (g *genericHelper) forSuccessorPassthrough() *genericHelper {
+	// forSuccessorPassthrough returns a new genericHelper configured for successor passthrough.
+	// forSuccessorPassthrough 返回配置为后继透传的新 genericHelper。
 	return &genericHelper{
 		inputStreamFilter:           g.outputStreamFilter,
 		outputStreamFilter:          g.outputStreamFilter,
@@ -154,21 +162,34 @@ func (g *genericHelper) forSuccessorPassthrough() *genericHelper {
 	}
 }
 
+// streamMapFilter filters the stream map.
+// streamMapFilter 过滤流映射。
 type streamMapFilter func(key string, isr streamReader) (streamReader, bool)
 
+// valueHandler handles the value.
+// valueHandler 处理值。
 type valueHandler func(value any) (any, error)
+
+// streamHandler handles the stream.
+// streamHandler 处理流。
 type streamHandler func(streamReader) streamReader
 
+// handlerPair is a pair of value handler and stream handler.
+// handlerPair 是值处理程序和流处理程序的对。
 type handlerPair struct {
 	invoke    valueHandler
 	transform streamHandler
 }
 
+// streamConvertPair is a pair of stream converter functions.
+// streamConvertPair 是流转换函数的对。
 type streamConvertPair struct {
 	concatStream  func(sr streamReader) (any, error)
 	restoreStream func(any) (streamReader, error)
 }
 
+// defaultStreamConvertPair returns the default stream convert pair.
+// defaultStreamConvertPair 返回默认的流转换对。
 func defaultStreamConvertPair[T any]() streamConvertPair {
 	var t T
 	return streamConvertPair{
@@ -199,6 +220,8 @@ func defaultStreamConvertPair[T any]() streamConvertPair {
 	}
 }
 
+// defaultStreamMapFilter filters the stream map by default.
+// defaultStreamMapFilter 默认过滤流映射。
 func defaultStreamMapFilter[T any](key string, isr streamReader) (streamReader, bool) {
 	sr, ok := unpackStreamReader[map[string]any](isr)
 	if !ok {
@@ -226,6 +249,8 @@ func defaultStreamMapFilter[T any](key string, isr streamReader) (streamReader, 
 	return packStreamReader(ret), true
 }
 
+// defaultStreamConverter converts the stream by default.
+// defaultStreamConverter 默认转换流。
 func defaultStreamConverter[T any](reader streamReader) streamReader {
 	return packStreamReader(schema.StreamReaderWithConvert(reader.toAnyStreamReader(), func(v any) (T, error) {
 		vv, ok := v.(T)
@@ -246,11 +271,15 @@ func defaultValueChecker[T any](v any) (any, error) {
 	return nValue, nil
 }
 
+// zeroValueFromGeneric returns the zero value of type T.
+// zeroValueFromGeneric 返回类型 T 的零值。
 func zeroValueFromGeneric[T any]() any {
 	var t T
 	return t
 }
 
+// emptyStreamFromGeneric returns an empty stream of type T.
+// emptyStreamFromGeneric 返回类型 T 的空流。
 func emptyStreamFromGeneric[T any]() streamReader {
 	var t T
 	sr, sw := schema.Pipe[T](1)

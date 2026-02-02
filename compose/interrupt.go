@@ -28,6 +28,7 @@ import (
 )
 
 // WithInterruptBeforeNodes instructs to interrupt before the given nodes.
+// WithInterruptBeforeNodes 指示在给定节点之前中断。
 func WithInterruptBeforeNodes(nodes []string) GraphCompileOption {
 	return func(options *graphCompileOptions) {
 		options.interruptBeforeNodes = nodes
@@ -35,6 +36,7 @@ func WithInterruptBeforeNodes(nodes []string) GraphCompileOption {
 }
 
 // WithInterruptAfterNodes instructs to interrupt after the given nodes.
+// WithInterruptAfterNodes 指示在给定节点之后中断。
 func WithInterruptAfterNodes(nodes []string) GraphCompileOption {
 	return func(options *graphCompileOptions) {
 		options.interruptAfterNodes = nodes
@@ -75,6 +77,9 @@ func (w *wrappedInterruptAndRerun) Unwrap() error {
 // WrapInterruptAndRerunIfNeeded wraps the deprecated old interrupt errors, with the current execution address.
 // If the error is returned by either Interrupt, StatefulInterrupt or CompositeInterrupt,
 // it will be returned as-is without wrapping
+// WrapInterruptAndRerunIfNeeded 包装已弃用的旧中断错误，并附带当前执行地址。
+// 如果错误是由 Interrupt、StatefulInterrupt 或 CompositeInterrupt 返回的，
+// 它将按原样返回，不进行包装
 func WrapInterruptAndRerunIfNeeded(ctx context.Context, step AddressSegment, err error) error {
 	addr := GetCurrentAddress(ctx)
 	newAddr := append(append([]AddressSegment{}, addr...), step)
@@ -107,6 +112,13 @@ func WrapInterruptAndRerunIfNeeded(ctx context.Context, step AddressSegment, err
 //   - ctx: The context of the running component, used to retrieve the current execution address.
 //   - info: User-facing information about the interrupt. This is not persisted but is exposed to the
 //     calling application via the InterruptCtx to provide context (e.g., a reason for the pause).
+//
+// Interrupt 创建一个特殊错误，指示执行引擎在组件的特定地址中断当前运行并保存检查点。
+//
+// 这是单个非组合组件发出可恢复中断信号的标准方式。
+//
+//   - ctx: 运行组件的上下文，用于检索当前执行地址。
+//   - info: 关于中断的用户可见信息。这不会持久化，但会通过 InterruptCtx 暴露给调用应用程序以提供上下文（例如，暂停的原因）。
 func Interrupt(ctx context.Context, info any) error {
 	is, err := core.Interrupt(ctx, info, nil, nil)
 	if err != nil {
@@ -127,6 +139,14 @@ func Interrupt(ctx context.Context, info any) error {
 //   - state: The internal state that the interrupting component needs to persist to be able to resume
 //     its work later. This state is saved in the checkpoint and will be provided back to the component
 //     upon resumption via GetInterruptState.
+//
+// StatefulInterrupt 创建一个特殊错误，指示执行引擎在组件的特定地址中断当前运行并保存检查点。
+//
+// 这是单个非组合组件发出可恢复中断信号的标准方式。
+//
+//   - ctx: 运行组件的上下文，用于检索当前执行地址。
+//   - info: 关于中断的用户可见信息。这不会持久化，但会通过 InterruptCtx 暴露给调用应用程序以提供上下文（例如，暂停的原因）。
+//   - state: 中断组件需要持久化以便稍后恢复其工作的内部状态。此状态保存在检查点中，并在恢复时通过 GetInterruptState 提供回组件。
 func StatefulInterrupt(ctx context.Context, info any, state any) error {
 	is, err := core.Interrupt(ctx, info, state, nil)
 	if err != nil {
@@ -171,6 +191,38 @@ func StatefulInterrupt(ctx context.Context, info any, state any) error {
 // NOTE: if the error you passed in is the deprecated old interrupt and rerun err, or an error returned by
 // the deprecated old interrupt function, you must wrap it using WrapInterruptAndRerunIfNeeded first
 // before passing them into this function.
+//
+// CompositeInterrupt 创建一个指示组合中断的特殊错误。
+// 它是为“组合”节点（如 ToolsNode）设计的，这些节点管理多个独立的、可中断的子进程。
+// 它将多个子中断错误捆绑成一个错误，引擎可以将其解构为可恢复点的扁平列表。
+//
+// 此函数很健壮，可以处理来自子进程的几种类型的错误：
+//
+//   - 来自简单组件的 `Interrupt` 或 `StatefulInterrupt` 错误。
+//
+//   - 来自另一个组合组件的嵌套 `CompositeInterrupt` 错误。
+//
+//   - 由 `Runnable` 返回的包含 `InterruptInfo` 的错误（例如，lambda 节点内的图）。
+//
+//   - 由 `WrapInterruptAndRerunIfNeeded` 返回的错误，用于旧的传统中断和重运行错误，
+//     以及由已弃用的旧中断错误返回的错误。
+//
+// 参数:
+//
+//   - ctx: 运行组合节点的上下文。
+//
+//   - info: 组合节点本身的用户可见信息。可以为 nil。
+//     此信息将附加到 InterruptInfo.RerunNodeExtra。
+//     主要用于兼容性目的，因为组合节点本身不是具有中断 ID 的中断点，
+//     这意味着它缺乏足够的理由提供用户可见信息。
+//
+//   - state: 组合节点本身的状态。可以为 nil。
+//     当组合节点需要恢复状态时（例如 ToolsNode 的输入），这可能很有用。
+//
+//   - errs: 子进程发出的错误列表。
+//
+// 注意：如果您传入的错误是已弃用的旧中断和重运行错误，或者是由已弃用的旧中断函数返回的错误，
+// 您必须在将它们传入此函数之前先使用 WrapInterruptAndRerunIfNeeded 包装它。
 func CompositeInterrupt(ctx context.Context, info any, state any, errs ...error) error {
 	if len(errs) == 0 {
 		return StatefulInterrupt(ctx, info, state)
@@ -238,6 +290,7 @@ func CompositeInterrupt(ctx context.Context, info any, state any, errs ...error)
 
 // IsInterruptRerunError reports whether the error represents an interrupt-and-rerun
 // and returns any attached info.
+// IsInterruptRerunError 报告错误是否表示中断并重运行，并返回任何附加信息。
 func IsInterruptRerunError(err error) (any, bool) {
 	info, _, ok := isInterruptRerunError(err)
 	return info, ok
@@ -255,6 +308,7 @@ func isInterruptRerunError(err error) (info any, state any, ok bool) {
 }
 
 // InterruptInfo aggregates interrupt metadata for composite or nested runs.
+// InterruptInfo 聚合组合或嵌套运行的中断元数据。
 type InterruptInfo struct {
 	State             any
 	BeforeNodes       []string
@@ -270,32 +324,45 @@ func init() {
 }
 
 // AddressSegmentType defines the type of a segment in an execution address.
+// AddressSegmentType 定义执行地址中段的类型。
 type AddressSegmentType = core.AddressSegmentType
 
 const (
 	// AddressSegmentNode represents a segment of an address that corresponds to a graph node.
+	// AddressSegmentNode 表示对应于图节点的地址段。
 	AddressSegmentNode AddressSegmentType = "node"
 	// AddressSegmentTool represents a segment of an address that corresponds to a specific tool call within a ToolsNode.
+	// AddressSegmentTool 表示对应于 ToolsNode 内特定工具调用的地址段。
 	AddressSegmentTool AddressSegmentType = "tool"
 	// AddressSegmentRunnable represents a segment of an address that corresponds to an instance of the Runnable interface.
 	// Currently the possible Runnable types are: Graph, Workflow and Chain.
 	// Note that for sub-graphs added through AddGraphNode to another graph is not a Runnable.
 	// So a AddressSegmentRunnable indicates a standalone Root level Graph,
 	// or a Root level Graph inside a node such as Lambda node.
+	// AddressSegmentRunnable 表示对应于 Runnable 接口实例的地址段。
+	// 目前可能的 Runnable 类型有：Graph, Workflow 和 Chain。
+	// 注意，通过 AddGraphNode 添加到另一个图的子图不是 Runnable。
+	// 因此 AddressSegmentRunnable 表示一个独立的根级图，
+	// 或者像 Lambda 节点这样的节点内部的根级图。
 	AddressSegmentRunnable AddressSegmentType = "runnable"
 )
 
 // Address represents a full, hierarchical address to a point in the execution structure.
+// Address 表示执行结构中某个点的完整、分层地址。
 type Address = core.Address
 
 // AddressSegment represents a single segment in the hierarchical address of an execution point.
 // A sequence of AddressSegments uniquely identifies a location within a potentially nested structure.
+// AddressSegment 表示执行点分层地址中的单个段。
+// AddressSegment 序列唯一标识潜在嵌套结构中的位置。
 type AddressSegment = core.AddressSegment
 
 // InterruptCtx provides a complete, user-facing context for a single, resumable interrupt point.
+// InterruptCtx 为单个可恢复的中断点提供完整的、用户可见的上下文。
 type InterruptCtx = core.InterruptCtx
 
 // ExtractInterruptInfo extracts InterruptInfo from an error if present.
+// ExtractInterruptInfo 从错误中提取 InterruptInfo（如果存在）。
 func ExtractInterruptInfo(err error) (info *InterruptInfo, existed bool) {
 	if err == nil {
 		return nil, false

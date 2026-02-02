@@ -37,10 +37,14 @@ type channel interface {
 	setMergeConfig(FanInMergeConfig)
 }
 
+// edgeHandlerManager manages handlers on edges.
+// edgeHandlerManager 管理边上的处理程序。
 type edgeHandlerManager struct {
 	h map[string]map[string][]handlerPair
 }
 
+// handle executes the handlers on the edge.
+// handle 执行边上的处理程序。
 func (e *edgeHandlerManager) handle(from, to string, value any, isStream bool) (any, error) {
 	if _, ok := e.h[from]; !ok {
 		return value, nil
@@ -64,10 +68,14 @@ func (e *edgeHandlerManager) handle(from, to string, value any, isStream bool) (
 	return value, nil
 }
 
+// preNodeHandlerManager manages handlers before nodes execution.
+// preNodeHandlerManager 管理节点执行前的处理程序。
 type preNodeHandlerManager struct {
 	h map[string][]handlerPair
 }
 
+// handle executes the handlers before the node execution.
+// handle 在节点执行前执行处理程序。
 func (p *preNodeHandlerManager) handle(nodeKey string, value any, isStream bool) (any, error) {
 	if _, ok := p.h[nodeKey]; !ok {
 		return value, nil
@@ -88,10 +96,14 @@ func (p *preNodeHandlerManager) handle(nodeKey string, value any, isStream bool)
 	return value, nil
 }
 
+// preBranchHandlerManager manages handlers before branch execution.
+// preBranchHandlerManager 管理分支执行前的处理程序。
 type preBranchHandlerManager struct {
 	h map[string][][]handlerPair
 }
 
+// handle executes the handlers before the branch execution.
+// handle 在分支执行前执行处理程序。
 func (p *preBranchHandlerManager) handle(nodeKey string, idx int, value any, isStream bool) (any, error) {
 	if _, ok := p.h[nodeKey]; !ok {
 		return value, nil
@@ -112,6 +124,8 @@ func (p *preBranchHandlerManager) handle(nodeKey string, idx int, value any, isS
 	return value, nil
 }
 
+// channelManager manages data channels and dependencies between nodes.
+// channelManager 管理数据通道和节点间的依赖关系。
 type channelManager struct {
 	isStream bool
 	channels map[string]channel
@@ -124,6 +138,8 @@ type channelManager struct {
 	preNodeHandlerManager *preNodeHandlerManager
 }
 
+// loadChannels loads channels into the manager.
+// loadChannels 将通道加载到管理器中。
 func (c *channelManager) loadChannels(channels map[string]channel) error {
 	for key, ch := range c.channels {
 		if nCh, ok := channels[key]; ok {
@@ -135,6 +151,8 @@ func (c *channelManager) loadChannels(channels map[string]channel) error {
 	return nil
 }
 
+// updateValues updates values to target channels.
+// updateValues 更新值到目标通道。
 func (c *channelManager) updateValues(_ context.Context, values map[string] /*to*/ map[string] /*from*/ any) error {
 	for target, fromMap := range values {
 		toChannel, ok := c.channels[target]
@@ -164,6 +182,8 @@ func (c *channelManager) updateValues(_ context.Context, values map[string] /*to
 	return nil
 }
 
+// updateDependencies updates control dependencies to target channels.
+// updateDependencies 更新控制依赖到目标通道。
 func (c *channelManager) updateDependencies(_ context.Context, dependenciesMap map[string][]string) error {
 	for target, dependencies := range dependenciesMap {
 		toChannel, ok := c.channels[target]
@@ -186,6 +206,8 @@ func (c *channelManager) updateDependencies(_ context.Context, dependenciesMap m
 	return nil
 }
 
+// getFromReadyChannels retrieves data from channels that are ready.
+// getFromReadyChannels 从准备好的通道中获取数据。
 func (c *channelManager) getFromReadyChannels(_ context.Context) (map[string]any, error) {
 	result := make(map[string]any)
 	for target, ch := range c.channels {
@@ -216,6 +238,8 @@ func (c *channelManager) updateAndGet(ctx context.Context, values map[string]map
 	return c.getFromReadyChannels(ctx)
 }
 
+// reportBranch reports skipped nodes due to branch selection.
+// reportBranch 报告由于分支选择而跳过的节点。
 func (c *channelManager) reportBranch(from string, skippedNodes []string) error {
 	var nKeys []string
 	for _, node := range skippedNodes {
@@ -254,6 +278,8 @@ func appendIfNotExist(s []string, elem string) []string {
 	return append(s, elem)
 }
 
+// task represents a unit of work to be executed.
+// task 表示要执行的一个工作单元。
 type task struct {
 	ctx            context.Context
 	nodeKey        string
@@ -266,6 +292,8 @@ type task struct {
 	skipPreHandler bool
 }
 
+// taskManager manages the execution of tasks.
+// taskManager 管理任务的执行。
 type taskManager struct {
 	runWrapper runnableCallWrapper
 	opts       []Option
@@ -521,6 +549,8 @@ func receiveWithListening(recv func() (*task, bool), cancel chan *time.Duration)
 	return p.ta, p.closed, false, canceled, nil
 }
 
+// runPreHandler runs the pre-handler for the task.
+// runPreHandler 为任务运行预处理程序。
 func runPreHandler(ta *task, runWrapper runnableCallWrapper) (err error) {
 	defer func() {
 		if e := recover(); e != nil {
@@ -537,6 +567,8 @@ func runPreHandler(ta *task, runWrapper runnableCallWrapper) (err error) {
 	return nil
 }
 
+// runPostHandler runs the post-handler for the task.
+// runPostHandler 为任务运行后处理程序。
 func runPostHandler(ta *task, runWrapper runnableCallWrapper) {
 	defer func() {
 		if e := recover(); e != nil {

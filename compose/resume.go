@@ -103,6 +103,11 @@ func Resume(ctx context.Context, interruptIDs ...string) context.Context {
 // It is the primary function for the "Explicit Targeted Resume" strategy when data is required.
 // It is a convenience wrapper around BatchResumeWithData.
 // The `interruptID` parameter is the unique interrupt ID of the target component.
+//
+// ResumeWithData 准备一个上下文，以便使用数据恢复单个特定组件。
+// 当需要数据时，它是“显式定向恢复”策略的主要函数。
+// 它是 BatchResumeWithData 的便捷包装器。
+// `interruptID` 参数是目标组件的唯一中断 ID。
 func ResumeWithData(ctx context.Context, interruptID string, data any) context.Context {
 	return BatchResumeWithData(ctx, map[string]any{interruptID: data})
 }
@@ -116,6 +121,14 @@ func ResumeWithData(ctx context.Context, interruptID string, data any) context.C
 //
 // This function is the foundation for the "Explicit Targeted Resume" strategy. Components whose interrupt IDs
 // are present as keys in the map will receive `isResumeFlow = true` when they call `GetResumeContext`.
+//
+// BatchResumeWithData 是准备恢复上下文的核心函数。它将恢复目标及其相应数据的映射注入上下文中。
+//
+// `resumeData` 映射应包含要恢复的组件的中断 ID（地址的字符串形式）作为键。
+// 值可以是该组件的恢复数据，如果不需要数据（相当于使用 `Resume`），则可以为 `nil`。
+//
+// 此函数是“显式定向恢复”策略的基础。
+// 中断 ID 作为键存在于映射中的组件在调用 `GetResumeContext` 时将收到 `isResumeFlow = true`。
 func BatchResumeWithData(ctx context.Context, resumeData map[string]any) context.Context {
 	return core.BatchResumeWithData(ctx, resumeData)
 }
@@ -147,6 +160,14 @@ func getNodePath(ctx context.Context) (*NodePath, bool) {
 //   - ctx: The parent context, typically the one passed into the component's Invoke/Stream method.
 //   - segType: The type of the new address segment (e.g., "node", "tool").
 //   - segID: The unique ID for the new address segment.
+//
+// AppendAddressSegment 为子组件（例如，图节点或工具调用）创建一个新的执行上下文。
+//
+// 它使用新的片段扩展当前上下文的地址，并为该特定子地址填充适当的中断状态和恢复数据的新上下文。
+//
+//   - ctx: 父上下文，通常是传入组件的 Invoke/Stream 方法的上下文。
+//   - segType: 新地址片段的类型（例如，“node”，“tool”）。
+//   - segID: 新地址片段的唯一 ID。
 func AppendAddressSegment(ctx context.Context, segType AddressSegmentType, segID string) context.Context {
 	return core.AppendAddressSegment(ctx, segType, segID, "")
 }
