@@ -33,7 +33,7 @@ import (
 	"github.com/cloudwego/eino/schema"
 )
 
-// TestNewSupervisor 测试 New 函数
+// TestNewSupervisor tests New function
 func TestNewSupervisor(t *testing.T) {
 	ctx := context.Background()
 
@@ -173,7 +173,6 @@ func TestNewSupervisor(t *testing.T) {
 	assert.Equal(t, finishMsg.Content, event.Output.MessageOutput.Message.Content)
 }
 
-// approvalInfo 用于存储待审批工具调用的信息。
 type approvalInfo struct {
 	ToolName        string
 	ArgumentsInJSON string
@@ -185,7 +184,6 @@ func (ai *approvalInfo) String() string {
 		ai.ToolName, ai.ArgumentsInJSON)
 }
 
-// approvalResult 用于存储审批结果。
 type approvalResult struct {
 	Approved         bool
 	DisapproveReason *string
@@ -196,7 +194,6 @@ func init() {
 	schema.Register[*approvalResult]()
 }
 
-// approvableTool 是一个需要人工审批才能执行的测试工具。
 type approvableTool struct {
 	name string
 	t    *testing.T
@@ -246,7 +243,6 @@ func (m *approvableTool) InvokableRun(ctx context.Context, argumentsInJSON strin
 	return fmt.Sprintf("Tool '%s' disapproved", m.name), nil
 }
 
-// checkpointStore 是用于测试的简单的 Checkpoint 存储实现。
 type checkpointStore struct {
 	data map[string][]byte
 }
@@ -265,7 +261,6 @@ func (s *checkpointStore) Get(_ context.Context, key string) ([]byte, bool, erro
 	return v, ok, nil
 }
 
-// namedAgent 是用于测试的具名 Agent 包装器。
 type namedAgent struct {
 	adk.ResumableAgent
 	name        string
@@ -496,7 +491,6 @@ func TestNestedSupervisorInterruptResume(t *testing.T) {
 	assert.True(t, hasTransferBack, "Should have transfer back to outer supervisor indicating completion")
 }
 
-// TestSupervisorExit 测试 Supervisor 中子 Agent 的退出行为。
 func TestSupervisorExit(t *testing.T) {
 	ctx := context.Background()
 	ctrl := gomock.NewController(t)
@@ -573,7 +567,6 @@ func TestSupervisorExit(t *testing.T) {
 	assert.False(t, foundTransferBack, "Should NOT have found Transfer back to Supervisor after Exit")
 }
 
-// TestNestedSupervisorExit 测试嵌套 Supervisor 结构中的退出行为。
 func TestNestedSupervisorExit(t *testing.T) {
 	ctx := context.Background()
 	ctrl := gomock.NewController(t)

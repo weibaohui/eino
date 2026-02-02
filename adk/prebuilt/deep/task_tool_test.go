@@ -57,6 +57,7 @@ func TestTaskTool(t *testing.T) {
 }
 
 // myAgent 是用于测试的自定义 Agent 实现。
+// 它模拟了一个简单的 Agent，返回其描述作为输出，用于验证调度逻辑。
 type myAgent struct {
 	name string
 	desc string

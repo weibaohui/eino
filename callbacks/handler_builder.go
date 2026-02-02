@@ -24,6 +24,8 @@ import (
 
 // HandlerBuilder constructs a Handler by chaining callback functions
 // for start, end, error, and streaming aspects.
+//
+// HandlerBuilder 通过链接 start、end、error 和流式切面的回调函数来构造 Handler。
 type HandlerBuilder struct {
 	onStartFn                func(ctx context.Context, info *RunInfo, input CallbackInput) context.Context
 	onEndFn                  func(ctx context.Context, info *RunInfo, output CallbackOutput) context.Context
@@ -79,11 +81,16 @@ func (hb *handlerImpl) Needed(_ context.Context, _ *RunInfo, timing CallbackTimi
 
 // NewHandlerBuilder creates and returns a new HandlerBuilder instance.
 // HandlerBuilder is used to construct a Handler with custom callback functions
+//
+// NewHandlerBuilder 创建并返回一个新的 HandlerBuilder 实例。
+// HandlerBuilder 用于使用自定义回调函数构造 Handler。
 func NewHandlerBuilder() *HandlerBuilder {
 	return &HandlerBuilder{}
 }
 
 // OnStartFn sets the handler for the start timing.
+//
+// OnStartFn 设置 start 时机的处理程序。
 func (hb *HandlerBuilder) OnStartFn(
 	fn func(ctx context.Context, info *RunInfo, input CallbackInput) context.Context) *HandlerBuilder {
 
@@ -92,6 +99,8 @@ func (hb *HandlerBuilder) OnStartFn(
 }
 
 // OnEndFn sets the handler for the end timing.
+//
+// OnEndFn 设置 end 时机的处理程序。
 func (hb *HandlerBuilder) OnEndFn(
 	fn func(ctx context.Context, info *RunInfo, output CallbackOutput) context.Context) *HandlerBuilder {
 
@@ -100,6 +109,8 @@ func (hb *HandlerBuilder) OnEndFn(
 }
 
 // OnErrorFn sets the handler for the error timing.
+//
+// OnErrorFn 设置 error 时机的处理程序。
 func (hb *HandlerBuilder) OnErrorFn(
 	fn func(ctx context.Context, info *RunInfo, err error) context.Context) *HandlerBuilder {
 
@@ -108,6 +119,8 @@ func (hb *HandlerBuilder) OnErrorFn(
 }
 
 // OnStartWithStreamInputFn sets the callback function to be called.
+//
+// OnStartWithStreamInputFn 设置要调用的回调函数。
 func (hb *HandlerBuilder) OnStartWithStreamInputFn(
 	fn func(ctx context.Context, info *RunInfo, input *schema.StreamReader[CallbackInput]) context.Context) *HandlerBuilder {
 
@@ -116,6 +129,8 @@ func (hb *HandlerBuilder) OnStartWithStreamInputFn(
 }
 
 // OnEndWithStreamOutputFn sets the callback function to be called.
+//
+// OnEndWithStreamOutputFn 设置要调用的回调函数。
 func (hb *HandlerBuilder) OnEndWithStreamOutputFn(
 	fn func(ctx context.Context, info *RunInfo, output *schema.StreamReader[CallbackOutput]) context.Context) *HandlerBuilder {
 
@@ -124,6 +139,8 @@ func (hb *HandlerBuilder) OnEndWithStreamOutputFn(
 }
 
 // Build returns a Handler with the functions set in the builder.
+//
+// Build 返回一个包含构建器中设置的函数的 Handler。
 func (hb *HandlerBuilder) Build() Handler {
 	return &handlerImpl{*hb}
 }

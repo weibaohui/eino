@@ -168,7 +168,7 @@ assistant: Clients are marked as failed in the 'connectToServer' function in src
 	generalAgentDescription = `general-purpose agent for researching complex questions, searching for code, and executing multi-step tasks. When you are searching for a keyword or file and are not confident that you will find the right match in the first few tries use this agent to perform the search for you. (Tools: *)`
 	// taskToolDescription 是 task 工具的默认描述模板。
 	// 它列出了可用的子 Agent，并指导模型如何根据用户需求选择合适的子 Agent。
-	taskToolDescription     = `Launch a new agent to handle complex, multi-step tasks autonomously. 
+	taskToolDescription = `Launch a new agent to handle complex, multi-step tasks autonomously. 
 
 The Task tool launches specialized agents (subprocesses) that autonomously handle complex tasks. Each agent type has specific capabilities and tools available to it.
 

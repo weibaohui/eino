@@ -16,4 +16,6 @@
 
 // Package schema defines core data structures and utilities for
 // messages, streams, and tool schemas used across Eino.
+//
+// Package schema 定义了 Eino 中使用的核心数据结构和实用程序，包括消息、流和工具模式。
 package schema

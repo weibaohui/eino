@@ -32,7 +32,9 @@ import (
 	"github.com/cloudwego/eino/schema"
 )
 
-// TestGenModelInput 测试 genModelInput 函数
+// TestGenModelInput 测试 genModelInput 函数。
+// 该测试验证了模型输入生成逻辑，包括处理指令（Instruction）和历史消息。
+// 它确保系统提示词（System Message）被正确添加，并且用户消息被保留。
 func TestGenModelInput(t *testing.T) {
 	ctx := context.Background()
 
@@ -67,7 +69,9 @@ func TestGenModelInput(t *testing.T) {
 	})
 }
 
-// TestWriteTodos 测试 WriteTodos 工具
+// TestWriteTodos 测试 WriteTodos 工具。
+// 该测试验证了 WriteTodos 工具的执行逻辑。
+// 它检查工具是否能正确解析输入的 JSON 参数，并返回预期的更新确认消息。
 func TestWriteTodos(t *testing.T) {
 	m, err := buildBuiltinAgentMiddlewares(false)
 	assert.NoError(t, err)
@@ -82,7 +86,9 @@ func TestWriteTodos(t *testing.T) {
 	assert.Equal(t, fmt.Sprintf("Updated todo list to %s", todos), result)
 }
 
-// TestDeepSubAgentSharesSessionValues 测试 Deep SubAgent 共享 Session 值
+// TestDeepSubAgentSharesSessionValues 测试 Deep SubAgent 共享 Session 值。
+// 该测试验证了 Deep Agent 在调用子 Agent 时，Session 中的值是否能正确传递。
+// 这对于多 Agent 协作场景中共享上下文（如父 Agent 的配置或状态）至关重要。
 func TestDeepSubAgentSharesSessionValues(t *testing.T) {
 	ctx := context.Background()
 	spy := &spySubAgent{}
@@ -131,6 +137,8 @@ func TestDeepSubAgentSharesSessionValues(t *testing.T) {
 }
 
 // TestDeepSubAgentFollowsStreamingMode 测试 Deep SubAgent 是否遵循流式传输模式。
+// 该测试验证了当 Deep Agent 以流式模式运行时，其调用的子 Agent 是否也接收到了流式模式的配置。
+// 这确保了整个调用链在流式处理上的一致性。
 func TestDeepSubAgentFollowsStreamingMode(t *testing.T) {
 	ctx := context.Background()
 	spy := &spyStreamingSubAgent{}
@@ -187,6 +195,7 @@ func TestDeepSubAgentFollowsStreamingMode(t *testing.T) {
 }
 
 // spySubAgent 是用于测试的间谍子 Agent。
+// 它用于捕获并验证父 Agent 传递下来的 Session 值。
 type spySubAgent struct {
 	seenParentValue any
 }
@@ -202,6 +211,7 @@ func (s *spySubAgent) Run(ctx context.Context, _ *adk.AgentInput, _ ...adk.Agent
 }
 
 // spyStreamingSubAgent 是用于测试流式传输的间谍子 Agent。
+// 它用于验证父 Agent 是否正确传递了流式模式配置。
 type spyStreamingSubAgent struct {
 	seenEnableStreaming bool
 }
@@ -219,6 +229,9 @@ func (s *spyStreamingSubAgent) Run(ctx context.Context, input *adk.AgentInput, _
 }
 
 // TestDeepAgentWithPlanExecuteSubAgent_InternalEventsEmitted 测试 Deep Agent 配合 PlanExecute 子 Agent 时是否正确触发内部事件。
+// 该测试构建了一个包含 PlanExecute 子 Agent 的 Deep Agent，并运行它。
+// 它验证了当 EmitInternalEvents 配置为 true 时，PlanExecute 内部组件（Planner, Executor, Replanner）的事件是否能正确冒泡并被 Runner 捕获。
+// 这对于调试和监控复杂的嵌套 Agent 执行流程非常重要。
 func TestDeepAgentWithPlanExecuteSubAgent_InternalEventsEmitted(t *testing.T) {
 	ctx := context.Background()
 
@@ -403,6 +416,8 @@ func (n *namedPlanExecuteAgent) Description(_ context.Context) string {
 }
 
 // TestDeepAgentOutputKey 测试 Deep Agent 的输出键功能。
+// 该测试验证了 Deep Agent 是否能将最终的输出内容存储到 Session 中指定的 OutputKey。
+// 它覆盖了非流式和流式两种运行模式，并检查了未设置 OutputKey 时的行为。
 func TestDeepAgentOutputKey(t *testing.T) {
 	t.Run("OutputKeyStoresInSession", func(t *testing.T) {
 		ctx := context.Background()
@@ -537,6 +552,7 @@ func TestDeepAgentOutputKey(t *testing.T) {
 }
 
 // sessionCaptureAgent 是一个用于捕获 Session 值的 Agent 包装器。
+// 它在 Agent 执行结束后读取并保存 Session 中的所有值，以便在测试中进行断言。
 type sessionCaptureAgent struct {
 	adk.Agent
 	captureSession func(map[string]any)

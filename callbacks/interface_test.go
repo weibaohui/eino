@@ -25,6 +25,8 @@ import (
 	"github.com/cloudwego/eino/internal/callbacks"
 )
 
+// TestAppendGlobalHandlers 测试追加全局回调处理程序。
+// 验证 AppendGlobalHandlers 函数能正确将处理程序添加到全局回调列表中。
 func TestAppendGlobalHandlers(t *testing.T) {
 	// Clear global handlers before test
 	callbacks.GlobalHandlers = nil

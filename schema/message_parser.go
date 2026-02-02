@@ -25,30 +25,38 @@ import (
 )
 
 // MessageParser parses a Message into a strongly typed value.
+// MessageParser 将 Message 解析为强类型值。
 type MessageParser[T any] interface {
 	Parse(ctx context.Context, m *Message) (T, error)
 }
 
 // MessageParseFrom determines the source of the data to be parsed. default is content (Message.Content).
+// MessageParseFrom 确定要解析的数据源。默认为内容 (Message.Content)。
 type MessageParseFrom string
 
 // MessageParseFrom indicates the source data used by the parser.
+// MessageParseFrom 指示解析器使用的源数据。
 const (
 	MessageParseFromContent  MessageParseFrom = "content"
 	MessageParseFromToolCall MessageParseFrom = "tool_call"
 )
 
 // MessageJSONParseConfig configures JSON parsing behavior for Message.
+// MessageJSONParseConfig 配置 Message 的 JSON 解析行为。
 type MessageJSONParseConfig struct {
 	// parse from content or tool call, default is content.
+	// 从内容或工具调用解析，默认为内容。
 	ParseFrom MessageParseFrom `json:"parse_from,omitempty"`
 
 	// parse key path, default is empty.
 	// must be a valid json path expression, eg: field.sub_field
+	// 解析键路径，默认为空。
+	// 必须是有效的 json 路径表达式，例如：field.sub_field
 	ParseKeyPath string `json:"parse_key_path,omitempty"`
 }
 
 // NewMessageJSONParser creates a new MessageJSONParser.
+// NewMessageJSONParser 创建一个新的 MessageJSONParser。
 func NewMessageJSONParser[T any](config *MessageJSONParseConfig) MessageParser[T] {
 	if config == nil {
 		config = &MessageJSONParseConfig{}
@@ -74,6 +82,24 @@ func NewMessageJSONParser[T any](config *MessageJSONParseConfig) MessageParser[T
 //	param, err := parser.Parse(ctx, message)
 //
 //	eg of parse to slice of struct:
+//
+//	config := &MessageJSONParseConfig{
+//		ParseFrom: MessageParseFromToolCall,
+//	}
+//
+// parser := NewMessageJSONParser[GetUserParam](config)
+// param, err := parser.Parse(ctx, message)
+//
+// MessageJSONParser 是一个解析器，使用 json unmarshal 将消息解析为对象 T。
+// 解析为单个结构体的示例：
+//
+//	config := &MessageJSONParseConfig{
+//		ParseFrom: MessageParseFromToolCall,
+//	}
+//	parser := NewMessageJSONParser[GetUserParam](config)
+//	param, err := parser.Parse(ctx, message)
+//
+//	解析为结构体切片的示例：
 //
 //	config := &MessageJSONParseConfig{
 //		ParseFrom: MessageParseFromToolCall,
@@ -127,6 +153,7 @@ func (p *MessageJSONParser[T]) extractData(data string) (string, error) {
 }
 
 // parse parses a string into an object T.
+// parse 将字符串解析为对象 T。
 func (p *MessageJSONParser[T]) parse(data string) (parsed T, err error) {
 	parsedData, err := p.extractData(data)
 	if err != nil {

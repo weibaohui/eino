@@ -19,9 +19,9 @@ package filesystem
 
 import (
 	"context"
-	"github.com/cloudwego/eino/adk/filesystem"
 
- )
+	"github.com/cloudwego/eino/adk/filesystem"
+)
 
 // FileInfo 定义文件信息结构
 // 包含文件名、大小、修改时间等基本属性

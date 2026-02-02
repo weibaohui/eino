@@ -29,6 +29,8 @@ import (
 	"github.com/cloudwego/eino/schema"
 )
 
+// TestAspectInject 测试切面注入功能。
+// 验证 OnStart, OnEnd, OnError 以及流式输入输出的切面处理逻辑。
 func TestAspectInject(t *testing.T) {
 	t.Run("ctx without manager", func(t *testing.T) {
 		ctx := context.Background()
@@ -184,6 +186,8 @@ func TestAspectInject(t *testing.T) {
 	})
 }
 
+// TestGlobalCallbacksRepeated 测试全局回调是否重复执行。
+// 验证当多次添加处理程序时，全局回调只执行一次（针对同一层级的调用）。
 func TestGlobalCallbacksRepeated(t *testing.T) {
 	times := 0
 	testHandler := NewHandlerBuilder().OnStartFn(func(ctx context.Context, info *callbacks.RunInfo, input callbacks.CallbackInput) context.Context {
@@ -200,6 +204,8 @@ func TestGlobalCallbacksRepeated(t *testing.T) {
 	assert.Equal(t, times, 1)
 }
 
+// TestEnsureRunInfo 测试 EnsureRunInfo 功能。
+// 验证 EnsureRunInfo 能正确设置和更新 RunInfo，并且能正确处理全局回调的初始化。
 func TestEnsureRunInfo(t *testing.T) {
 	ctx := context.Background()
 
@@ -234,6 +240,8 @@ func TestEnsureRunInfo(t *testing.T) {
 	callbacks.GlobalHandlers = []Handler{}
 }
 
+// TestNesting 测试嵌套调用的场景。
+// 验证在嵌套调用中，回调处理程序是否被正确复用或重新初始化。
 func TestNesting(t *testing.T) {
 	ctx := context.Background()
 	cb := &myCallback{t: t}
@@ -259,6 +267,8 @@ func TestNesting(t *testing.T) {
 
 }
 
+// TestReuseHandlersOnEmptyCtx 测试在空上下文上复用处理程序。
+// 验证在空上下文上调用 ReuseHandlers 是否能正确初始化全局处理程序。
 func TestReuseHandlersOnEmptyCtx(t *testing.T) {
 	callbacks.GlobalHandlers = []Handler{}
 	cb := &myCallback{t: t}
@@ -268,6 +278,8 @@ func TestReuseHandlersOnEmptyCtx(t *testing.T) {
 	assert.Equal(t, 1, cb.times)
 }
 
+// TestAppendHandlersTwiceOnSameCtx 测试在同一上下文上两次追加处理程序。
+// 验证每次追加处理程序是否都创建了新的上下文，且互不影响。
 func TestAppendHandlersTwiceOnSameCtx(t *testing.T) {
 	callbacks.GlobalHandlers = []Handler{}
 	cb := &myCallback{t: t}
@@ -283,6 +295,7 @@ func TestAppendHandlersTwiceOnSameCtx(t *testing.T) {
 	assert.Equal(t, 1, cb2.times)
 }
 
+// myCallback 是用于测试的自定义回调实现。
 type myCallback struct {
 	t     *testing.T
 	times int

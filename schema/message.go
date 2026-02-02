@@ -43,6 +43,9 @@ func init() {
 
 // ConcatMessageArray merges aligned slices of messages into a single slice,
 // concatenating messages at the same index across the input arrays.
+//
+// ConcatMessageArray 将对齐的消息切片合并为单个切片，
+// 连接输入数组中相同索引处的消息。
 func ConcatMessageArray(mas [][]*Message) ([]*Message, error) {
 	arrayLen := len(mas[0])
 
@@ -82,173 +85,279 @@ func ConcatMessageArray(mas [][]*Message) ([]*Message, error) {
 }
 
 // FormatType used by MessageTemplate.Format
+//
+// FormatType 由 MessageTemplate.Format 使用。
 type FormatType uint8
 
 const (
 	// FString Supported by pyfmt(github.com/slongfield/pyfmt), which is an implementation of https://peps.python.org/pep-3101/.
+	//
+	// FString 由 pyfmt(github.com/slongfield/pyfmt) 支持，它是 https://peps.python.org/pep-3101/ 的实现。
 	FString FormatType = 0
 	// GoTemplate https://pkg.go.dev/text/template.
+	//
+	// GoTemplate https://pkg.go.dev/text/template。
 	GoTemplate FormatType = 1
 	// Jinja2 Supported by gonja(github.com/nikolalohinski/gonja), which is a implementation of https://jinja.palletsprojects.com/en/3.1.x/templates/.
+	//
+	// Jinja2 由 gonja(github.com/nikolalohinski/gonja) 支持，它是 https://jinja.palletsprojects.com/en/3.1.x/templates/ 的实现。
 	Jinja2 FormatType = 2
 )
 
 // RoleType is the type of the role of a message.
+//
+// RoleType 是消息角色的类型。
 type RoleType string
 
 const (
 	// Assistant is the role of an assistant, means the message is returned by ChatModel.
+	//
+	// Assistant 是助手的角色，表示消息由 ChatModel 返回。
 	Assistant RoleType = "assistant"
 	// User is the role of a user, means the message is a user message.
+	//
+	// User 是用户的角色，表示消息是用户消息。
 	User RoleType = "user"
 	// System is the role of a system, means the message is a system message.
+	//
+	// System 是系统的角色，表示消息是系统消息。
 	System RoleType = "system"
 	// Tool is the role of a tool, means the message is a tool call output.
+	//
+	// Tool 是工具的角色，表示消息是工具调用输出。
 	Tool RoleType = "tool"
 )
 
 // FunctionCall is the function call in a message.
 // It's used in Assistant Message.
+//
+// FunctionCall 是消息中的函数调用。
+// 它用于 Assistant Message。
 type FunctionCall struct {
 	// Name is the name of the function to call, it can be used to identify the specific function.
+	// Name 是要调用的函数名称，可用于标识特定函数。
 	Name string `json:"name,omitempty"`
 	// Arguments is the arguments to call the function with, in JSON format.
+	// Arguments 是调用函数的参数，采用 JSON 格式。
 	Arguments string `json:"arguments,omitempty"`
 }
 
 // ToolCall is the tool call in a message.
 // It's used in Assistant Message when there are tool calls should be made.
+//
+// ToolCall 是消息中的工具调用。
+// 当需要进行工具调用时，它用于 Assistant Message。
 type ToolCall struct {
 	// Index is used when there are multiple tool calls in a message.
 	// In stream mode, it's used to identify the chunk of the tool call for merging.
+	//
+	// Index 用于消息中有多个工具调用时。
+	// 在流模式下，它用于标识工具调用块以进行合并。
 	Index *int `json:"index,omitempty"`
 	// ID is the id of the tool call, it can be used to identify the specific tool call.
+	//
+	// ID 是工具调用的 id，可用于标识特定工具调用。
 	ID string `json:"id"`
 	// Type is the type of the tool call, default is "function".
+	//
+	// Type 是工具调用的类型，默认为 "function"。
 	Type string `json:"type"`
 	// Function is the function call to be made.
+	//
+	// Function 是要进行的函数调用。
 	Function FunctionCall `json:"function"`
 
 	// Extra is used to store extra information for the tool call.
+	//
+	// Extra 用于存储工具调用的额外信息。
 	Extra map[string]any `json:"extra,omitempty"`
 }
 
 // ImageURLDetail is the detail of the image url.
+//
+// ImageURLDetail 是图片 url 的细节。
 type ImageURLDetail string
 
 const (
 	// ImageURLDetailHigh means the high quality image url.
+	//
+	// ImageURLDetailHigh 表示高质量图片 url。
 	ImageURLDetailHigh ImageURLDetail = "high"
 	// ImageURLDetailLow means the low quality image url.
+	//
+	// ImageURLDetailLow 表示低质量图片 url。
 	ImageURLDetailLow ImageURLDetail = "low"
 	// ImageURLDetailAuto means the auto quality image url.
+	//
+	// ImageURLDetailAuto 表示自动质量图片 url。
 	ImageURLDetailAuto ImageURLDetail = "auto"
 )
 
 // MessagePartCommon represents the common abstract components for input and output of multi-modal types.
+//
+// MessagePartCommon 表示多模态类型输入和输出的通用抽象组件。
 type MessagePartCommon struct {
 	// URL is primarily used for HTTP or HTTPS access links.
 	// For data in the format 'data:[<mediatype>][;base64],<data>' (the 'data' URL Schema of RFC-2397 (https://www.rfc-editor.org/rfc/rfc2397)),
 	// it is recommended to use Base64Data and MIMEType fields separately instead.
+	//
+	// URL 主要用于 HTTP 或 HTTPS 访问链接。
+	// 对于格式为 'data:[<mediatype>][;base64],<data>' 的数据（RFC-2397 的 'data' URL Schema），建议分别使用 Base64Data 和 MIMEType 字段。
 	URL *string `json:"url,omitempty"`
 
 	// Base64Data represents the binary data in Base64 encoded string format.
+	//
+	// Base64Data 表示 Base64 编码字符串格式的二进制数据。
 	Base64Data *string `json:"base64data,omitempty"`
 
 	// MIMEType is the mime type , eg."image/png",""audio/wav" etc.
+	//
+	// MIMEType 是 mime 类型，例如 "image/png", "audio/wav" 等。
 	MIMEType string `json:"mime_type,omitempty"`
 
 	// Extra is used to store extra information.
+	//
+	// Extra 用于存储额外信息。
 	Extra map[string]any `json:"extra,omitempty"`
 }
 
 // MessageInputImage is used to represent an image part in message.
 // Choose either URL or Base64Data.
+//
+// MessageInputImage 用于表示消息中的图像部分。
+// 选择 URL 或 Base64Data。
 type MessageInputImage struct {
 	MessagePartCommon
 
 	// Detail is the quality of the image url.
+	//
+	// Detail 是图片 url 的质量。
 	Detail ImageURLDetail `json:"detail,omitempty"`
 }
 
 // MessageInputAudio is used to represent an audio part in message.
 // Choose either URL or Base64Data.
+//
+// MessageInputAudio 用于表示消息中的音频部分。
+// 选择 URL 或 Base64Data。
 type MessageInputAudio struct {
 	MessagePartCommon
 }
 
 // MessageInputVideo is used to represent a video part in message.
 // Choose either URL or Base64Data.
+//
+// MessageInputVideo 用于表示消息中的视频部分。
+// 选择 URL 或 Base64Data。
 type MessageInputVideo struct {
 	MessagePartCommon
 }
 
 // MessageInputFile is used to represent a file part in message.
 // Choose either URL or Base64Data.
+//
+// MessageInputFile 用于表示消息中的文件部分。
+// 选择 URL 或 Base64Data。
 type MessageInputFile struct {
 	MessagePartCommon
 
 	// Name represents the filename.
 	// Optional.
+	//
+	// Name 表示文件名。
+	// 可选。
 	Name string `json:"name,omitempty"`
 }
 
 // MessageInputPart represents the input part of message.
+//
+// MessageInputPart 表示消息的输入部分。
 type MessageInputPart struct {
 	Type ChatMessagePartType `json:"type"`
 
 	Text string `json:"text,omitempty"`
 
 	// Image is the image input of the part, it's used when Type is "image_url".
+	//
+	// Image 是部分的图像输入，当 Type 为 "image_url" 时使用。
 	Image *MessageInputImage `json:"image,omitempty"`
 
 	// Audio  is the audio input of the part, it's used when Type is "audio_url".
+	//
+	// Audio 是部分的音频输入，当 Type 为 "audio_url" 时使用。
 	Audio *MessageInputAudio `json:"audio,omitempty"`
 
 	// Video is the video input of the part, it's used when Type is "video_url".
+	//
+	// Video 是部分的视频输入，当 Type 为 "video_url" 时使用。
 	Video *MessageInputVideo `json:"video,omitempty"`
 
 	// File is the file input of the part, it's used when Type is "file_url".
+	//
+	// File 是部分的文件输入，当 Type 为 "file_url" 时使用。
 	File *MessageInputFile `json:"file,omitempty"`
 
 	// Extra is used to store extra information.
+	//
+	// Extra 用于存储额外信息。
 	Extra map[string]any `json:"extra,omitempty"`
 }
 
 // MessageOutputImage is used to represent an image part in message.
+//
+// MessageOutputImage 用于表示消息中的图像部分。
 type MessageOutputImage struct {
 	MessagePartCommon
 }
 
 // MessageOutputAudio is used to represent an audio part in message.
+//
+// MessageOutputAudio 用于表示消息中的音频部分。
 type MessageOutputAudio struct {
 	MessagePartCommon
 }
 
 // MessageOutputVideo is used to represent a video part in message.
+//
+// MessageOutputVideo 用于表示消息中的视频部分。
 type MessageOutputVideo struct {
 	MessagePartCommon
 }
 
 // MessageOutputPart represents a part of an assistant-generated message.
 // It can contain text, or multimedia content like images, audio, or video.
+//
+// MessageOutputPart 表示助手生成的消息的一部分。
+// 它可以包含文本或多媒体内容，如图像、音频或视频。
 type MessageOutputPart struct {
 	// Type is the type of the part, eg. "text", "image_url", "audio_url", "video_url".
+	//
+	// Type 是部分的类型，例如 "text", "image_url", "audio_url", "video_url"。
 	Type ChatMessagePartType `json:"type"`
 
 	// Text is the text of the part, it's used when Type is "text".
+	//
+	// Text 是部分的文本，当 Type 为 "text" 时使用。
 	Text string `json:"text,omitempty"`
 
 	// Image is the image output of the part, used when Type is ChatMessagePartTypeImageURL.
+	//
+	// Image 是部分的图像输出，当 Type 为 ChatMessagePartTypeImageURL 时使用。
 	Image *MessageOutputImage `json:"image,omitempty"`
 
 	// Audio is the audio output of the part, used when Type is ChatMessagePartTypeAudioURL.
+	//
+	// Audio 是部分的音频输出，当 Type 为 ChatMessagePartTypeAudioURL 时使用。
 	Audio *MessageOutputAudio `json:"audio,omitempty"`
 
 	// Video is the video output of the part, used when Type is ChatMessagePartTypeVideoURL.
+	//
+	// Video 是部分的视频输出，当 Type 为 ChatMessagePartTypeVideoURL 时使用。
 	Video *MessageOutputVideo `json:"video,omitempty"`
 
 	// Extra is used to store extra information.
+	//
+	// Extra 用于存储额外信息。
 	Extra map[string]any `json:"extra,omitempty"`
 }
 
@@ -258,34 +367,61 @@ type MessageOutputPart struct {
 // Choose either URL or URI.
 // If your model implementation supports it, URL could embed inline image data
 // as defined in RFC-2397.
+//
+// Deprecated: 由于 MultiContent 字段已弃用，此结构已弃用。
+// 对于模型的图像输入部分，请使用 MessageInputImage。
+// 对于模型的图像输出部分，请使用 MessageOutputImage。
+// 选择 URL 或 URI。
+// 如果您的模型实现支持，URL 可以嵌入 RFC-2397 定义的内联图像数据。
 type ChatMessageImageURL struct {
 	// URL can either be a traditional URL or a special URL conforming to RFC-2397 (https://www.rfc-editor.org/rfc/rfc2397).
 	// double check with model implementations for detailed instructions on how to use this.
+	//
+	// URL 可以是传统 URL 或符合 RFC-2397 的特殊 URL。
+	// 请与模型实现进行详细检查以获取有关如何使用此功能的说明。
 	URL string `json:"url,omitempty"`
 
 	URI string `json:"uri,omitempty"`
 	// Detail is the quality of the image url.
+	//
+	// Detail 是图片 url 的质量。
 	Detail ImageURLDetail `json:"detail,omitempty"`
 
 	// MIMEType is the mime type of the image, eg. "image/png".
+	//
+	// MIMEType 是图像的 mime 类型，例如 "image/png"。
 	MIMEType string `json:"mime_type,omitempty"`
 	// Extra is used to store extra information for the image url.
+	//
+	// Extra 用于存储图片 url 的额外信息。
 	Extra map[string]any `json:"extra,omitempty"`
 }
 
 // ChatMessagePartType is the type of the part in a chat message.
+//
+// ChatMessagePartType 是聊天消息中部分的类型。
 type ChatMessagePartType string
 
 const (
 	// ChatMessagePartTypeText means the part is a text.
+	//
+	// ChatMessagePartTypeText 表示该部分是文本。
 	ChatMessagePartTypeText ChatMessagePartType = "text"
 	// ChatMessagePartTypeImageURL means the part is an image url.
+	//
+	// ChatMessagePartTypeImageURL 表示该部分是图片 url。
 	ChatMessagePartTypeImageURL ChatMessagePartType = "image_url"
 	// ChatMessagePartTypeAudioURL means the part is an audio url.
+	//
+	// ChatMessagePartTypeAudioURL 表示该部分是音频 url。
 	ChatMessagePartTypeAudioURL ChatMessagePartType = "audio_url"
 	// ChatMessagePartTypeVideoURL means the part is a video url.
+	//
+	// ChatMessagePartTypeVideoURL 表示该部分是视频 url。
 	ChatMessagePartTypeVideoURL ChatMessagePartType = "video_url"
 	// ChatMessagePartTypeFileURL means the part is a file url.
+	//
+	// ChatMessagePartTypeFileURL 表示该部分是文件 url。
 	ChatMessagePartTypeFileURL ChatMessagePartType = "file_url"
 )
 
@@ -294,15 +430,28 @@ const (
 // For the audio output part of the model, use MessageOutputAudio.
 // Choose either URL or URI.
 // If supported, URL may embed inline audio data per RFC-2397.
+//
+// Deprecated: 由于 MultiContent 字段已弃用，此结构已弃用。
+// 对于模型的音频输入部分，请使用 MessageInputAudio。
+// 对于模型的音频输出部分，请使用 MessageOutputAudio。
+// 选择 URL 或 URI。
+// 如果支持，URL 可以根据 RFC-2397 嵌入内联音频数据。
 type ChatMessageAudioURL struct {
 	// URL can either be a traditional URL or a special URL conforming to RFC-2397 (https://www.rfc-editor.org/rfc/rfc2397).
 	// double check with model implementations for detailed instructions on how to use this.
+	//
+	// URL 可以是传统 URL 或符合 RFC-2397 的特殊 URL。
+	// 请与模型实现进行详细检查以获取有关如何使用此功能的说明。
 	URL string `json:"url,omitempty"`
 	URI string `json:"uri,omitempty"`
 
 	// MIMEType is the mime type of the audio, eg. "audio/wav" or "audio/ogg".
+	//
+	// MIMEType 是音频的 mime 类型，例如 "audio/wav" 或 "audio/ogg"。
 	MIMEType string `json:"mime_type,omitempty"`
 	// Extra is used to store extra information for the audio url.
+	//
+	// Extra 用于存储音频 url 的额外信息。
 	Extra map[string]any `json:"extra,omitempty"`
 }
 
@@ -311,100 +460,176 @@ type ChatMessageAudioURL struct {
 // For the video output part of the model, use MessageOutputVideo.
 // Choose either URL or URI.
 // If supported, URL may embed inline video data per RFC-2397.
+//
+// Deprecated: 由于 MultiContent 字段已弃用，此结构已弃用。
+// 对于模型的视频输入部分，请使用 MessageInputVideo。
+// 对于模型的视频输出部分，请使用 MessageOutputVideo。
+// 选择 URL 或 URI。
+// 如果支持，URL 可以根据 RFC-2397 嵌入内联视频数据。
 type ChatMessageVideoURL struct {
 	// URL can either be a traditional URL or a special URL conforming to RFC-2397 (https://www.rfc-editor.org/rfc/rfc2397).
 	// double check with model implementations for detailed instructions on how to use this.
+	//
+	// URL 可以是传统 URL 或符合 RFC-2397 的特殊 URL。
+	// 请与模型实现进行详细检查以获取有关如何使用此功能的说明。
 	URL string `json:"url,omitempty"`
 	URI string `json:"uri,omitempty"`
 
 	// MIMEType is the mime type of the video, eg. "video/mp4".
+	//
+	// MIMEType 是视频的 mime 类型，例如 "video/mp4"。
 	MIMEType string `json:"mime_type,omitempty"`
 	// Extra is used to store extra information for the video url.
+	//
+	// Extra 用于存储视频 url 的额外信息。
 	Extra map[string]any `json:"extra,omitempty"`
 }
 
 // Deprecated: This struct is deprecated as the MultiContent field is deprecated.
 // For the file input part of the model, use MessageInputFile.
 // Choose either URL or URI.
+//
+// Deprecated: 由于 MultiContent 字段已弃用，此结构已弃用。
+// 对于模型的文件输入部分，请使用 MessageInputFile。
+// 选择 URL 或 URI。
 type ChatMessageFileURL struct {
 	URL string `json:"url,omitempty"`
 	URI string `json:"uri,omitempty"`
 
 	// MIMEType is the mime type of the file, eg. "application/pdf", "text/plain".
+	//
+	// MIMEType 是文件的 mime 类型，例如 "application/pdf", "text/plain"。
 	MIMEType string `json:"mime_type,omitempty"`
 	// Name is the name of the file.
+	//
+	// Name 是文件名。
 	Name string `json:"name,omitempty"`
 
 	// Extra is used to store extra information for the file url.
+	//
+	// Extra 用于存储文件 url 的额外信息。
 	Extra map[string]any `json:"extra,omitempty"`
 }
 
 // Deprecated: This struct is deprecated as the MultiContent field is deprecated.
 // For model input, use MessageInputPart. For model output, use MessageOutputPart.
+//
+// Deprecated: 由于 MultiContent 字段已弃用，此结构已弃用。
+// 对于模型输入，请使用 MessageInputPart。对于模型输出，请使用 MessageOutputPart。
 type ChatMessagePart struct {
 	// Type is the type of the part, eg. "text", "image_url", "audio_url", "video_url", "file_url".
+	//
+	// Type 是部分的类型，例如 "text", "image_url", "audio_url", "video_url", "file_url"。
 	Type ChatMessagePartType `json:"type,omitempty"`
 
 	// Text is the text of the part, it's used when Type is "text".
+	//
+	// Text 是部分的文本，当 Type 为 "text" 时使用。
 	Text string `json:"text,omitempty"`
 
 	// ImageURL is the image url of the part, it's used when Type is "image_url".
+	//
+	// ImageURL 是部分的图片 url，当 Type 为 "image_url" 时使用。
 	ImageURL *ChatMessageImageURL `json:"image_url,omitempty"`
 	// AudioURL is the audio url of the part, it's used when Type is "audio_url".
+	//
+	// AudioURL 是部分的音频 url，当 Type 为 "audio_url" 时使用。
 	AudioURL *ChatMessageAudioURL `json:"audio_url,omitempty"`
 	// VideoURL is the video url of the part, it's used when Type is "video_url".
+	//
+	// VideoURL 是部分的视频 url，当 Type 为 "video_url" 时使用。
 	VideoURL *ChatMessageVideoURL `json:"video_url,omitempty"`
 	// FileURL is the file url of the part, it's used when Type is "file_url".
+	//
+	// FileURL 是部分的文件 url，当 Type 为 "file_url" 时使用。
 	FileURL *ChatMessageFileURL `json:"file_url,omitempty"`
 }
 
 // LogProbs is the top-level structure containing the log probability information.
+//
+// LogProbs 是包含对数概率信息的顶级结构。
 type LogProbs struct {
 	// Content is a list of message content tokens with log probability information.
+	//
+	// Content 是带有对数概率信息的消息内容标记列表。
 	Content []LogProb `json:"content"`
 }
 
 // LogProb represents the probability information for a token.
+//
+// LogProb 表示标记的概率信息。
 type LogProb struct {
 	// Token represents the text of the token, which is a contiguous sequence of characters
 	// (e.g., a word, part of a word, or punctuation) as understood by the tokenization process used by the language model.
+	//
+	// Token 表示标记的文本，它是语言模型使用的标记化过程所理解的连续字符序列（例如，单词、单词的一部分或标点符号）。
 	Token string `json:"token"`
 	// LogProb is the log probability of this token, if it is within the top 20 most likely tokens.
 	// Otherwise, the value `-9999.0` is used to signify that the token is very unlikely.
+	//
+	// LogProb 是此标记的对数概率（如果它位于前 20 个最可能的标记中）。
+	// 否则，使用值 `-9999.0` 表示该标记不太可能。
 	LogProb float64 `json:"logprob"`
 	// Bytes is a list of integers representing the UTF-8 bytes representation of the token.
 	// Useful in instances where characters are represented by multiple tokens and
 	// their byte representations must be combined to generate the correct text
 	// representation. Can be `null` if there is no bytes representation for the token.
+	//
+	// Bytes 是表示标记的 UTF-8 字节表示形式的整数列表。
+	// 在字符由多个标记表示且必须组合其字节表示形式以生成正确文本表示形式的情况下很有用。
+	// 如果标记没有字节表示形式，则可以为 `null`。
 	Bytes []int64 `json:"bytes,omitempty"` // Omitting the field if it is null
 	// TopLogProbs is a list of the most likely tokens and their log probability, at this token position.
 	// In rare cases, there may be fewer than the number of requested top_logprobs returned.
+	//
+	// TopLogProbs 是此标记位置最可能的标记及其对数概率的列表。
+	// 在极少数情况下，返回的 top_logprobs 数量可能少于请求的数量。
 	TopLogProbs []TopLogProb `json:"top_logprobs"`
 }
 
 // TopLogProb describes a likely token and its log probability at a position.
+//
+// TopLogProb 描述了某个位置可能的标记及其对数概率。
 type TopLogProb struct {
 	// Token represents the text of the token, which is a contiguous sequence of characters
 	// (e.g., a word, part of a word, or punctuation) as understood by the tokenization process used by the language model.
+	//
+	// Token 表示标记的文本，它是语言模型使用的标记化过程所理解的连续字符序列（例如，单词、单词的一部分或标点符号）。
 	Token string `json:"token"`
 	// LogProb is the log probability of this token, if it is within the top 20 most likely tokens.
 	// Otherwise, the value `-9999.0` is used to signify that the token is very unlikely.
+	//
+	// LogProb 是此标记的对数概率（如果它位于前 20 个最可能的标记中）。
+	// 否则，使用值 `-9999.0` 表示该标记不太可能。
 	LogProb float64 `json:"logprob"`
 	// Bytes is a list of integers representing the UTF-8 bytes representation of the token.
 	// Useful in instances where characters are represented by multiple tokens and
 	// their byte representations must be combined to generate the correct text
 	// representation. Can be `null` if there is no bytes representation for the token.
+	//
+	// Bytes 是表示标记的 UTF-8 字节表示形式的整数列表。
+	// 在字符由多个标记表示且必须组合其字节表示形式以生成正确文本表示形式的情况下很有用。
+	// 如果标记没有字节表示形式，则可以为 `null`。
 	Bytes []int64 `json:"bytes,omitempty"`
 }
 
 // ResponseMeta collects meta information about a chat response.
+//
+// ResponseMeta 收集有关聊天响应的元信息。
 type ResponseMeta struct {
 	// FinishReason is the reason why the chat response is finished.
 	// It's usually "stop", "length", "tool_calls", "content_filter", "null". This is defined by chat model implementation.
+	//
+	// FinishReason 是聊天响应结束的原因。
+	// 通常是 "stop", "length", "tool_calls", "content_filter", "null"。这是由聊天模型实现定义的。
 	FinishReason string `json:"finish_reason,omitempty"`
 	// Usage is the token usage of the chat response, whether usage exists depends on whether the chat model implementation returns.
+	//
+	// Usage 是聊天响应的标记使用情况，是否存在取决于聊天模型实现是否返回。
 	Usage *TokenUsage `json:"usage,omitempty"`
 	// LogProbs is Log probability information.
+	//
+	// LogProbs 是对数概率信息。
 	LogProbs *LogProbs `json:"logprobs,omitempty"`
 }
 
@@ -448,53 +673,124 @@ type ResponseMeta struct {
 //			}},
 //		},
 //	}
+//
+// Message 表示模型输入和输出的数据结构，源自用户输入或模型返回。
+// 它支持纯文本和多模态内容。
+//
+// 对于来自用户的纯文本输入，请使用 Content 字段：
+//
+//	&schema.Message{
+//		Role:    schema.User,
+//		Content: "What is the capital of France?",
+//	}
+//
+// 对于来自用户的多模态输入，请使用 UserInputMultiContent 字段。
+// 这允许将文本与其他媒体（如图像）结合使用：
+//
+//	&schema.Message{
+//		Role: schema.User,
+//		UserInputMultiContent: []schema.MessageInputPart{
+//			{Type: schema.ChatMessagePartTypeText, Text: "What is in this image?"},
+//			{Type: schema.ChatMessagePartTypeImageURL, Image: &schema.MessageInputImage{
+//				MessagePartCommon: schema.MessagePartCommon{
+//					URL: toPtr("https://example.com/cat.jpg"),
+//				},
+//				Detail: schema.ImageURLDetailHigh,
+//			}},
+//		},
+//	}
+//
+// 当模型返回多模态内容时，它在 AssistantGenMultiContent 字段中可用：
+//
+//	&schema.Message{
+//		Role: schema.Assistant,
+//		AssistantGenMultiContent: []schema.MessageOutputPart{
+//			{Type: schema.ChatMessagePartTypeText, Text: "Here is the generated image:"},
+//			{Type: schema.ChatMessagePartTypeImage, Image: &schema.MessageOutputImage{
+//				MessagePartCommon: schema.MessagePartCommon{
+//					Base64Data: toPtr("base64_image_binary"),
+//					MIMEType:   "image/png",
+//				},
+//			}},
+//		},
+//	}
 type Message struct {
 	Role RoleType `json:"role"`
 
 	// Content is for user text input and model text output.
+	//
+	// Content 用于用户文本输入和模型文本输出。
 	Content string `json:"content"`
 
 	// if MultiContent is not empty, use this instead of Content
 	// if MultiContent is empty, use Content
 	// Deprecated: Use UserInputMultiContent for user multimodal inputs and AssistantGenMultiContent for model multimodal outputs.
+	//
+	// Deprecated: 请使用 UserInputMultiContent 用于用户多模态输入，使用 AssistantGenMultiContent 用于模型多模态输出。
 	MultiContent []ChatMessagePart `json:"multi_content,omitempty"`
 
 	// UserInputMultiContent passes multimodal content provided by the user to the model.
+	//
+	// UserInputMultiContent 将用户提供的多模态内容传递给模型。
 	UserInputMultiContent []MessageInputPart `json:"user_input_multi_content,omitempty"`
 
 	// AssistantGenMultiContent is for receiving multimodal output from the model.
+	//
+	// AssistantGenMultiContent 用于接收模型的具体多模态输出。
 	AssistantGenMultiContent []MessageOutputPart `json:"assistant_output_multi_content,omitempty"`
 
 	Name string `json:"name,omitempty"`
 
 	// only for AssistantMessage
+	//
+	// 仅用于 AssistantMessage
 	ToolCalls []ToolCall `json:"tool_calls,omitempty"`
 
 	// only for ToolMessage
+	//
+	// 仅用于 ToolMessage
 	ToolCallID string `json:"tool_call_id,omitempty"`
 	// only for ToolMessage
+	//
+	// 仅用于 ToolMessage
 	ToolName string `json:"tool_name,omitempty"`
 
 	ResponseMeta *ResponseMeta `json:"response_meta,omitempty"`
 
 	// ReasoningContent is the thinking process of the model, which will be included when the model returns reasoning content.
+	//
+	// ReasoningContent 是模型的思考过程，当模型返回推理内容时将包含此内容。
 	ReasoningContent string `json:"reasoning_content,omitempty"`
 
 	// customized information for model implementation
+	//
+	// 模型实现的自定义信息
 	Extra map[string]any `json:"extra,omitempty"`
 }
 
 // TokenUsage Represents the token usage of chat model request.
+//
+// TokenUsage 表示聊天模型请求的标记使用情况。
 type TokenUsage struct {
 	// PromptTokens is the number of prompt tokens, including all the input tokens of this request.
+	//
+	// PromptTokens 是提示标记的数量，包括此请求的所有输入标记。
 	PromptTokens int `json:"prompt_tokens"`
 	// PromptTokenDetails is a breakdown of the prompt tokens.
+	//
+	// PromptTokenDetails 是提示标记的细分。
 	PromptTokenDetails PromptTokenDetails `json:"prompt_token_details"`
 	// CompletionTokens is the number of completion tokens.
+	//
+	// CompletionTokens 是完成标记的数量。
 	CompletionTokens int `json:"completion_tokens"`
 	// TotalTokens is the total number of tokens.
+	//
+	// TotalTokens 是标记的总数。
 	TotalTokens int `json:"total_tokens"`
 	// CompletionTokensDetails is breakdown of completion tokens.
+	//
+	// CompletionTokensDetails 是完成标记的细分。
 	CompletionTokensDetails CompletionTokensDetails `json:"completion_token_details"`
 }
 
@@ -502,12 +798,20 @@ type CompletionTokensDetails struct {
 	// ReasoningTokens tokens generated by the model for reasoning.
 	// This is currently supported by OpenAI, Gemini, ARK and Qwen  chat models.
 	// For other models, this field will be 0.
+	//
+	// ReasoningTokens 模型生成的用于推理的标记。
+	// 目前 OpenAI, Gemini, ARK 和 Qwen 聊天模型支持此功能。
+	// 对于其他模型，此字段将为 0。
 	ReasoningTokens int `json:"reasoning_tokens,omitempty"`
 }
 
 // PromptTokenDetails provides a breakdown of prompt token usage.
+//
+// PromptTokenDetails 提供提示标记使用情况的细分。
 type PromptTokenDetails struct {
 	// Cached tokens present in the prompt.
+	//
+	// CachedTokens 提示中存在的缓存标记。
 	CachedTokens int `json:"cached_tokens"`
 }
 
@@ -517,6 +821,16 @@ var _ MessagesTemplate = MessagesPlaceholder("", false)
 // MessagesTemplate is the interface for messages template.
 // It's used to render a template to a list of messages.
 // e.g.
+//
+//	chatTemplate := prompt.FromMessages(
+//		schema.SystemMessage("you are eino helper"),
+//		schema.MessagesPlaceholder("history", false), // <= this will use the value of "history" in params
+//	)
+//	msgs, err := chatTemplate.Format(ctx, params)
+//
+// MessagesTemplate 是消息模板的接口。
+// 它用于将模板渲染为消息列表。
+// 例如：
 //
 //	chatTemplate := prompt.FromMessages(
 //		schema.SystemMessage("you are eino helper"),
@@ -545,6 +859,20 @@ type messagesPlaceholder struct {
 //		schema.MessagesPlaceholder("history", false), // <= this will use the value of "history" in params
 //	)
 //	msgs, err := chatTemplate.Format(ctx, params)
+//
+// MessagesPlaceholder 可以将占位符渲染为 params 中的消息列表。
+// 例如：
+//
+//	placeholder := MessagesPlaceholder("history", false)
+//	params := map[string]any{
+//		"history": []*schema.Message{{Role: "user", Content: "what is eino?"}, {Role: "assistant", Content: "eino is a great freamwork to build llm apps"}},
+//		"query": "how to use eino?",
+//	}
+//	chatTemplate := chatTpl := prompt.FromMessages(
+//		schema.SystemMessage("you are eino helper"),
+//		schema.MessagesPlaceholder("history", false), // <= this will use the value of "history" in params
+//	)
+//	msgs, err := chatTemplate.Format(ctx, params)
 func MessagesPlaceholder(key string, optional bool) MessagesTemplate {
 	return &messagesPlaceholder{
 		key:      key,
@@ -555,6 +883,17 @@ func MessagesPlaceholder(key string, optional bool) MessagesTemplate {
 // Format just return the messages of specified key.
 // because it's a placeholder.
 // e.g.
+//
+//	placeholder := MessagesPlaceholder("history", false)
+//	params := map[string]any{
+//		"history": []*schema.Message{{Role: "user", Content: "what is eino?"}, {Role: "assistant", Content: "eino is a great freamwork to build llm apps"}},
+//		"query": "how to use eino?",
+//	}
+//	msgs, err := placeholder.Format(ctx, params) // <= this will return the value of "history" in params
+//
+// Format 仅返回指定 key 的消息。
+// 因为它是一个占位符。
+// 例如：
 //
 //	placeholder := MessagesPlaceholder("history", false)
 //	params := map[string]any{

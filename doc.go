@@ -16,4 +16,6 @@
 
 // Package eino provides building blocks for agent workflows,
 // tools, and composable graph utilities.
+//
+// Package eino 提供了用于构建 Agent 工作流、工具和可组合图实用程序的构建块。
 package eino

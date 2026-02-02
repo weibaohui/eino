@@ -18,6 +18,11 @@ package schema
 
 const maxSelectNum = 5
 
+// receiveN receives from one of the chosen streams efficiently using switch-case select.
+// It supports up to maxSelectNum streams.
+//
+// receiveN 使用 switch-case select 高效地从选定的流中接收数据。
+// 它最多支持 maxSelectNum 个流。
 func receiveN[T any](chosenList []int, ss []*stream[T]) (int, *streamItem[T], bool) {
 	return []func(chosenList []int, ss []*stream[T]) (index int, item *streamItem[T], ok bool){
 		nil,
