@@ -18,20 +18,28 @@ package compose
 
 import "fmt"
 
+// pregelChannelBuilder creates a new pregelChannel.
+// pregelChannelBuilder 创建一个新的 pregelChannel。
 func pregelChannelBuilder(_ []string, _ []string, _ func() any, _ func() streamReader) channel {
 	return &pregelChannel{Values: make(map[string]any)}
 }
 
+// pregelChannel implements the channel interface for Pregel graph execution.
+// pregelChannel 实现了 Pregel 图执行的 channel 接口。
 type pregelChannel struct {
 	Values map[string]any
 
 	mergeConfig FanInMergeConfig
 }
 
+// setMergeConfig sets the merge configuration for the channel.
+// setMergeConfig 设置通道的合并配置。
 func (ch *pregelChannel) setMergeConfig(cfg FanInMergeConfig) {
 	ch.mergeConfig.StreamMergeWithSourceEOF = cfg.StreamMergeWithSourceEOF
 }
 
+// load loads values from another channel.
+// load 从另一个通道加载值。
 func (ch *pregelChannel) load(c channel) error {
 	dc, ok := c.(*pregelChannel)
 	if !ok {
@@ -41,10 +49,14 @@ func (ch *pregelChannel) load(c channel) error {
 	return nil
 }
 
+// convertValues applies a function to the channel's values.
+// convertValues 对通道的值应用一个函数。
 func (ch *pregelChannel) convertValues(fn func(map[string]any) error) error {
 	return fn(ch.Values)
 }
 
+// reportValues adds values to the channel.
+// reportValues 向通道添加值。
 func (ch *pregelChannel) reportValues(ins map[string]any) error {
 	for k, v := range ins {
 		ch.Values[k] = v
@@ -52,6 +64,8 @@ func (ch *pregelChannel) reportValues(ins map[string]any) error {
 	return nil
 }
 
+// get retrieves a value from the channel.
+// get 从通道中检索值。
 func (ch *pregelChannel) get(isStream bool, name string, edgeHandler *edgeHandlerManager) (
 	any, bool, error) {
 	if len(ch.Values) == 0 {
@@ -87,9 +101,14 @@ func (ch *pregelChannel) get(isStream bool, name string, edgeHandler *edgeHandle
 	return v, true, nil
 }
 
+// reportSkip reports that the node execution should be skipped.
+// reportSkip 报告应跳过节点执行。
 func (ch *pregelChannel) reportSkip(_ []string) bool {
 	return false
 }
+
+// reportDependencies reports the dependencies of the node.
+// reportDependencies 报告节点的依赖关系。
 func (ch *pregelChannel) reportDependencies(_ []string) {
 	return
 }
