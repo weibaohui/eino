@@ -25,6 +25,8 @@ import (
 	"github.com/cloudwego/eino/schema"
 )
 
+// newGenericHelper creates a new genericHelper.
+// newGenericHelper 创建一个新的 genericHelper。
 func newGenericHelper[I, O any]() *genericHelper {
 	return &genericHelper{
 		inputStreamFilter:  defaultStreamMapFilter[I],
@@ -54,6 +56,8 @@ func newGenericHelper[I, O any]() *genericHelper {
 	}
 }
 
+// genericHelper provides helper functions for generic graph operations.
+// genericHelper 提供用于泛型图操作的辅助函数。
 type genericHelper struct {
 	// when set input key, use this method to convert input from map[string]any to T
 	inputStreamFilter, outputStreamFilter streamMapFilter

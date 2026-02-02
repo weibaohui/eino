@@ -46,6 +46,8 @@ func toComponentNode[I, O, TOption any](
 	return gn, options
 }
 
+// toEmbeddingNode converts an Embedder component to a graph node.
+// toEmbeddingNode 将 Embedder 组件转换为图节点。
 func toEmbeddingNode(node embedding.Embedder, opts ...GraphAddNodeOpt) (*graphNode, *graphAddNodeOpts) {
 	return toComponentNode(
 		node,
@@ -57,6 +59,8 @@ func toEmbeddingNode(node embedding.Embedder, opts ...GraphAddNodeOpt) (*graphNo
 		opts...)
 }
 
+// toRetrieverNode converts a Retriever component to a graph node.
+// toRetrieverNode 将 Retriever 组件转换为图节点。
 func toRetrieverNode(node retriever.Retriever, opts ...GraphAddNodeOpt) (*graphNode, *graphAddNodeOpts) {
 	return toComponentNode(
 		node,
@@ -68,6 +72,8 @@ func toRetrieverNode(node retriever.Retriever, opts ...GraphAddNodeOpt) (*graphN
 		opts...)
 }
 
+// toLoaderNode converts a Loader component to a graph node.
+// toLoaderNode 将 Loader 组件转换为图节点。
 func toLoaderNode(node document.Loader, opts ...GraphAddNodeOpt) (*graphNode, *graphAddNodeOpts) {
 	return toComponentNode(
 		node,
@@ -79,6 +85,8 @@ func toLoaderNode(node document.Loader, opts ...GraphAddNodeOpt) (*graphNode, *g
 		opts...)
 }
 
+// toIndexerNode converts an Indexer component to a graph node.
+// toIndexerNode 将 Indexer 组件转换为图节点。
 func toIndexerNode(node indexer.Indexer, opts ...GraphAddNodeOpt) (*graphNode, *graphAddNodeOpts) {
 	return toComponentNode(
 		node,
@@ -90,6 +98,8 @@ func toIndexerNode(node indexer.Indexer, opts ...GraphAddNodeOpt) (*graphNode, *
 		opts...)
 }
 
+// toChatModelNode converts a ChatModel component to a graph node.
+// toChatModelNode 将 ChatModel 组件转换为图节点。
 func toChatModelNode(node model.BaseChatModel, opts ...GraphAddNodeOpt) (*graphNode, *graphAddNodeOpts) {
 	return toComponentNode(
 		node,
@@ -101,6 +111,8 @@ func toChatModelNode(node model.BaseChatModel, opts ...GraphAddNodeOpt) (*graphN
 		opts...)
 }
 
+// toChatTemplateNode converts a ChatTemplate component to a graph node.
+// toChatTemplateNode 将 ChatTemplate 组件转换为图节点。
 func toChatTemplateNode(node prompt.ChatTemplate, opts ...GraphAddNodeOpt) (*graphNode, *graphAddNodeOpts) {
 	return toComponentNode(
 		node,
@@ -112,6 +124,8 @@ func toChatTemplateNode(node prompt.ChatTemplate, opts ...GraphAddNodeOpt) (*gra
 		opts...)
 }
 
+// toDocumentTransformerNode converts a DocumentTransformer component to a graph node.
+// toDocumentTransformerNode 将 DocumentTransformer 组件转换为图节点。
 func toDocumentTransformerNode(node document.Transformer, opts ...GraphAddNodeOpt) (*graphNode, *graphAddNodeOpts) {
 	return toComponentNode(
 		node,
@@ -123,6 +137,8 @@ func toDocumentTransformerNode(node document.Transformer, opts ...GraphAddNodeOp
 		opts...)
 }
 
+// toToolsNode converts a ToolsNode to a graph node.
+// toToolsNode 将 ToolsNode 转换为图节点。
 func toToolsNode(node *ToolsNode, opts ...GraphAddNodeOpt) (*graphNode, *graphAddNodeOpts) {
 	return toComponentNode(
 		node,
@@ -134,6 +150,8 @@ func toToolsNode(node *ToolsNode, opts ...GraphAddNodeOpt) (*graphNode, *graphAd
 		opts...)
 }
 
+// toLambdaNode converts a Lambda to a graph node.
+// toLambdaNode 将 Lambda 转换为图节点。
 func toLambdaNode(node *Lambda, opts ...GraphAddNodeOpt) (*graphNode, *graphAddNodeOpts) {
 	info, options := getNodeInfo(opts...)
 
@@ -142,6 +160,8 @@ func toLambdaNode(node *Lambda, opts ...GraphAddNodeOpt) (*graphNode, *graphAddN
 	return gn, options
 }
 
+// toAnyGraphNode converts an AnyGraph to a graph node.
+// toAnyGraphNode 将 AnyGraph 转换为图节点。
 func toAnyGraphNode(node AnyGraph, opts ...GraphAddNodeOpt) (*graphNode, *graphAddNodeOpts) {
 	meta := parseExecutorInfoFromComponent(node.component(), node)
 	info, options := getNodeInfo(opts...)
@@ -151,6 +171,8 @@ func toAnyGraphNode(node AnyGraph, opts ...GraphAddNodeOpt) (*graphNode, *graphA
 	return gn, options
 }
 
+// toPassthroughNode creates a Passthrough node.
+// toPassthroughNode 创建一个 Passthrough 节点。
 func toPassthroughNode(opts ...GraphAddNodeOpt) (*graphNode, *graphAddNodeOpts) {
 	node := composablePassthrough()
 	info, options := getNodeInfo(opts...)
@@ -158,6 +180,8 @@ func toPassthroughNode(opts ...GraphAddNodeOpt) (*graphNode, *graphAddNodeOpts) 
 	return gn, options
 }
 
+// toNode creates a new graphNode with the provided information.
+// toNode 使用提供的信息创建一个新的 graphNode。
 func toNode(nodeInfo *nodeInfo, executor *composableRunnable, graph AnyGraph,
 	meta *executorMeta, instance any, opts ...GraphAddNodeOpt) *graphNode {
 
