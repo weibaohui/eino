@@ -254,12 +254,16 @@ func init() {
 	schema.RegisterName[*toolsInterruptAndRerunState]("_eino_compose_tools_interrupt_and_rerun_state")
 }
 
+// toolsInterruptAndRerunState stores state for interrupt and rerun.
+// toolsInterruptAndRerunState 存储中断和重运行的状态。
 type toolsInterruptAndRerunState struct {
 	Input         *schema.Message
 	ExecutedTools map[string]string
 	RerunTools    []string
 }
 
+// toolsTuple holds processed tool information.
+// toolsTuple 保存处理后的工具信息。
 type toolsTuple struct {
 	indexes         map[string]int
 	meta            []*executorMeta
@@ -267,6 +271,8 @@ type toolsTuple struct {
 	streamEndpoints []StreamableToolEndpoint
 }
 
+// convTools converts base tools to internal tool representation.
+// convTools 将基础工具转换为内部工具表示。
 func convTools(ctx context.Context, tools []tool.BaseTool, ms []InvokableToolMiddleware, sms []StreamableToolMiddleware) (*toolsTuple, error) {
 	ret := &toolsTuple{
 		indexes:         make(map[string]int),
@@ -321,6 +327,8 @@ func convTools(ctx context.Context, tools []tool.BaseTool, ms []InvokableToolMid
 	return ret, nil
 }
 
+// wrapToolCall wraps an invokable tool with middlewares and callbacks.
+// wrapToolCall 使用中间件和回调包装可调用工具。
 func wrapToolCall(it tool.InvokableTool, middlewares []InvokableToolMiddleware, needCallback bool) InvokableToolEndpoint {
 	middleware := func(next InvokableToolEndpoint) InvokableToolEndpoint {
 		for i := len(middlewares) - 1; i >= 0; i-- {
@@ -340,6 +348,8 @@ func wrapToolCall(it tool.InvokableTool, middlewares []InvokableToolMiddleware, 
 	})
 }
 
+// wrapStreamToolCall wraps a streamable tool with middlewares and callbacks.
+// wrapStreamToolCall 使用中间件和回调包装可流式传输工具。
 func wrapStreamToolCall(st tool.StreamableTool, middlewares []StreamableToolMiddleware, needCallback bool) StreamableToolEndpoint {
 	middleware := func(next StreamableToolEndpoint) StreamableToolEndpoint {
 		for i := len(middlewares) - 1; i >= 0; i-- {
@@ -359,6 +369,8 @@ func wrapStreamToolCall(st tool.StreamableTool, middlewares []StreamableToolMidd
 	})
 }
 
+// invokableToolWithCallback wraps InvokableTool to add callbacks.
+// invokableToolWithCallback 包装 InvokableTool 以添加回调。
 type invokableToolWithCallback struct {
 	it tool.InvokableTool
 }
@@ -371,6 +383,8 @@ func (i *invokableToolWithCallback) InvokableRun(ctx context.Context, argumentsI
 	return invokeWithCallbacks(i.it.InvokableRun)(ctx, argumentsInJSON, opts...)
 }
 
+// streamableToolWithCallback wraps StreamableTool to add callbacks.
+// streamableToolWithCallback 包装 StreamableTool 以添加回调。
 type streamableToolWithCallback struct {
 	st tool.StreamableTool
 }
@@ -478,6 +492,8 @@ func (tn *ToolsNode) genToolCallTasks(ctx context.Context, tuple *toolsTuple,
 	return toolCallTasks, nil
 }
 
+// newUnknownToolTask creates a task for an unknown tool.
+// newUnknownToolTask 为未知工具创建一个任务。
 func newUnknownToolTask(name, arg, callID string, unknownToolHandler func(ctx context.Context, name, input string) (string, error)) toolCallTask {
 	endpoint := func(ctx context.Context, input *ToolInput) (*ToolOutput, error) {
 		result, err := unknownToolHandler(ctx, input.Name, input.Arguments)
@@ -502,6 +518,8 @@ func newUnknownToolTask(name, arg, callID string, unknownToolHandler func(ctx co
 	}
 }
 
+// runToolCallTaskByInvoke executes a tool call task using the invokable endpoint.
+// runToolCallTaskByInvoke 使用可调用端点执行工具调用任务。
 func runToolCallTaskByInvoke(ctx context.Context, task *toolCallTask, opts ...tool.Option) {
 	if task.executed {
 		return
@@ -528,6 +546,8 @@ func runToolCallTaskByInvoke(ctx context.Context, task *toolCallTask, opts ...to
 	}
 }
 
+// runToolCallTaskByStream executes a tool call task using the streamable endpoint.
+// runToolCallTaskByStream 使用可流式传输端点执行工具调用任务。
 func runToolCallTaskByStream(ctx context.Context, task *toolCallTask, opts ...tool.Option) {
 	ctx = callbacks.ReuseHandlers(ctx, &callbacks.RunInfo{
 		Name:      task.name,

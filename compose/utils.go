@@ -49,6 +49,8 @@ func onStartWithStreamInput[T any](ctx context.Context, input *schema.StreamRead
 	return icb.On(ctx, input, icb.OnStartWithStreamInputHandle[T], callbacks.TimingOnStartWithStreamInput, true)
 }
 
+// genericOnStartWithStreamInputHandle handles the OnStartWithStreamInput callback for generic types.
+// genericOnStartWithStreamInputHandle 处理泛型类型的 OnStartWithStreamInput 回调。
 func genericOnStartWithStreamInputHandle(ctx context.Context, input streamReader,
 	runInfo *icb.RunInfo, handlers []icb.Handler) (context.Context, streamReader) {
 
@@ -68,6 +70,8 @@ func genericOnStartWithStreamInputHandle(ctx context.Context, input streamReader
 	return icb.OnWithStreamHandle(ctx, input, handlers, cpy, handle)
 }
 
+// genericOnStartWithStreamInput invokes the OnStartWithStreamInput callback for generic types.
+// genericOnStartWithStreamInput 调用泛型类型的 OnStartWithStreamInput 回调。
 func genericOnStartWithStreamInput(ctx context.Context, input streamReader) (context.Context, streamReader) {
 	return icb.On(ctx, input, genericOnStartWithStreamInputHandle, callbacks.TimingOnStartWithStreamInput, true)
 }
@@ -80,6 +84,8 @@ func onEndWithStreamOutput[T any](ctx context.Context, output *schema.StreamRead
 	return icb.On(ctx, output, icb.OnEndWithStreamOutputHandle[T], callbacks.TimingOnEndWithStreamOutput, false)
 }
 
+// genericOnEndWithStreamOutputHandle handles the OnEndWithStreamOutput callback for generic types.
+// genericOnEndWithStreamOutputHandle 处理泛型类型的 OnEndWithStreamOutput 回调。
 func genericOnEndWithStreamOutputHandle(ctx context.Context, output streamReader,
 	runInfo *icb.RunInfo, handlers []icb.Handler) (context.Context, streamReader) {
 
@@ -97,6 +103,8 @@ func genericOnEndWithStreamOutputHandle(ctx context.Context, output streamReader
 	return icb.OnWithStreamHandle(ctx, output, handlers, cpy, handle)
 }
 
+// genericOnEndWithStreamOutput invokes the OnEndWithStreamOutput callback for generic types.
+// genericOnEndWithStreamOutput 调用泛型类型的 OnEndWithStreamOutput 回调。
 func genericOnEndWithStreamOutput(ctx context.Context, output streamReader) (context.Context, streamReader) {
 	return icb.On(ctx, output, genericOnEndWithStreamOutputHandle, callbacks.TimingOnEndWithStreamOutput, false)
 }
@@ -133,6 +141,8 @@ func invokeWithCallbacks[I, O, TOption any](i Invoke[I, O, TOption]) Invoke[I, O
 	return runWithCallbacks(i, onStart[I], onEnd[O], onError)
 }
 
+// onGraphStart invokes the OnStart callback for the graph.
+// onGraphStart 调用图的 OnStart 回调。
 func onGraphStart(ctx context.Context, input any, isStream bool) (context.Context, any) {
 	if isStream {
 		return genericOnStartWithStreamInput(ctx, input.(streamReader))
@@ -140,6 +150,8 @@ func onGraphStart(ctx context.Context, input any, isStream bool) (context.Contex
 	return onStart(ctx, input)
 }
 
+// onGraphEnd invokes the OnEnd callback for the graph.
+// onGraphEnd 调用图的 OnEnd 回调。
 func onGraphEnd(ctx context.Context, output any, isStream bool) (context.Context, any) {
 	if isStream {
 		return genericOnEndWithStreamOutput(ctx, output.(streamReader))
@@ -147,6 +159,8 @@ func onGraphEnd(ctx context.Context, output any, isStream bool) (context.Context
 	return onEnd(ctx, output)
 }
 
+// onGraphError invokes the OnError callback for the graph.
+// onGraphError 调用图的 OnError 回调。
 func onGraphError(ctx context.Context, err error) (context.Context, error) {
 	return onError(ctx, err)
 }
@@ -163,6 +177,8 @@ func transformWithCallbacks[I, O, TOption any](t Transform[I, O, TOption]) Trans
 	return runWithCallbacks(t, onStartWithStreamInput[I], onEndWithStreamOutput[O], onError)
 }
 
+// initGraphCallbacks initializes callbacks for the graph.
+// initGraphCallbacks 初始化图的回调。
 func initGraphCallbacks(ctx context.Context, info *nodeInfo, meta *executorMeta, opts ...Option) context.Context {
 	ri := &callbacks.RunInfo{}
 	if meta != nil {
@@ -188,6 +204,8 @@ func initGraphCallbacks(ctx context.Context, info *nodeInfo, meta *executorMeta,
 	return icb.AppendHandlers(ctx, ri, cbs...)
 }
 
+// initNodeCallbacks initializes callbacks for a node.
+// initNodeCallbacks 初始化节点的回调。
 func initNodeCallbacks(ctx context.Context, key string, info *nodeInfo, meta *executorMeta, opts ...Option) context.Context {
 	ri := &callbacks.RunInfo{}
 	if meta != nil {
@@ -220,14 +238,20 @@ func initNodeCallbacks(ctx context.Context, key string, info *nodeInfo, meta *ex
 	return icb.AppendHandlers(ctx, ri, cbs...)
 }
 
+// streamChunkConvertForCBOutput converts a stream chunk for callback output.
+// streamChunkConvertForCBOutput 转换回调输出的流块。
 func streamChunkConvertForCBOutput[O any](o O) (callbacks.CallbackOutput, error) {
 	return o, nil
 }
 
+// streamChunkConvertForCBInput converts a stream chunk for callback input.
+// streamChunkConvertForCBInput 转换回调输入的流块。
 func streamChunkConvertForCBInput[I any](i I) (callbacks.CallbackInput, error) {
 	return i, nil
 }
 
+// toAnyList converts a typed slice to a slice of any.
+// toAnyList 将类型化切片转换为 any 切片。
 func toAnyList[T any](in []T) []any {
 	ret := make([]any, len(in))
 	for i := range in {

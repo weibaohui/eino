@@ -36,6 +36,8 @@ type graphCancelChanVal struct {
 	ch chan *time.Duration
 }
 
+// graphInterruptOptions contains options for graph interruption.
+// graphInterruptOptions 包含图中断的选项。
 type graphInterruptOptions struct {
 	timeout *time.Duration
 }

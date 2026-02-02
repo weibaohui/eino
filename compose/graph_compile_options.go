@@ -16,6 +16,8 @@
 
 package compose
 
+// graphCompileOptions is the options for compiling a graph.
+// graphCompileOptions 是编译图的选项。
 type graphCompileOptions struct {
 	maxRunSteps     int
 	graphName       string
@@ -35,6 +37,8 @@ type graphCompileOptions struct {
 	mergeConfigs map[string]FanInMergeConfig
 }
 
+// newGraphCompileOptions creates a new graphCompileOptions.
+// newGraphCompileOptions 创建一个新的 graphCompileOptions。
 func newGraphCompileOptions(opts ...GraphCompileOption) *graphCompileOptions {
 	option := &graphCompileOptions{}
 

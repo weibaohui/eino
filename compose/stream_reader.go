@@ -77,6 +77,8 @@ func (srp streamReaderPacker[T]) toStreamReaders(srs []streamReader) []*schema.S
 	return ret
 }
 
+// merge merges multiple stream readers into one.
+// merge 将多个流读取器合并为一个。
 func (srp streamReaderPacker[T]) merge(isrs []streamReader) streamReader {
 	srs := srp.toStreamReaders(isrs)
 
@@ -85,6 +87,8 @@ func (srp streamReaderPacker[T]) merge(isrs []streamReader) streamReader {
 	return packStreamReader(sr)
 }
 
+// mergeWithNames merges multiple stream readers with names.
+// mergeWithNames 将多个流读取器与名称合并。
 func (srp streamReaderPacker[T]) mergeWithNames(isrs []streamReader, names []string) streamReader {
 	srs := srp.toStreamReaders(isrs)
 
@@ -93,6 +97,8 @@ func (srp streamReaderPacker[T]) mergeWithNames(isrs []streamReader, names []str
 	return packStreamReader(sr)
 }
 
+// withKey wraps the stream items in a map with the given key.
+// withKey 将流项目包装在具有给定键的 map 中。
 func (srp streamReaderPacker[T]) withKey(key string) streamReader {
 	cvt := func(v T) (map[string]any, error) {
 		return map[string]any{key: v}, nil
@@ -103,16 +109,22 @@ func (srp streamReaderPacker[T]) withKey(key string) streamReader {
 	return packStreamReader(ret)
 }
 
+// toAnyStreamReader converts the stream reader to a StreamReader of any.
+// toAnyStreamReader 将流读取器转换为 any 类型的 StreamReader。
 func (srp streamReaderPacker[T]) toAnyStreamReader() *schema.StreamReader[any] {
 	return schema.StreamReaderWithConvert(srp.sr, func(t T) (any, error) {
 		return t, nil
 	})
 }
 
+// packStreamReader wraps a typed StreamReader into a streamReader interface.
+// packStreamReader 将类型化的 StreamReader 包装为 streamReader 接口。
 func packStreamReader[T any](sr *schema.StreamReader[T]) streamReader {
 	return streamReaderPacker[T]{sr}
 }
 
+// unpackStreamReader attempts to extract the typed StreamReader from a streamReader interface.
+// unpackStreamReader 尝试从 streamReader 接口中提取类型化的 StreamReader。
 func unpackStreamReader[T any](isr streamReader) (*schema.StreamReader[T], bool) {
 	c, ok := isr.(streamReaderPacker[T])
 	if ok {

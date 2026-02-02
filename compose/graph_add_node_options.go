@@ -22,6 +22,8 @@ import (
 	"github.com/cloudwego/eino/internal/generic"
 )
 
+// graphAddNodeOpts is the options for adding a node to a graph.
+// graphAddNodeOpts 是向图中添加节点的选项。
 type graphAddNodeOpts struct {
 	nodeOptions *nodeOptions
 	processor   *processorOpts
@@ -40,6 +42,8 @@ type graphAddNodeOpts struct {
 //	graph.AddNode("node_name", node, compose.WithInputKey("input_key"), compose.WithOutputKey("output_key"))
 type GraphAddNodeOpt func(o *graphAddNodeOpts)
 
+// nodeOptions is the options for a node.
+// nodeOptions 是节点的选项。
 type nodeOptions struct {
 	nodeName string
 

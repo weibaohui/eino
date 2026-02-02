@@ -35,6 +35,7 @@ type NewGraphOption func(ngo *newGraphOptions)
 
 // WithGenLocalState registers a function to generate per-run local state
 // that can be shared across nodes in the graph.
+// WithGenLocalState 注册一个函数，用于生成每次运行的本地状态，该状态可以在图中的节点之间共享。
 func WithGenLocalState[S any](gls GenLocalState[S]) NewGraphOption {
 	return func(ngo *newGraphOptions) {
 		ngo.withState = func(ctx context.Context) any {
@@ -95,6 +96,9 @@ func NewGraph[I, O any](opts ...NewGraphOption) *Graph[I, O] {
 // Graph is a generic graph that can be used to compose components.
 // I: the input type of graph compiled product
 // O: the output type of graph compiled product
+// Graph 是一个通用图，可用于组合组件。
+// I: 图编译产物的输入类型
+// O: 图编译产物的输出类型
 type Graph[I, O any] struct {
 	*graph
 }

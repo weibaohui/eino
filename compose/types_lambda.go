@@ -109,6 +109,8 @@ func WithLambdaType(t string) LambdaOpt {
 	}
 }
 
+// unreachableOption is used to prevent users from passing options to lambda functions that don't support them.
+// unreachableOption 用于防止用户将选项传递给不支持它们的 lambda 函数。
 type unreachableOption struct{}
 
 // InvokableLambdaWithOption creates a Lambda with invokable lambda function and options.

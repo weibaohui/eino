@@ -40,6 +40,8 @@ type mergeOptions struct {
 }
 
 // the caller should ensure len(vs) > 1
+// mergeValues merges values from multiple branches.
+// mergeValues 合并来自多个分支的值。
 func mergeValues(vs []any, opts *mergeOptions) (any, error) {
 	v0 := reflect.ValueOf(vs[0])
 	t0 := v0.Type()
