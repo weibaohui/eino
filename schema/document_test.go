@@ -22,6 +22,9 @@ import (
 	"github.com/smartystreets/goconvey/convey"
 )
 
+// TestDocument 测试 Document 结构体的链式调用方法。
+// 验证 WithSubIndexes, WithDenseVector, WithScore, WithExtraInfo, WithDSLInfo
+// 等方法能否正确设置 Document 的字段值。
 func TestDocument(t *testing.T) {
 	convey.Convey("test document", t, func() {
 		var (

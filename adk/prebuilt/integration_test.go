@@ -35,19 +35,24 @@ import (
 	"github.com/cloudwego/eino/schema"
 )
 
-// approvalInfo 定义了需要批准的工具调用的信息
+// approvalInfo 定义了需要批准的工具调用的信息。
+// 该结构体用于在 StateInterrupt 中传递中断上下文，
+// 包含了触发中断的工具名称、参数以及工具调用 ID。
 type approvalInfo struct {
 	ToolName        string
 	ArgumentsInJSON string
 	ToolCallID      string
 }
 
+// String 实现了 fmt.Stringer 接口，用于生成 approvalInfo 的字符串表示。
+// 用于日志打印或调试信息。
 func (ai *approvalInfo) String() string {
 	return fmt.Sprintf("tool '%s' interrupted with arguments '%s', waiting for approval",
 		ai.ToolName, ai.ArgumentsInJSON)
 }
 
-// approvalResult 定义了批准结果
+// approvalResult 定义了批准结果。
+// 该结构体用于在 Resume 时传递用户的审批决定（批准或拒绝）。
 type approvalResult struct {
 	Approved         bool
 	DisapproveReason *string
@@ -58,12 +63,15 @@ func init() {
 	schema.Register[*approvalResult]()
 }
 
-// approvableTool 是一个需要批准才能执行的工具
+// approvableTool 是一个需要批准才能执行的工具。
+// 它模拟了一个敏感操作（如资金分配），在执行前会触发中断，等待外部批准。
 type approvableTool struct {
 	name string
 	t    *testing.T
 }
 
+// Info 返回工具的元数据信息。
+// 包括工具名称、描述和参数定义（JSON Schema）。
 func (m *approvableTool) Info(_ context.Context) (*schema.ToolInfo, error) {
 	return &schema.ToolInfo{
 		Name: m.name,
@@ -74,6 +82,12 @@ func (m *approvableTool) Info(_ context.Context) (*schema.ToolInfo, error) {
 	}, nil
 }
 
+// InvokableRun 执行工具逻辑，支持中断和恢复。
+// 逻辑流程：
+// 1. 检查是否是从中断恢复（GetInterruptState）。
+// 2. 如果不是恢复（第一次调用），触发 StatefulInterrupt，请求批准。
+// 3. 如果是恢复，检查是否包含 Resume 数据（approvalResult）。
+// 4. 根据 Resume 数据中的 Approved 字段决定执行成功还是失败。
 func (m *approvableTool) InvokableRun(ctx context.Context, argumentsInJSON string, _ ...tool.Option) (string, error) {
 	wasInterrupted, _, storedArguments := tool.GetInterruptState[string](ctx)
 	if !wasInterrupted {
@@ -108,28 +122,35 @@ func (m *approvableTool) InvokableRun(ctx context.Context, argumentsInJSON strin
 	return fmt.Sprintf("Tool '%s' disapproved", m.name), nil
 }
 
+// integrationCheckpointStore 是一个用于测试的简单的 Checkpoint 存储实现。
+// 它将 Checkpoint 数据存储在内存 map 中。
 type integrationCheckpointStore struct {
 	data map[string][]byte
 }
 
+// newIntegrationCheckpointStore 创建一个新的 integrationCheckpointStore 实例。
 func newIntegrationCheckpointStore() *integrationCheckpointStore {
 	return &integrationCheckpointStore{data: make(map[string][]byte)}
 }
 
+// Set 保存 Checkpoint 数据。
 func (s *integrationCheckpointStore) Set(_ context.Context, key string, value []byte) error {
 	s.data[key] = value
 	return nil
 }
 
+// Get 获取 Checkpoint 数据。
 func (s *integrationCheckpointStore) Get(_ context.Context, key string) ([]byte, bool, error) {
 	v, ok := s.data[key]
 	return v, ok, nil
 }
 
+// defaultPlan 定义了一个简单的计划结构，包含一系列步骤。
 type defaultPlan struct {
 	Steps []string `json:"steps"`
 }
 
+// FirstStep 返回计划中的第一步。
 func (p *defaultPlan) FirstStep() string {
 	if len(p.Steps) == 0 {
 		return ""
@@ -137,30 +158,37 @@ func (p *defaultPlan) FirstStep() string {
 	return p.Steps[0]
 }
 
+// MarshalJSON 实现了 json.Marshaler 接口。
 func (p *defaultPlan) MarshalJSON() ([]byte, error) {
 	type planTyp defaultPlan
 	return sonic.Marshal((*planTyp)(p))
 }
 
+// UnmarshalJSON 实现了 json.Unmarshaler 接口。
 func (p *defaultPlan) UnmarshalJSON(bytes []byte) error {
 	type planTyp defaultPlan
 	return sonic.Unmarshal(bytes, (*planTyp)(p))
 }
 
+// namedAgent 是一个简单的 Agent 包装器，用于给 Agent 添加名称和描述。
+// 这在 Supervisor 模式中很有用，因为 Supervisor 需要根据名称来调度 Agent。
 type namedAgent struct {
 	adk.ResumableAgent
 	name        string
 	description string
 }
 
+// Name 返回 Agent 的名称。
 func (n *namedAgent) Name(_ context.Context) string {
 	return n.name
 }
 
+// Description 返回 Agent 的描述。
 func (n *namedAgent) Description(_ context.Context) string {
 	return n.description
 }
 
+// formatRunPath 格式化运行路径，用于日志打印。
 func formatRunPath(runPath []adk.RunStep) string {
 	if len(runPath) == 0 {
 		return "[]"
@@ -172,6 +200,8 @@ func formatRunPath(runPath []adk.RunStep) string {
 	return "[" + strings.Join(parts, " -> ") + "]"
 }
 
+// formatAgentEventIntegration 格式化 Agent 事件，用于集成测试中的日志打印。
+// 它可以显示事件的 Agent 名称、运行路径、输出消息、以及各种 Action（中断、跳出循环、转移 Agent）。
 func formatAgentEventIntegration(event *adk.AgentEvent) string {
 	var sb strings.Builder
 	sb.WriteString(fmt.Sprintf("{AgentName: %q, RunPath: %s", event.AgentName, formatRunPath(event.RunPath)))
@@ -199,6 +229,14 @@ func formatAgentEventIntegration(event *adk.AgentEvent) string {
 	return sb.String()
 }
 
+// TestSupervisorWithPlanExecuteInterruptResume 测试 Supervisor 与 PlanExecute Agent 的集成，
+// 重点验证中断和恢复机制。
+// 该测试模拟了一个复杂的场景：
+// 1. Supervisor 调度 PlanExecute Agent。
+// 2. PlanExecute Agent 执行过程中，某个工具（allocate_budget）触发了状态中断（需要审批）。
+// 3. 验证系统能否正确捕获中断事件。
+// 4. 模拟用户审批通过后，从 Checkpoint 恢复执行。
+// 5. 验证恢复后，任务能够继续并成功完成。
 func TestSupervisorWithPlanExecuteInterruptResume(t *testing.T) {
 	ctx := context.Background()
 

@@ -20,6 +20,7 @@ import (
 	"context"
 )
 
+// mockAgentForOption 用于测试选项传递的 Mock Agent。
 type mockAgentForOption struct {
 	opts []AgentRunOption
 

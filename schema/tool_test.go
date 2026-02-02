@@ -25,6 +25,12 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// TestParamsOneOfToJSONSchema 测试 ParamsOneOf 到 JSONSchema 的转换。
+// 验证：
+// 1. 用户直接提供 JSONSchema 的情况。
+// 2. 用户提供 map[string]ParameterInfo（参数定义）并转换为 JSONSchema。
+// 3. 验证参数定义的嵌套结构、数组、必填项等特性的转换正确性。
+// 4. 验证转换结果的确定性（顺序一致性）。
 func TestParamsOneOfToJSONSchema(t *testing.T) {
 	convey.Convey("ParamsOneOfToJSONSchema", t, func() {
 		var (

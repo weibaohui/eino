@@ -35,7 +35,9 @@ import (
 	"github.com/cloudwego/eino/schema"
 )
 
-// TestNewPlannerWithFormattedOutput 测试使用 ChatModelWithFormattedOutput 的 NewPlanner 函数
+// TestNewPlannerWithFormattedOutput 测试使用 ChatModelWithFormattedOutput 的 NewPlanner 函数。
+// 验证 Planner 初始化是否正确，特别是 Name 和 Description 是否符合预期。
+// 场景：使用支持格式化输出的 ChatModel 创建 Planner。
 func TestNewPlannerWithFormattedOutput(t *testing.T) {
 	ctx := context.Background()
 
@@ -61,7 +63,9 @@ func TestNewPlannerWithFormattedOutput(t *testing.T) {
 	assert.Equal(t, "a planner agent", p.Description(ctx))
 }
 
-// TestNewPlannerWithToolCalling 测试使用 ToolCallingChatModel 的 NewPlanner 函数
+// TestNewPlannerWithToolCalling 测试使用 ToolCallingChatModel 的 NewPlanner 函数。
+// 验证 Planner 初始化是否正确，特别是工具绑定是否成功。
+// 场景：使用支持工具调用的 ChatModel 创建 Planner。
 func TestNewPlannerWithToolCalling(t *testing.T) {
 	ctx := context.Background()
 
@@ -89,7 +93,13 @@ func TestNewPlannerWithToolCalling(t *testing.T) {
 	assert.Equal(t, "a planner agent", p.Description(ctx))
 }
 
-// TestPlannerRunWithFormattedOutput 测试使用 ChatModelWithFormattedOutput 创建的 Planner 的 Run 方法
+// TestPlannerRunWithFormattedOutput 测试使用 ChatModelWithFormattedOutput 创建的 Planner 的 Run 方法。
+// 验证 Planner 能否正确生成计划并解析为结构化数据。
+// 流程：
+// 1. Mock ChatModel 返回一个 JSON 格式的计划字符串。
+// 2. 运行 Planner。
+// 3. 验证 Planner 输出的事件内容与 Mock 返回一致。
+// 4. 验证内容能否被正确反序列化为 defaultPlan 结构体。
 func TestPlannerRunWithFormattedOutput(t *testing.T) {
 	ctx := context.Background()
 
@@ -144,7 +154,13 @@ func TestPlannerRunWithFormattedOutput(t *testing.T) {
 	assert.Equal(t, "Step 3", plan_.Steps[2])
 }
 
-// TestPlannerRunWithToolCalling 测试使用 ToolCallingChatModel 创建的 Planner 的 Run 方法
+// TestPlannerRunWithToolCalling 测试使用 ToolCallingChatModel 创建的 Planner 的 Run 方法。
+// 验证 Planner 能否通过工具调用生成计划。
+// 流程：
+// 1. Mock ChatModel 返回一个调用 "plan" 工具的请求，参数为 JSON 格式的计划。
+// 2. 运行 Planner。
+// 3. 验证 Planner 输出的事件内容包含计划参数。
+// 4. 验证内容能否被正确反序列化为 defaultPlan 结构体。
 func TestPlannerRunWithToolCalling(t *testing.T) {
 	ctx := context.Background()
 
@@ -215,7 +231,8 @@ func TestPlannerRunWithToolCalling(t *testing.T) {
 	assert.Equal(t, "Step 3", plan_.Steps[2])
 }
 
-// TestNewExecutor 测试 NewExecutor 函数
+// TestNewExecutor 测试 NewExecutor 函数。
+// 验证 Executor 初始化是否正确，特别是 Name 和 Description。
 func TestNewExecutor(t *testing.T) {
 	ctx := context.Background()
 
@@ -242,7 +259,13 @@ func TestNewExecutor(t *testing.T) {
 	assert.Equal(t, "an executor agent", executor.Description(ctx))
 }
 
-// TestExecutorRun 测试 Executor 的 Run 方法
+// TestExecutorRun 测试 Executor 的 Run 方法。
+// 验证 Executor 在有上下文（如 Plan 和 UserInput）的情况下的执行逻辑。
+// 场景：
+// 1. 在 Session 中预设 Plan 和 UserInput。
+// 2. Mock ChatModel 读取 UserInput 并返回响应。
+// 3. 运行 Executor。
+// 4. 验证 Executor 正确调用了 Model 并输出了结果。
 func TestExecutorRun(t *testing.T) {
 	ctx := context.Background()
 
@@ -305,7 +328,8 @@ func TestExecutorRun(t *testing.T) {
 	assert.False(t, ok)
 }
 
-// TestNewReplanner 测试 NewReplanner 函数
+// TestNewReplanner 测试 NewReplanner 函数。
+// 验证 Replanner 初始化是否正确，包括工具配置。
 func TestNewReplanner(t *testing.T) {
 	ctx := context.Background()
 
@@ -726,11 +750,14 @@ func TestPlanExecuteAgentWithReplan(t *testing.T) {
 	}
 }
 
+// interruptibleTool 是一个需要人工批准的工具。
+// 模拟在工具执行过程中触发中断，等待外部信号。
 type interruptibleTool struct {
 	name string
 	t    *testing.T
 }
 
+// Info 返回工具元数据。
 func (m *interruptibleTool) Info(_ context.Context) (*schema.ToolInfo, error) {
 	return &schema.ToolInfo{
 		Name: m.name,
@@ -745,6 +772,11 @@ func (m *interruptibleTool) Info(_ context.Context) (*schema.ToolInfo, error) {
 	}, nil
 }
 
+// InvokableRun 执行工具逻辑，支持中断和恢复。
+// 逻辑：
+// 1. 检查是否为中断恢复。
+// 2. 如果不是恢复，触发 Interrupt，请求人工批准。
+// 3. 如果是恢复，返回批准后的执行结果。
 func (m *interruptibleTool) InvokableRun(ctx context.Context, argumentsInJSON string, _ ...tool.Option) (string, error) {
 	wasInterrupted, _, _ := tool.GetInterruptState[any](ctx)
 	if !wasInterrupted {
@@ -762,6 +794,7 @@ func (m *interruptibleTool) InvokableRun(ctx context.Context, argumentsInJSON st
 	return "Approved action executed", nil
 }
 
+// checkpointStore 是用于测试的简单 Checkpoint 存储实现。
 type checkpointStore struct {
 	data map[string][]byte
 }
@@ -815,6 +848,13 @@ func formatAgentEvent(event *adk.AgentEvent) string {
 	return sb.String()
 }
 
+// TestPlanExecuteAgentInterruptResume 测试 PlanExecute Agent 的中断和恢复机制。
+// 该测试模拟了一个包含审批环节的工具调用场景：
+// 1. Planner 生成计划。
+// 2. Executor 执行计划中的步骤，其中一步涉及需要审批的工具 (approve_action)。
+// 3. 验证在工具触发中断时，系统能够正确捕获中断事件。
+// 4. 模拟用户批准操作后，从断点恢复执行。
+// 5. 验证恢复后，工具调用成功完成，Replanner 确认任务结束。
 func TestPlanExecuteAgentInterruptResume(t *testing.T) {
 	ctx := context.Background()
 

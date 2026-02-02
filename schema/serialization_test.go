@@ -31,6 +31,9 @@ import (
 
 type testStruct struct{}
 
+// TestGetTypeName 测试获取类型名称的功能。
+// 验证不同类型（命名类型、指针、Map、内置类型、标准库类型、本地类型）
+// 能否正确生成符合预期的类型名称字符串。
 func TestGetTypeName(t *testing.T) {
 	type localNamedType struct{}
 
@@ -101,6 +104,12 @@ func TestGetTypeName(t *testing.T) {
 	}
 }
 
+// TestRegister 测试类型注册和序列化功能。
+// 验证：
+// 1. 注册不同类型的结构体（包括嵌套结构体、Slice、Map）。
+// 2. 使用 InternalSerializer 进行 Marshal 和 Unmarshal，验证数据一致性。
+// 3. 使用 gob 进行 Encode 和 Decode，验证兼容性。
+// 4. 验证重复注册不会引发 Panic。
 func TestRegister(t *testing.T) {
 	type testStruct1 struct {
 		A any
@@ -164,9 +173,9 @@ func TestRegister(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-// TestRegisterStructWithUUIDField reproduces issue #607
-// uuid.UUID is a [16]byte array. Prior to the fix, calling schema.RegisterName on
-// a struct with a uuid.UUID field would panic during deserialization.
+// TestRegisterStructWithUUIDField 重现并验证 issue #607。
+// 验证包含 uuid.UUID 字段的结构体在注册和序列化/反序列化时是否正常工作。
+// 之前版本中，uuid.UUID 字段可能导致反序列化 Panic。
 func TestRegisterStructWithUUIDField(t *testing.T) {
 	type Item struct {
 		ID uuid.UUID

@@ -29,6 +29,12 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// TestStream1 测试 Stream 的并发复制和读取性能。
+// 验证：
+// 1. 将 Stream 复制为两份。
+// 2. 并发读取两个复制的 Stream。
+// 3. 检查读取数据的正确性和顺序。
+// 4. 监控读取延迟（通过 atomic 计数）。
 func TestStream1(t *testing.T) {
 	runtime.GOMAXPROCS(1)
 
@@ -102,6 +108,12 @@ type info struct {
 	content string
 }
 
+// TestCopyDelay 测试 Stream 复制过程中的延迟传播。
+// 验证：
+// 1. 创建多个 Stream 副本。
+// 2. 在发送端模拟延迟。
+// 3. 记录每个副本接收数据的时间戳和延迟。
+// 4. 验证所有副本都能正确接收数据并最终结束。
 func TestCopyDelay(t *testing.T) {
 	runtime.GOMAXPROCS(10)
 	n := 3

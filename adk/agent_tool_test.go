@@ -73,18 +73,20 @@ func newMockAgentForTool(name, description string, responses []*AgentEvent) *moc
 	}
 }
 
+// TestAgentTool_Info 测试 AgentTool 的 Info 方法。
+// 验证工具名称、描述和参数 schema 是否正确从 Agent 传递到 Tool。
 func TestAgentTool_Info(t *testing.T) {
-	// Create a mock agent
+	// 创建一个 mock agent
 	mockAgent_ := newMockAgentForTool("TestAgent", "Test agent description", nil)
 
-	// Create an agentTool with the mock agent
+	// 创建一个 agentTool 包装 mock agent
 	agentTool_ := NewAgentTool(context.Background(), mockAgent_)
 
-	// Test the Info method
+	// 测试 Info 方法
 	ctx := context.Background()
 	info, err := agentTool_.Info(ctx)
 
-	// Verify results
+	// 验证结果
 	assert.NoError(t, err)
 	assert.NotNil(t, info)
 	assert.Equal(t, "TestAgent", info.Name)

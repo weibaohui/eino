@@ -57,6 +57,15 @@ func TestMessageTemplate(t *testing.T) {
 	assert.Equal(t, ms[1], m2)
 }
 
+// TestConcatMessage 测试消息拼接功能。
+// 验证将多个消息片段（Message Chunk）合并为一个完整消息的逻辑：
+// 1. 合并工具调用（ToolCall）。
+// 2. 处理 nil 消息片段。
+// 3. 合并 ResponseMeta（Usage, FinishReason 等）。
+// 4. 验证不同角色或名称的消息不能合并。
+// 5. 并发安全性测试。
+// 6. 合并 LogProbs。
+// 7. 合并多模态内容（AssistantGenMultiContent）。
 func TestConcatMessage(t *testing.T) {
 	t.Run("tool_call_normal_append", func(t *testing.T) {
 		expectMsg := &Message{

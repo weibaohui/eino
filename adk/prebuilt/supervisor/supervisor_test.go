@@ -34,6 +34,12 @@ import (
 )
 
 // TestNewSupervisor tests New function
+// TestNewSupervisor 测试 New 函数。
+// 验证 Supervisor Agent 的初始化流程。
+// 场景：
+// 1. 创建 Supervisor 和两个 SubAgent (SubAgent1, SubAgent2)。
+// 2. 模拟 Supervisor 将任务依次分发给 SubAgent1 和 SubAgent2。
+// 3. 验证 Supervisor 正确管理子 Agent 的生命周期和消息传递。
 func TestNewSupervisor(t *testing.T) {
 	ctx := context.Background()
 
@@ -50,6 +56,7 @@ func TestNewSupervisor(t *testing.T) {
 	subAgent1.EXPECT().Name(gomock.Any()).Return("SubAgent1").AnyTimes()
 	subAgent2.EXPECT().Name(gomock.Any()).Return("SubAgent2").AnyTimes()
 
+	// Mock interaction: Supervisor -> SubAgent1
 	aMsg, tMsg := adk.GenTransferMessages(ctx, "SubAgent1")
 	i, g := adk.NewAsyncIteratorPair[*adk.AgentEvent]()
 	g.Send(adk.EventFromMessage(aMsg, nil, schema.Assistant, ""))
@@ -59,12 +66,14 @@ func TestNewSupervisor(t *testing.T) {
 	g.Close()
 	supervisorAgent.EXPECT().Run(gomock.Any(), gomock.Any(), gomock.Any()).Return(i).Times(1)
 
+	// Mock interaction: SubAgent1 returns
 	i, g = adk.NewAsyncIteratorPair[*adk.AgentEvent]()
 	subAgent1Msg := schema.AssistantMessage("SubAgent1", nil)
 	g.Send(adk.EventFromMessage(subAgent1Msg, nil, schema.Assistant, ""))
 	g.Close()
 	subAgent1.EXPECT().Run(gomock.Any(), gomock.Any(), gomock.Any()).Return(i).Times(1)
 
+	// Mock interaction: Supervisor -> SubAgent2
 	aMsg, tMsg = adk.GenTransferMessages(ctx, "SubAgent2 message")
 	i, g = adk.NewAsyncIteratorPair[*adk.AgentEvent]()
 	g.Send(adk.EventFromMessage(aMsg, nil, schema.Assistant, ""))
@@ -74,12 +83,14 @@ func TestNewSupervisor(t *testing.T) {
 	g.Close()
 	supervisorAgent.EXPECT().Run(gomock.Any(), gomock.Any(), gomock.Any()).Return(i).Times(1)
 
+	// Mock interaction: SubAgent2 returns
 	i, g = adk.NewAsyncIteratorPair[*adk.AgentEvent]()
 	subAgent2Msg := schema.AssistantMessage("SubAgent2 message", nil)
 	g.Send(adk.EventFromMessage(subAgent2Msg, nil, schema.Assistant, ""))
 	g.Close()
 	subAgent2.EXPECT().Run(gomock.Any(), gomock.Any(), gomock.Any()).Return(i).Times(1)
 
+	// Mock interaction: Supervisor finishes
 	i, g = adk.NewAsyncIteratorPair[*adk.AgentEvent]()
 	finishMsg := schema.AssistantMessage("finish", nil)
 	g.Send(adk.EventFromMessage(finishMsg, nil, schema.Assistant, ""))
@@ -672,6 +683,13 @@ func TestNestedSupervisorExit(t *testing.T) {
 	assert.False(t, foundTransferBackToTopAfterExit, "Should NOT have found Transfer back to TopSupervisor after Exit")
 }
 
+// TestChatModelAgentInternalEventsExit 测试 ChatModel Agent 的内部事件和退出机制。
+// 该测试验证了嵌套 Agent 结构中的事件传播和控制流：
+// 1. Supervisor 将控制权转移给 Worker Agent。
+// 2. Worker Agent 调用内部工具 (InnerAgent)。
+// 3. InnerAgent 执行并发出退出 (Exit) 信号。
+// 4. 验证 InnerAgent 的退出事件是否被正确捕获并作为内部事件传播。
+// 5. 验证 Worker Agent 是否正确将控制权交还给 Supervisor，而不是随 InnerAgent 一起退出。
 func TestChatModelAgentInternalEventsExit(t *testing.T) {
 	ctx := context.Background()
 	ctrl := gomock.NewController(t)

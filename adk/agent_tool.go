@@ -97,7 +97,7 @@ func withAgentToolEnableStreaming(enabled bool) tool.Option {
 //
 // 为什么要做这个：允许将复杂的 Agent 封装为一个简单的工具，供其他 Agent 调用，实现多 Agent 协作。
 // 如何使用：传入上下文、Agent 实例和可选的配置选项来创建工具。
-func NewAgentTool(_ context.Context, agent Agent, options ...AgentToolOption) tool.BaseTool {
+func NewAgentTool(ctx context.Context, agent Agent, options ...AgentToolOption) tool.BaseTool {
 	opts := &AgentToolOptions{}
 	for _, opt := range options {
 		opt(opts)

@@ -31,6 +31,14 @@ type TestStructForParse struct {
 	} `json:"xx"`
 }
 
+// TestMessageJSONParser 测试 MessageJSONParser 的解析功能。
+// 验证不同配置下的解析行为：
+// 1. 从 Content 中解析 JSON。
+// 2. 从 ToolCall 参数中解析 JSON。
+// 3. 支持指定 JSON 路径 (ParseKeyPath)。
+// 4. 支持嵌套结构体和指针类型的解析。
+// 5. 支持 Slice 类型的解析。
+// 6. 验证错误处理（无效配置、解析失败等）。
 func TestMessageJSONParser(t *testing.T) {
 	ctx := context.Background()
 

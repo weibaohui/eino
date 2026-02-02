@@ -28,6 +28,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// TestStream 测试基本的 Stream 发送和接收功能。
+// 验证：
+// 1. 并发发送和接收。
+// 2. 发送端关闭后，接收端能正确读取剩余数据并收到 EOF。
+// 3. 接收端提前关闭的情况。
 func TestStream(t *testing.T) {
 	s := newStream[int](0)
 
@@ -62,6 +67,11 @@ func TestStream(t *testing.T) {
 	wg.Wait()
 }
 
+// TestStreamCopy 测试 Stream 的复制功能。
+// 验证：
+// 1. 将 Stream 复制为多份。
+// 2. 所有副本都能独立接收到完整的原始数据。
+// 3. 原始 Stream 也能正常接收数据（如果不作为副本源）。
 func TestStreamCopy(t *testing.T) {
 	s := newStream[string](10)
 	srs := s.asReader().Copy(2)
@@ -119,6 +129,13 @@ func TestStreamCopy(t *testing.T) {
 	t.Log("done")
 }
 
+// TestNewStreamCopy 测试 Stream 复制的详细行为。
+// 包括：
+// 1. 一个副本阻塞不影响其他副本接收。
+// 2. 一个副本关闭不影响其他副本。
+// 3. 大量数据传输的稳定性。
+// 4. 自动关闭（SetAutomaticClose）机制。
+// 5. 显式不关闭的行为。
 func TestNewStreamCopy(t *testing.T) {
 	t.Run("test one index recv channel blocked while other indexes could recv", func(t *testing.T) {
 		s := newStream[string](1)
@@ -465,6 +482,11 @@ func TestCopy5(t *testing.T) {
 	}
 }
 
+// TestStreamReaderWithConvert 测试 Stream 的类型转换功能。
+// 验证：
+// 1. 使用转换函数将 Stream[int] 转换为 Stream[int]（模拟处理）。
+// 2. 验证转换函数的错误处理（模拟 mock err）。
+// 3. 验证数据能否正确流转和累加。
 func TestStreamReaderWithConvert(t *testing.T) {
 	s := newStream[int](2)
 
@@ -577,8 +599,13 @@ func TestMultiStream(t *testing.T) {
 	}
 }
 
-// TestMergeNamedStreamReaders tests the functionality of MergeNamedStreamReaders
-// with a focus on SourceEOF error handling.
+// TestMergeNamedStreamReaders 测试命名 Stream 读取器的合并功能。
+// 重点验证 SourceEOF 错误处理机制，确保可以区分不同来源的流结束事件。
+// 场景包括：
+// 1. 基本 SourceEOF：验证能分别收到不同流的结束信号。
+// 2. 空流处理：验证空流也能正确触发 SourceEOF。
+// 3. 数组源：验证数组源也能正确参与合并和结束。
+// 4. 错误传播：验证流中的非 EOF 错误能正确传播出来。
 func TestMergeNamedStreamReaders(t *testing.T) {
 	t.Run("BasicSourceEOF", func(t *testing.T) {
 		// Create two named streams
