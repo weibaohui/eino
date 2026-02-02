@@ -130,6 +130,7 @@ func TestDeepSubAgentSharesSessionValues(t *testing.T) {
 	assert.Equal(t, "parent_val", spy.seenParentValue)
 }
 
+// TestDeepSubAgentFollowsStreamingMode 测试 Deep SubAgent 是否遵循流式传输模式。
 func TestDeepSubAgentFollowsStreamingMode(t *testing.T) {
 	ctx := context.Background()
 	spy := &spyStreamingSubAgent{}
@@ -185,6 +186,7 @@ func TestDeepSubAgentFollowsStreamingMode(t *testing.T) {
 	assert.True(t, spy.seenEnableStreaming)
 }
 
+// spySubAgent 是用于测试的间谍子 Agent。
 type spySubAgent struct {
 	seenParentValue any
 }
@@ -199,6 +201,7 @@ func (s *spySubAgent) Run(ctx context.Context, _ *adk.AgentInput, _ ...adk.Agent
 	return it
 }
 
+// spyStreamingSubAgent 是用于测试流式传输的间谍子 Agent。
 type spyStreamingSubAgent struct {
 	seenEnableStreaming bool
 }
@@ -215,6 +218,7 @@ func (s *spyStreamingSubAgent) Run(ctx context.Context, input *adk.AgentInput, _
 	return it
 }
 
+// TestDeepAgentWithPlanExecuteSubAgent_InternalEventsEmitted 测试 Deep Agent 配合 PlanExecute 子 Agent 时是否正确触发内部事件。
 func TestDeepAgentWithPlanExecuteSubAgent_InternalEventsEmitted(t *testing.T) {
 	ctx := context.Background()
 
@@ -398,6 +402,7 @@ func (n *namedPlanExecuteAgent) Description(_ context.Context) string {
 	return n.description
 }
 
+// TestDeepAgentOutputKey 测试 Deep Agent 的输出键功能。
 func TestDeepAgentOutputKey(t *testing.T) {
 	t.Run("OutputKeyStoresInSession", func(t *testing.T) {
 		ctx := context.Background()
@@ -531,6 +536,7 @@ func TestDeepAgentOutputKey(t *testing.T) {
 	})
 }
 
+// sessionCaptureAgent 是一个用于捕获 Session 值的 Agent 包装器。
 type sessionCaptureAgent struct {
 	adk.Agent
 	captureSession func(map[string]any)

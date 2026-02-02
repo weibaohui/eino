@@ -173,6 +173,7 @@ func TestNewSupervisor(t *testing.T) {
 	assert.Equal(t, finishMsg.Content, event.Output.MessageOutput.Message.Content)
 }
 
+// approvalInfo 用于存储待审批工具调用的信息。
 type approvalInfo struct {
 	ToolName        string
 	ArgumentsInJSON string

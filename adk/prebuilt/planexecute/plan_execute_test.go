@@ -215,7 +215,7 @@ func TestPlannerRunWithToolCalling(t *testing.T) {
 	assert.Equal(t, "Step 3", plan_.Steps[2])
 }
 
-// TestNewExecutor tests the NewExecutor function
+// TestNewExecutor 测试 NewExecutor 函数
 func TestNewExecutor(t *testing.T) {
 	ctx := context.Background()
 
@@ -242,7 +242,7 @@ func TestNewExecutor(t *testing.T) {
 	assert.Equal(t, "an executor agent", executor.Description(ctx))
 }
 
-// TestExecutorRun tests the Run method of the executor
+// TestExecutorRun 测试 Executor 的 Run 方法
 func TestExecutorRun(t *testing.T) {
 	ctx := context.Background()
 
@@ -305,7 +305,7 @@ func TestExecutorRun(t *testing.T) {
 	assert.False(t, ok)
 }
 
-// TestNewReplanner tests the NewReplanner function
+// TestNewReplanner 测试 NewReplanner 函数
 func TestNewReplanner(t *testing.T) {
 	ctx := context.Background()
 
@@ -346,7 +346,7 @@ func TestNewReplanner(t *testing.T) {
 	assert.Equal(t, "a replanner agent", rp.Description(ctx))
 }
 
-// TestReplannerRunWithPlan tests the Replanner's ability to use the plan_tool
+// TestReplannerRunWithPlan 测试 Replanner 使用 plan_tool 的能力
 func TestReplannerRunWithPlan(t *testing.T) {
 	ctx := context.Background()
 
@@ -569,6 +569,7 @@ func TestNewPlanExecuteAgent(t *testing.T) {
 	assert.NotNil(t, agent)
 }
 
+// TestPlanExecuteAgentWithReplan 测试带有重计划功能的 PlanExecute Agent
 func TestPlanExecuteAgentWithReplan(t *testing.T) {
 	ctx := context.Background()
 

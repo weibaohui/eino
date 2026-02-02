@@ -56,6 +56,7 @@ func TestTaskTool(t *testing.T) {
 	assert.Equal(t, "desc of my agent 2", result)
 }
 
+// myAgent 是用于测试的自定义 Agent 实现。
 type myAgent struct {
 	name string
 	desc string
