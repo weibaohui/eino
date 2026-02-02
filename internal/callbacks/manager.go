@@ -18,15 +18,20 @@ package callbacks
 
 import "context"
 
+// CtxManagerKey 上下文中存储 Manager 的键
 type CtxManagerKey struct{}
+
+// CtxRunInfoKey 上下文中存储 RunInfo 的键
 type CtxRunInfoKey struct{}
 
+// manager 回调管理器，包含全局和请求级别的 handlers
 type manager struct {
 	globalHandlers []Handler
 	handlers       []Handler
 	runInfo        *RunInfo
 }
 
+// GlobalHandlers 全局回调处理器列表
 var GlobalHandlers []Handler
 
 // newManager 创建回调管理器（结合全局与本地 handlers）

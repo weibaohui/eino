@@ -23,16 +23,22 @@ import (
 	"github.com/cloudwego/eino/schema"
 )
 
+// RunInfo 运行时信息，包含节点名称、组件类型和实例
 type RunInfo struct {
 	// Name is the graph node name for display purposes, not unique.
 	// Passed from compose.WithNodeName().
-	Name      string
-	Type      string
+	// Name 节点名称（用于展示，不唯一）
+	Name string
+	// Type 组件类型（如 "node", "chain" 等）
+	Type string
+	// Component 组件实例
 	Component components.Component
 }
 
+// CallbackInput 回调输入类型（泛型）
 type CallbackInput any
 
+// CallbackOutput 回调输出类型（泛型）
 type CallbackOutput any
 
 // Handler 回调处理器接口
@@ -51,6 +57,7 @@ type Handler interface {
 		output *schema.StreamReader[CallbackOutput]) context.Context
 }
 
+// CallbackTiming 回调触发时机枚举
 type CallbackTiming uint8
 
 // TimingChecker 用于按时机筛选是否需要触发当前 Handler

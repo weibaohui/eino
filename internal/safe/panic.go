@@ -20,6 +20,9 @@ import (
 	"fmt"
 )
 
+// panicErr 恐慌错误包装结构
+// - info: panic 的原始值
+// - stack: 堆栈信息
 type panicErr struct {
 	info  any
 	stack []byte
@@ -32,6 +35,10 @@ func (p *panicErr) Error() string {
 // NewPanicErr creates a new panic error.
 // panicErr is a wrapper of panic info and stack trace.
 // it implements the error interface, can print error message of info and stack trace.
+//
+// NewPanicErr 创建一个新的恐慌错误
+// - info: panic 的原始值
+// - stack: 堆栈信息
 func NewPanicErr(info any, stack []byte) error {
 	return &panicErr{
 		info:  info,

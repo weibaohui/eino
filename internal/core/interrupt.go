@@ -66,11 +66,13 @@ func (is *InterruptState) String() string {
 }
 
 // InterruptConfig holds optional parameters for creating an interrupt.
+// InterruptConfig 中断配置选项
 type InterruptConfig struct {
 	LayerPayload any
 }
 
 // InterruptOption is a function that configures an InterruptConfig.
+// InterruptOption 中断配置函数
 type InterruptOption func(*InterruptConfig)
 
 // WithLayerPayload creates an option to attach layer-specific metadata

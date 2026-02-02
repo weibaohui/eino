@@ -29,6 +29,8 @@ package gslice
 //	ToMap([]Foo{}, mapper) ⏩ map[int]string{}
 //	s := []Foo{{1, "one"}, {2, "two"}, {3, "three"}}
 //	ToMap(s, mapper)       ⏩ map[int]string{1: "one", 2: "two", 3: "three"}
+// ToMap 将切片转换为 map，键值由映射函数生成
+// - 用户：需要将列表转换为键值映射的使用者
 func ToMap[T, V any, K comparable](s []T, f func(T) (K, V)) map[K]V {
 	m := make(map[K]V, len(s))
 	for _, e := range s {

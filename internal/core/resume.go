@@ -143,6 +143,7 @@ func GetResumeContext[T any](ctx context.Context) (isResumeTarget bool, hasData 
 	return
 }
 
+// getRunCtx 从上下文获取内部执行信息
 func getRunCtx(ctx context.Context) (*addrCtx, bool) {
 	rCtx, ok := ctx.Value(addrCtxKey{}).(*addrCtx)
 	return rCtx, ok

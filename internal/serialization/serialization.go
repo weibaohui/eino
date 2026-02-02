@@ -164,6 +164,7 @@ func unmarshal(data []byte, t reflect.Type) (any, error) {
 	return internalUnmarshal(is, t)
 }
 
+// internalStruct 内部通用结构，用于中间表示
 type internalStruct struct {
 	Type *valueType `json:",omitempty"`
 
@@ -172,12 +173,15 @@ type internalStruct struct {
 	// map or struct
 	// in map, the key is the serialized map key anyway todo: if key is string, don't serialize
 	// in struct, the key is the original field name
+	// MapValues 存储 Map 或 Struct 的字段值
 	MapValues map[string]*internalStruct `json:",omitempty"`
 
 	// slice
+	// SliceValues 存储 Slice 或 Array 的元素值
 	SliceValues []*internalStruct `json:",omitempty"`
 }
 
+// valueType 类型描述符，用于恢复原始类型
 type valueType struct {
 	PointerNum uint32 `json:",omitempty"`
 

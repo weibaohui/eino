@@ -26,9 +26,11 @@ import (
 )
 
 // AddressSegmentType defines the type of a segment in an execution address.
+// AddressSegmentType 定义执行地址中片段的类型
 type AddressSegmentType string
 
 // Address represents a full, hierarchical address to a point in the execution structure.
+// Address 表示执行结构中某一点的完整层级地址
 type Address []AddressSegment
 
 // String converts an Address into its unique string representation.
@@ -68,18 +70,24 @@ func (p Address) Equals(other Address) bool {
 
 // AddressSegment represents a single segment in the hierarchical address of an execution point.
 // A sequence of AddressSegments uniquely identifies a location within a potentially nested structure.
+// AddressSegment 执行点层级地址中的单个片段
 type AddressSegment struct {
 	// ID is the unique identifier for this segment, e.g., the node's key or the tool's name.
+	// ID 片段唯一标识符（如节点 Key 或工具名称）
 	ID string
 	// Type indicates whether this address segment is a graph node, a tool call, an agent, etc.
+	// Type 地址段类型（节点、工具、Agent 等）
 	Type AddressSegmentType
 	// In some cases, ID alone are not unique enough, we need this SubID to guarantee uniqueness.
 	// e.g. parallel tool calls with the same name but different tool call IDs.
+	// SubID 子 ID，用于保证唯一性（如并行工具调用）
 	SubID string
 }
 
+// addrCtxKey 上下文中存储 addrCtx 的键
 type addrCtxKey struct{}
 
+// addrCtx 内部执行上下文，包含地址、中断状态和恢复数据
 type addrCtx struct {
 	addr           Address
 	interruptState *InterruptState
@@ -87,8 +95,10 @@ type addrCtx struct {
 	resumeData     any
 }
 
+// globalResumeInfoKey 上下文中存储全局恢复信息的键
 type globalResumeInfoKey struct{}
 
+// globalResumeInfo 全局恢复信息，包含所有恢复点的数据和状态
 type globalResumeInfo struct {
 	mu                sync.Mutex
 	id2ResumeData     map[string]any
@@ -118,6 +128,7 @@ func GetCurrentAddress(ctx context.Context) Address {
 //   - ctx: The parent context, typically the one passed into the component's Invoke/Stream method.
 //   - segType: The type of the new address segment (e.g., "node", "tool").
 //   - segID: The unique ID for the new address segment.
+//
 // AppendAddressSegment 为子组件创建新的执行上下文（扩展地址，并注入中断/恢复信息）
 // - 使用：在进入子组件（节点/工具等）时调用，形成新的地址段上下文
 // - 逻辑：根据当前地址生成新地址；若全局恢复信息存在，注入匹配的中断状态与恢复数据
@@ -336,8 +347,11 @@ func getResumeInfo(ctx context.Context) (*globalResumeInfo, bool) {
 	return info, ok
 }
 
+// InterruptInfo 中断信息结构
 type InterruptInfo struct {
-	Info        any
+	// Info 用户定义的中断信息
+	Info any
+	// IsRootCause 是否为中断的根因
 	IsRootCause bool
 }
 

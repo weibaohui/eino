@@ -72,6 +72,7 @@ func PtrOf[T any](v T) *T {
 	return &v
 }
 
+// Pair 通用键值对结构
 type Pair[F, S any] struct {
 	First  F
 	Second S
