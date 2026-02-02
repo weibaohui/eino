@@ -24,6 +24,10 @@ import (
 	"github.com/cloudwego/eino/schema"
 )
 
+// InitCallbacks 初始化回调上下文
+// - 用户：希望为组件执行过程注入回调的使用者
+// - 使用：ctx = InitCallbacks(ctx, &RunInfo{Type: "node", Component: comp}, handlers...)
+// - 逻辑：若存在处理器则创建管理器；否则注入 nil 管理器
 func InitCallbacks(ctx context.Context, info *RunInfo, handlers ...Handler) context.Context {
 	mgr, ok := newManager(info, handlers...)
 	if ok {
@@ -33,6 +37,8 @@ func InitCallbacks(ctx context.Context, info *RunInfo, handlers ...Handler) cont
 	return ctxWithManager(ctx, nil)
 }
 
+// EnsureRunInfo 确保回调上下文包含 RunInfo（若为空则填充）
+// - 用户：在组件入口处确保上下文拥有正确的运行信息
 func EnsureRunInfo(ctx context.Context, typ string, comp components.Component) context.Context {
 	cbm, ok := managerFromCtx(ctx)
 	if !ok {
@@ -50,6 +56,7 @@ func EnsureRunInfo(ctx context.Context, typ string, comp components.Component) c
 	return ctx
 }
 
+// ReuseHandlers 复用已有的 handlers，并更新 RunInfo
 func ReuseHandlers(ctx context.Context, info *RunInfo) context.Context {
 	cbm, ok := managerFromCtx(ctx)
 	if !ok {
@@ -58,6 +65,7 @@ func ReuseHandlers(ctx context.Context, info *RunInfo) context.Context {
 	return ctxWithManager(ctx, cbm.withRunInfo(info))
 }
 
+// AppendHandlers 追加新的 handlers，并生成新的管理器
 func AppendHandlers(ctx context.Context, info *RunInfo, handlers ...Handler) context.Context {
 	cbm, ok := managerFromCtx(ctx)
 	if !ok {
@@ -71,6 +79,10 @@ func AppendHandlers(ctx context.Context, info *RunInfo, handlers ...Handler) con
 
 type Handle[T any] func(context.Context, T, *RunInfo, []Handler) (context.Context, T)
 
+// On 统一的“按时机触发处理器”入口
+// - start=true：从 RunInfo 中取信息并清空，随后存入上下文，适用于 OnStart
+// - start=false：优先使用当前 RunInfo，否则从上下文取历史值，适用于 OnEnd/OnError
+// - 逻辑：按 TimingChecker 过滤需要处理的 handlers，调用 handle 回调
 func On[T any](ctx context.Context, inOut T, handle Handle[T], timing CallbackTiming, start bool) (context.Context, T) {
 	mgr, ok := managerFromCtx(ctx)
 	if !ok {
@@ -104,6 +116,7 @@ func On[T any](ctx context.Context, inOut T, handle Handle[T], timing CallbackTi
 	return ctxWithManager(ctx, &nMgr), out
 }
 
+// OnStartHandle 触发非流式 OnStart 处理器（逆序调用）
 func OnStartHandle[T any](ctx context.Context, input T,
 	runInfo *RunInfo, handlers []Handler) (context.Context, T) {
 
@@ -114,6 +127,7 @@ func OnStartHandle[T any](ctx context.Context, input T,
 	return ctx, input
 }
 
+// OnEndHandle 触发非流式 OnEnd 处理器（顺序调用）
 func OnEndHandle[T any](ctx context.Context, output T,
 	runInfo *RunInfo, handlers []Handler) (context.Context, T) {
 
@@ -124,6 +138,8 @@ func OnEndHandle[T any](ctx context.Context, output T,
 	return ctx, output
 }
 
+// OnWithStreamHandle 通用流式处理器触发逻辑
+// - 复制流副本以串联处理，按给定 handle 将流传递给各 handler
 func OnWithStreamHandle[S any](
 	ctx context.Context,
 	inOut S,
@@ -144,6 +160,7 @@ func OnWithStreamHandle[S any](
 	return ctx, inOuts[len(inOuts)-1]
 }
 
+// OnStartWithStreamInputHandle 触发流式 OnStart（输入流）
 func OnStartWithStreamInputHandle[T any](ctx context.Context, input *schema.StreamReader[T],
 	runInfo *RunInfo, handlers []Handler) (context.Context, *schema.StreamReader[T]) {
 
@@ -161,6 +178,7 @@ func OnStartWithStreamInputHandle[T any](ctx context.Context, input *schema.Stre
 	return OnWithStreamHandle(ctx, input, handlers, cpy, handle)
 }
 
+// OnEndWithStreamOutputHandle 触发流式 OnEnd（输出流）
 func OnEndWithStreamOutputHandle[T any](ctx context.Context, output *schema.StreamReader[T],
 	runInfo *RunInfo, handlers []Handler) (context.Context, *schema.StreamReader[T]) {
 
@@ -176,6 +194,7 @@ func OnEndWithStreamOutputHandle[T any](ctx context.Context, output *schema.Stre
 	return OnWithStreamHandle(ctx, output, handlers, cpy, handle)
 }
 
+// OnErrorHandle 触发错误处理器（顺序调用）
 func OnErrorHandle(ctx context.Context, err error,
 	runInfo *RunInfo, handlers []Handler) (context.Context, error) {
 
