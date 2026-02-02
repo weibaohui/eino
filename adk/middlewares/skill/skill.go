@@ -92,6 +92,8 @@ func New(ctx context.Context, config *Config) (adk.AgentMiddleware, error) {
 	}, nil
 }
 
+// buildSystemPrompt constructs the system prompt based on the tool name and language preference.
+// buildSystemPrompt 根据工具名称和语言偏好构建系统提示词。
 func buildSystemPrompt(skillToolName string, useChinese bool) string {
 	prompt := systemPrompt
 	if useChinese {
@@ -174,6 +176,8 @@ func (s *skillTool) InvokableRun(ctx context.Context, argumentsInJSON string, op
 	return fmt.Sprintf(resultFmt, skill.Name) + fmt.Sprintf(contentFmt, skill.BaseDirectory, skill.Content), nil
 }
 
+// renderToolDescription renders the description for the skill tool using the template.
+// renderToolDescription 使用模板渲染 Skill 工具的描述。
 func renderToolDescription(matters []FrontMatter) (string, error) {
 	tpl, err := template.New("skills").Parse(toolDescriptionTemplate)
 	if err != nil {

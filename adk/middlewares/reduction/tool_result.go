@@ -36,24 +36,23 @@ type Backend interface {
 // ToolResultConfig configures the tool result reduction middleware.
 // ToolResultConfig 配置工具结果缩减中间件。
 type ToolResultConfig struct {
-	// ClearingTokenThreshold is the threshold for the total token count of all tool results.
-	// When the sum of all tool result tokens exceeds this threshold, old tool results
-	// (outside the KeepRecentTokens range) will be replaced with a placeholder.
-	// Token estimation uses a simple heuristic: character count / 4.
-	// optional, 20000 by default
-	// ClearingTokenThreshold 是所有工具结果总 token 数量的阈值。
-	// 当所有工具结果 token 的总和超过此阈值时，旧的工具结果（在 KeepRecentTokens 范围之外）将被替换为占位符。
+	// ClearingTokenThreshold is the threshold for total token count of all tool results.
+	// When the sum of all tool result tokens exceeds this threshold, older tool results
+	// (outside of KeepRecentTokens) will be replaced with placeholders.
+	// Token estimation uses a simple heuristic: char count / 4.
+	// Optional. Default is 20000.
+	// ClearingTokenThreshold 是所有工具结果总 Token 数量的阈值。
+	// 当所有工具结果 Token 的总和超过此阈值时，旧的工具结果（在 KeepRecentTokens 范围之外）将被替换为占位符。
 	// Token 估算使用简单的启发式方法：字符数 / 4。
-	// 可选，默认为 20000。
+	// 可选。默认为 20000。
 	ClearingTokenThreshold int
 
-	// KeepRecentTokens is the token budget for recent messages to keep intact.
-	// Messages within this token budget from the end will not have their tool results cleared,
-	// even if the total tool result tokens exceed the threshold.
-	// optional, 40000 by default
-	// KeepRecentTokens 是要保持完整的最近消息的 token 预算。
-	// 即使总工具结果 token 超过阈值，位于末尾此 token 预算内的消息的工具结果也不会被清理。
-	// 可选，默认为 40000。
+	// KeepRecentTokens specifies the number of most recent tokens to preserve when clearing is triggered.
+	// This ensures the agent retains context of the most recent tool executions.
+	// Optional. Default is 1000.
+	// KeepRecentTokens 指定触发清理时要保留的最近 Token 数量。
+	// 这确保 Agent 保留最近工具执行的上下文。
+	// 可选。默认为 1000。
 	KeepRecentTokens int
 
 	// ClearToolResultPlaceholder is the text to replace old tool results with.

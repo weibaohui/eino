@@ -109,6 +109,8 @@ func (b *LocalBackend) Get(ctx context.Context, name string) (Skill, error) {
 	return Skill{}, fmt.Errorf("skill not found: %s", name)
 }
 
+// list scans the base directory for skills.
+// list 扫描基础目录以查找技能。
 func (b *LocalBackend) list(ctx context.Context) ([]Skill, error) {
 	var skills []Skill
 

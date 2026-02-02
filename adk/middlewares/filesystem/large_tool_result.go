@@ -175,6 +175,8 @@ func concatString(sr *schema.StreamReader[string]) (string, error) {
 	}
 }
 
+// formatToolMessage formats the tool message for preview (first 10 lines, max 1000 chars per line).
+// formatToolMessage 格式化工具消息以便预览（前 10 行，每行最多 1000 个字符）。
 func formatToolMessage(s string) string {
 	reader := bufio.NewScanner(strings.NewReader(s))
 	var b strings.Builder

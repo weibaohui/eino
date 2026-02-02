@@ -204,6 +204,8 @@ func getFilesystemTools(_ context.Context, validatedConfig *Config) ([]tool.Base
 	return tools, nil
 }
 
+// lsArgs is the argument for ls tool.
+// lsArgs 是 ls 工具的参数。
 type lsArgs struct {
 	Path string `json:"path"`
 }
@@ -236,6 +238,8 @@ func newLsTool(fs filesystem.Backend, desc *string) (tool.BaseTool, error) {
 	})
 }
 
+// readFileArgs is the argument for read_file tool.
+// readFileArgs 是 read_file 工具的参数。
 type readFileArgs struct {
 	FilePath string `json:"file_path"`
 	Offset   int    `json:"offset"`
@@ -272,6 +276,8 @@ func newReadFileTool(fs filesystem.Backend, desc *string) (tool.BaseTool, error)
 	})
 }
 
+// writeFileArgs is the argument for write_file tool.
+// writeFileArgs 是 write_file 工具的参数。
 type writeFileArgs struct {
 	FilePath string `json:"file_path"`
 	Content  string `json:"content"`
@@ -304,6 +310,8 @@ func newWriteFileTool(fs filesystem.Backend, desc *string) (tool.BaseTool, error
 	})
 }
 
+// editFileArgs is the argument for edit_file tool.
+// editFileArgs 是 edit_file 工具的参数。
 type editFileArgs struct {
 	FilePath   string `json:"file_path"`
 	OldString  string `json:"old_string"`
@@ -340,6 +348,8 @@ func newEditFileTool(fs filesystem.Backend, desc *string) (tool.BaseTool, error)
 	})
 }
 
+// globArgs is the argument for glob tool.
+// globArgs 是 glob 工具的参数。
 type globArgs struct {
 	Pattern string `json:"pattern"`
 	Path    string `json:"path"`
@@ -376,6 +386,8 @@ func newGlobTool(fs filesystem.Backend, desc *string) (tool.BaseTool, error) {
 	})
 }
 
+// grepArgs is the argument for grep tool.
+// grepArgs 是 grep 工具的参数。
 type grepArgs struct {
 	Pattern    string  `json:"pattern"`
 	Path       *string `json:"path,omitempty"`
@@ -435,6 +447,8 @@ func newGrepTool(fs filesystem.Backend, desc *string) (tool.BaseTool, error) {
 	})
 }
 
+// executeArgs is the argument for execute tool.
+// executeArgs 是 execute 工具的参数。
 type executeArgs struct {
 	Command string `json:"command"`
 }
