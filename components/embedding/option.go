@@ -17,12 +17,17 @@
 package embedding
 
 // Options is the options for the embedding.
+//
+// Options 是 embedding 的选项。
 type Options struct {
 	// Model is the model name for the embedding.
+	// Model 是 embedding 的模型名称。
 	Model *string
 }
 
 // Option is the call option for Embedder component.
+//
+// Option 是 Embedder 组件的调用选项。
 type Option struct {
 	apply func(opts *Options)
 
@@ -30,6 +35,8 @@ type Option struct {
 }
 
 // WithModel is the option to set the model for the embedding.
+//
+// WithModel 是设置 embedding 模型的选项。
 func WithModel(model string) Option {
 	return Option{
 		apply: func(opts *Options) {
@@ -40,6 +47,15 @@ func WithModel(model string) Option {
 
 // GetCommonOptions extract embedding Options from Option list, optionally providing a base Options with default values.
 // eg.
+//
+//	defaultModelName := "default_model"
+//	embeddingOption := &embedding.Options{
+//		Model: &defaultModelName,
+//	}
+//	embeddingOption := embedding.GetCommonOptions(embeddingOption, opts...)
+//
+// GetCommonOptions 从 Option 列表中提取 embedding Options，可选择提供带有默认值的 base Options。
+// 例如：
 //
 //	defaultModelName := "default_model"
 //	embeddingOption := &embedding.Options{
@@ -62,6 +78,8 @@ func GetCommonOptions(base *Options, opts ...Option) *Options {
 }
 
 // WrapImplSpecificOptFn is the option to wrap the implementation specific option function.
+//
+// WrapImplSpecificOptFn 是包装特定于实现的选项函数的选项。
 func WrapImplSpecificOptFn[T any](optFn func(*T)) Option {
 	return Option{
 		implSpecificOptFn: optFn,
@@ -70,6 +88,15 @@ func WrapImplSpecificOptFn[T any](optFn func(*T)) Option {
 
 // GetImplSpecificOptions extract the implementation specific options from Option list, optionally providing a base options with default values.
 // e.g.
+//
+//	myOption := &MyOption{
+//		Field1: "default_value",
+//	}
+//
+//	myOption := model.GetImplSpecificOptions(myOption, opts...)
+//
+// GetImplSpecificOptions 从 Option 列表中提取特定于实现的选项，可选择提供带有默认值的 base options。
+// 例如：
 //
 //	myOption := &MyOption{
 //		Field1: "default_value",

@@ -19,14 +19,20 @@ package indexer
 import "github.com/cloudwego/eino/components/embedding"
 
 // Options is the options for the indexer.
+//
+// Options 是 indexer 的选项。
 type Options struct {
 	// SubIndexes is the sub indexes to be indexed.
+	// SubIndexes 是要索引的子索引。
 	SubIndexes []string
 	// Embedding is the embedding component.
+	// Embedding 是 embedding 组件。
 	Embedding embedding.Embedder
 }
 
 // WithSubIndexes is the option to set the sub indexes for the indexer.
+//
+// WithSubIndexes 是设置 indexer 子索引的选项。
 func WithSubIndexes(subIndexes []string) Option {
 	return Option{
 		apply: func(opts *Options) {
@@ -36,6 +42,8 @@ func WithSubIndexes(subIndexes []string) Option {
 }
 
 // WithEmbedding is the option to set the embedder for the indexer, which convert document to embeddings.
+//
+// WithEmbedding 是设置 indexer 的 embedder 的选项，它将文档转换为 embeddings。
 func WithEmbedding(emb embedding.Embedder) Option {
 	return Option{
 		apply: func(opts *Options) {
@@ -45,6 +53,8 @@ func WithEmbedding(emb embedding.Embedder) Option {
 }
 
 // Option is the call option for Indexer component.
+//
+// Option 是 Indexer 组件的调用选项。
 type Option struct {
 	apply func(opts *Options)
 
@@ -53,6 +63,15 @@ type Option struct {
 
 // GetCommonOptions extract indexer Options from Option list, optionally providing a base Options with default values.
 // e.g.
+//
+//	indexerOption := &IndexerOption{
+//		SubIndexes: []string{"default_sub_index"}, // default value
+//	}
+//
+//	indexerOption := indexer.GetCommonOptions(indexerOption, opts...)
+//
+// GetCommonOptions 从 Option 列表中提取 indexer Options，可选择提供带有默认值的 base Options。
+// 例如：
 //
 //	indexerOption := &IndexerOption{
 //		SubIndexes: []string{"default_sub_index"}, // default value
@@ -75,6 +94,8 @@ func GetCommonOptions(base *Options, opts ...Option) *Options {
 }
 
 // WrapImplSpecificOptFn is the option to wrap the implementation specific option function.
+//
+// WrapImplSpecificOptFn 是包装特定于实现的选项函数的选项。
 func WrapImplSpecificOptFn[T any](optFn func(*T)) Option {
 	return Option{
 		implSpecificOptFn: optFn,
@@ -83,6 +104,15 @@ func WrapImplSpecificOptFn[T any](optFn func(*T)) Option {
 
 // GetImplSpecificOptions extract the implementation specific options from Option list, optionally providing a base options with default values.
 // e.g.
+//
+//	myOption := &MyOption{
+//		Field1: "default_value",
+//	}
+//
+//	myOption := model.GetImplSpecificOptions(myOption, opts...)
+//
+// GetImplSpecificOptions 从 Option 列表中提取特定于实现的选项，可选择提供带有默认值的 base options。
+// 例如：
 //
 //	myOption := &MyOption{
 //		Field1: "default_value",

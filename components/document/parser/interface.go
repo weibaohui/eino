@@ -24,6 +24,8 @@ import (
 )
 
 // Parser is a document parser, can be used to parse a document from a reader.
+//
+// Parser 是文档解析器，可用于从 reader 解析文档。
 type Parser interface {
 	Parse(ctx context.Context, reader io.Reader, opts ...Option) ([]*schema.Document, error)
 }

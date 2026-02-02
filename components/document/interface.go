@@ -25,6 +25,10 @@ import (
 // Source is a document source.
 // e.g. https://www.bytedance.com/docx/xxxx, https://xxx.xxx.xxx/xx.pdf.
 // make sure the URI can be reached by service.
+//
+// Source 是文档来源。
+// 例如 https://www.bytedance.com/docx/xxxx, https://xxx.xxx.xxx/xx.pdf。
+// 请确保服务可以访问 URI。
 type Source struct {
 	URI string
 }
@@ -32,11 +36,15 @@ type Source struct {
 //go:generate  mockgen -destination ../../internal/mock/components/document/document_mock.go --package document -source interface.go
 
 // Loader is a document loader.
+//
+// Loader 是文档加载器。
 type Loader interface {
 	Load(ctx context.Context, src Source, opts ...LoaderOption) ([]*schema.Document, error)
 }
 
 // Transformer is to convert documents, such as split or filter.
+//
+// Transformer 用于转换文档，例如分割或过滤。
 type Transformer interface {
 	Transform(ctx context.Context, src []*schema.Document, opts ...TransformerOption) ([]*schema.Document, error)
 }

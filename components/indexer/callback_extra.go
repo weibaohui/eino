@@ -23,22 +23,32 @@ import (
 )
 
 // CallbackInput is the input for the indexer callback.
+//
+// CallbackInput 是 indexer 回调的输入。
 type CallbackInput struct {
 	// Docs is the documents to be indexed.
+	// Docs 是要索引的文档。
 	Docs []*schema.Document
 	// Extra is the extra information for the callback.
+	// Extra 是回调的额外信息。
 	Extra map[string]any
 }
 
 // CallbackOutput is the output for the indexer callback.
+//
+// CallbackOutput 是 indexer 回调的输出。
 type CallbackOutput struct {
 	// IDs is the ids of the indexed documents returned by the indexer.
+	// IDs 是 indexer 返回的已索引文档的 ID。
 	IDs []string
 	// Extra is the extra information for the callback.
+	// Extra 是回调的额外信息。
 	Extra map[string]any
 }
 
 // ConvCallbackInput converts the callback input to the indexer callback input.
+//
+// ConvCallbackInput 将回调输入转换为 indexer 回调输入。
 func ConvCallbackInput(src callbacks.CallbackInput) *CallbackInput {
 	switch t := src.(type) {
 	case *CallbackInput:
@@ -53,6 +63,8 @@ func ConvCallbackInput(src callbacks.CallbackInput) *CallbackInput {
 }
 
 // ConvCallbackOutput converts the callback output to the indexer callback output.
+//
+// ConvCallbackOutput 将回调输出转换为 indexer 回调输出。
 func ConvCallbackOutput(src callbacks.CallbackOutput) *CallbackOutput {
 	switch t := src.(type) {
 	case *CallbackOutput:

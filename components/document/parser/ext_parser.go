@@ -16,6 +16,8 @@
 
 // Package parser provides document parsers and helpers, including
 // a simple text parser and extension-aware parser.
+//
+// Package parser 提供了文档解析器和辅助工具，包括简单的文本解析器和感知扩展名的解析器。
 package parser
 
 import (
@@ -28,6 +30,8 @@ import (
 )
 
 // ExtParserConfig defines the configuration for the ExtParser.
+//
+// ExtParserConfig 定义 ExtParser 的配置。
 type ExtParserConfig struct {
 	// ext -> parser.
 	// eg: map[string]Parser{
@@ -38,6 +42,9 @@ type ExtParserConfig struct {
 
 	// Fallback parser to use when no other parser is found.
 	// Default is TextParser if not set.
+	//
+	// FallbackParser 是当找不到其他解析器时使用的回退解析器。
+	// 如果未设置，默认为 TextParser。
 	FallbackParser Parser
 }
 
@@ -54,6 +61,20 @@ type ExtParserConfig struct {
 //
 //	pdf, _ := os.Open("./testdata/test.pdf")
 //	docs, err := ExtParser.Parse(ctx, pdf, parser.WithURI("./testdata/test.pdf"))
+//
+// ExtParser 是一个使用文件扩展名来决定使用哪个解析器的解析器。
+// 你可以通过调用 RegisterParser 来注册自己的解析器。
+// 默认解析器是 TextParser。
+// 注意：
+//
+//	parse 时，是通过 filepath.Ext(uri) 的方式找到对应的 parser，因此使用时需要：
+//	 	① 必须使用 parser.WithURI 在请求时传入 URI
+//	 	② URI 必须能通过 filepath.Ext 来解析出符合预期的 ext
+//
+// 例如：
+//
+//	pdf, _ := os.Open("./testdata/test.pdf")
+//	docs, err := ExtParser.Parse(ctx, pdf, parser.WithURI("./testdata/test.pdf"))
 type ExtParser struct {
 	parsers map[string]Parser
 
@@ -61,6 +82,8 @@ type ExtParser struct {
 }
 
 // NewExtParser creates a new ExtParser.
+//
+// NewExtParser 创建一个新的 ExtParser。
 func NewExtParser(ctx context.Context, conf *ExtParserConfig) (*ExtParser, error) {
 	if conf == nil {
 		conf = &ExtParserConfig{}
@@ -84,6 +107,9 @@ func NewExtParser(ctx context.Context, conf *ExtParserConfig) (*ExtParser, error
 
 // GetParsers returns a copy of the registered parsers.
 // It is safe to modify the returned parsers.
+//
+// GetParsers 返回已注册解析器的副本。
+// 修改返回的解析器是安全的。
 func (p *ExtParser) GetParsers() map[string]Parser {
 	res := make(map[string]Parser, len(p.parsers))
 	for k, v := range p.parsers {
@@ -94,6 +120,8 @@ func (p *ExtParser) GetParsers() map[string]Parser {
 }
 
 // Parse parses the given reader and returns a list of documents.
+//
+// Parse 解析给定的 reader 并返回文档列表。
 func (p *ExtParser) Parse(ctx context.Context, reader io.Reader, opts ...Option) ([]*schema.Document, error) {
 	opt := GetCommonOptions(&Options{}, opts...)
 

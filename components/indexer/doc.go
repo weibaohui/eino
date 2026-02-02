@@ -14,4 +14,7 @@
  * limitations under the License.
  */
 
+// Package indexer defines callback payloads used by indexers.
+//
+// Package indexer 定义了 indexer 组件的回调 payload。
 package indexer

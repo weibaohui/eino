@@ -14,4 +14,7 @@
  * limitations under the License.
  */
 
+// Package embedding defines callback payloads for embedding components.
+//
+// Package embedding 定义了 embedding 组件的回调 payload。
 package embedding

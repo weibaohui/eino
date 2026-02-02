@@ -25,6 +25,9 @@ import (
 // Indexer is the interface for the indexer.
 // Indexer is used to store the documents.
 //
+// Indexer 是 indexer 的接口。
+// Indexer 用于存储文档。
+//
 //go:generate  mockgen -destination ../../internal/mock/components/indexer/indexer_mock.go --package indexer -source interface.go
 type Indexer interface {
 	// Store stores the documents.

@@ -19,6 +19,8 @@ package document
 import "github.com/cloudwego/eino/components/document/parser"
 
 // LoaderOptions configures document loaders, including parser options.
+//
+// LoaderOptions 配置 document loaders，包括解析器选项。
 type LoaderOptions struct {
 	ParserOptions []parser.Option
 }
@@ -26,6 +28,10 @@ type LoaderOptions struct {
 // LoaderOption defines call option for Loader component, which is part of the component interface signature.
 // Each Loader implementation could define its own options struct and option funcs within its own package,
 // then wrap the impl specific option funcs into this type, before passing to Load.
+//
+// LoaderOption 定义 Loader 组件的调用选项，它是组件接口签名的一部分。
+// 每个 Loader 实现可以在其自己的包中定义自己的 options 结构体和 option 函数，
+// 然后在传递给 Load 之前，将特定于实现的 option 函数包装到此类型中。
 type LoaderOption struct {
 	apply func(opts *LoaderOptions)
 
@@ -48,6 +54,23 @@ type LoaderOption struct {
 //			o.conf = conf
 //		}
 //	}
+//
+// WrapLoaderImplSpecificOptFn 将特定于实现的 option 函数包装到 LoaderOption 类型中。
+// T：特定于实现的 options 结构体的类型。
+// Loader 实现需要使用此函数将其自己的 option 函数转换为统一的 LoaderOption 类型。
+// 例如，如果 Loader 实现定义了自己的 options 结构体：
+//
+//	type customOptions struct {
+//	    conf string
+//	}
+//
+// 那么实现需要提供如下的 option 函数：
+//
+//	func WithConf(conf string) Option {
+//	    return WrapLoaderImplSpecificOptFn(func(o *customOptions) {
+//			o.conf = conf
+//		}
+//	}
 func WrapLoaderImplSpecificOptFn[T any](optFn func(*T)) LoaderOption {
 	return LoaderOption{
 		implSpecificOptFn: optFn,
@@ -59,6 +82,17 @@ func WrapLoaderImplSpecificOptFn[T any](optFn func(*T)) LoaderOption {
 // This function should be used within the Loader implementation's Load function.
 // It is recommended to provide a base T as the first argument, within which the Loader author can provide default values for the impl specific options.
 // eg.
+//
+//	myOption := &MyOption{
+//		Field1: "default_value",
+//	}
+//	myOption := loader.GetLoaderImplSpecificOptions(myOption, opts...)
+//
+// GetLoaderImplSpecificOptions 为 Loader 作者提供了从统一的 LoaderOption 类型中提取其自己的自定义选项的能力。
+// T：特定于实现的 options 结构体的类型。
+// 此函数应在 Loader 实现的 Load 函数中使用。
+// 建议提供一个 base T 作为第一个参数，Loader 作者可以在其中为特定于实现的选项提供默认值。
+// 例如：
 //
 //	myOption := &MyOption{
 //		Field1: "default_value",
@@ -83,6 +117,8 @@ func GetLoaderImplSpecificOptions[T any](base *T, opts ...LoaderOption) *T {
 }
 
 // GetLoaderCommonOptions extract loader Options from Option list, optionally providing a base Options with default values.
+//
+// GetLoaderCommonOptions 从 Option 列表中提取 loader Options，可选择提供带有默认值的 base Options。
 func GetLoaderCommonOptions(base *LoaderOptions, opts ...LoaderOption) *LoaderOptions {
 	if base == nil {
 		base = &LoaderOptions{}
@@ -98,18 +134,13 @@ func GetLoaderCommonOptions(base *LoaderOptions, opts ...LoaderOption) *LoaderOp
 	return base
 }
 
-// WithParserOptions attaches parser options to a loader request.
-func WithParserOptions(opts ...parser.Option) LoaderOption {
-	return LoaderOption{
-		apply: func(o *LoaderOptions) {
-			o.ParserOptions = opts
-		},
-	}
-}
-
 // TransformerOption defines call option for Transformer component, which is part of the component interface signature.
 // Each Transformer implementation could define its own options struct and option funcs within its own package,
 // then wrap the impl specific option funcs into this type, before passing to Transform.
+//
+// TransformerOption 定义 Transformer 组件的调用选项，它是组件接口签名的一部分。
+// 每个 Transformer 实现可以在其自己的包中定义自己的 options 结构体和 option 函数，
+// 然后在传递给 Transform 之前，将特定于实现的 option 函数包装到此类型中。
 type TransformerOption struct {
 	implSpecificOptFn any
 }
@@ -125,13 +156,28 @@ type TransformerOption struct {
 //
 // Then the impl needs to provide an option function as such:
 //
-//	func WithConf(conf string) TransformerOption {
+//	func WithConf(conf string) Option {
 //	    return WrapTransformerImplSpecificOptFn(func(o *customOptions) {
 //			o.conf = conf
 //		}
 //	}
 //
-// .
+// WrapTransformerImplSpecificOptFn 将特定于实现的 option 函数包装到 TransformerOption 类型中。
+// T：特定于实现的 options 结构体的类型。
+// Transformer 实现需要使用此函数将其自己的 option 函数转换为统一的 TransformerOption 类型。
+// 例如，如果 Transformer 实现定义了自己的 options 结构体：
+//
+//	type customOptions struct {
+//	    conf string
+//	}
+//
+// 那么实现需要提供如下的 option 函数：
+//
+//	func WithConf(conf string) Option {
+//	    return WrapTransformerImplSpecificOptFn(func(o *customOptions) {
+//			o.conf = conf
+//		}
+//	}
 func WrapTransformerImplSpecificOptFn[T any](optFn func(*T)) TransformerOption {
 	return TransformerOption{
 		implSpecificOptFn: optFn,
@@ -143,6 +189,17 @@ func WrapTransformerImplSpecificOptFn[T any](optFn func(*T)) TransformerOption {
 // This function should be used within the Transformer implementation's Transform function.
 // It is recommended to provide a base T as the first argument, within which the Transformer author can provide default values for the impl specific options.
 // eg.
+//
+//	myOption := &MyOption{
+//		Field1: "default_value",
+//	}
+//	myOption := transformer.GetTransformerImplSpecificOptions(myOption, opts...)
+//
+// GetTransformerImplSpecificOptions 为 Transformer 作者提供了从统一的 TransformerOption 类型中提取其自己的自定义选项的能力。
+// T：特定于实现的 options 结构体的类型。
+// 此函数应在 Transformer 实现的 Transform 函数中使用。
+// 建议提供一个 base T 作为第一个参数，Transformer 作者可以在其中为特定于实现的选项提供默认值。
+// 例如：
 //
 //	myOption := &MyOption{
 //		Field1: "default_value",
@@ -164,4 +221,13 @@ func GetTransformerImplSpecificOptions[T any](base *T, opts ...TransformerOption
 	}
 
 	return base
+}
+
+// WithParserOptions attaches parser options to a loader request.
+func WithParserOptions(opts ...parser.Option) LoaderOption {
+	return LoaderOption{
+		apply: func(o *LoaderOptions) {
+			o.ParserOptions = opts
+		},
+	}
 }

@@ -14,4 +14,7 @@
  * limitations under the License.
  */
 
+// Package document defines callback payloads used by document loaders.
+//
+// Package document 定义了 document loader 使用的回调 payload。
 package document

@@ -94,4 +94,83 @@
 // Use the handler with a component:
 //
 //	runnable.Invoke(ctx, input, compose.WithCallbacks(handler))
+//
+// Package callbacks 提供了 Eino 中组件执行的回调机制。
+//
+// 该包允许你在组件执行的不同阶段注入回调处理程序，例如开始、结束和错误处理。它对于实现日志记录、监控和指标收集等治理能力特别有用。
+//
+// 该包提供了两种创建回调处理程序的方法：
+//
+// 1. 使用 HandlerBuilder 创建回调处理程序：
+//
+//	handler := callbacks.NewHandlerBuilder().
+//		OnStart(func(ctx context.Context, info *RunInfo, input CallbackInput) context.Context {
+//			// Handle component start
+//			return ctx
+//		}).
+//		OnEnd(func(ctx context.Context, info *RunInfo, output CallbackOutput) context.Context {
+//			// Handle component end
+//			return ctx
+//		}).
+//		OnError(func(ctx context.Context, info *RunInfo, err error) context.Context {
+//			// Handle component error
+//			return ctx
+//		}).
+//		OnStartWithStreamInput(func(ctx context.Context, info *RunInfo, input *schema.StreamReader[CallbackInput]) context.Context {
+//			// Handle component start with stream input
+//			return ctx
+//		}).
+//		OnEndWithStreamOutput(func(ctx context.Context, info *RunInfo, output *schema.StreamReader[CallbackOutput]) context.Context {
+//			// Handle component end with stream output
+//			return ctx
+//		}).
+//		Build()
+//
+// 使用这种方法，你需要自己转换回调输入类型，并在一个处理程序中实现不同组件类型的逻辑。
+//
+// 2. 使用 [template.HandlerHelper] 创建处理程序：
+//
+// Package utils/callbacks 提供了 [HandlerHelper] 作为构建不同组件类型回调处理程序的便捷方式。它允许你为每种组件类型设置特定的处理程序，
+//
+// 例如：
+//
+//	// Create handlers for specific components
+//	modelHandler := &model.CallbackHandler{
+//		OnStart: func(ctx context.Context, info *RunInfo, input *model.CallbackInput) context.Context {
+//			log.Printf("Model execution started: %s", info.ComponentName)
+//			return ctx
+//		},
+//	}
+//
+//	promptHandler := &prompt.CallbackHandler{
+//		OnEnd: func(ctx context.Context, info *RunInfo, output *prompt.CallbackOutput) context.Context {
+//			log.Printf("Prompt execution completed: %s", output.Result)
+//			return ctx
+//		},
+//	}
+//
+//	// Build the handler using HandlerHelper
+//	handler := callbacks.NewHandlerHelper().
+//		ChatModel(modelHandler).
+//		Prompt(promptHandler).
+//		Fallback(fallbackHandler).
+//		Handler()
+//
+// [HandlerHelper] 支持各种组件类型的处理程序，包括：
+//   - Prompt components (via prompt.CallbackHandler)
+//   - Chat model components (via model.CallbackHandler)
+//   - Embedding components (via embedding.CallbackHandler)
+//   - Indexer components (via indexer.CallbackHandler)
+//   - Retriever components (via retriever.CallbackHandler)
+//   - Document loader components (via loader.CallbackHandler)
+//   - Document transformer components (via transformer.CallbackHandler)
+//   - Tool components (via tool.CallbackHandler)
+//   - Graph (via Handler)
+//   - Chain (via Handler)
+//   - Tools node (via Handler)
+//   - Lambda (via Handler)
+//
+// 将处理程序与组件一起使用：
+//
+//	runnable.Invoke(ctx, input, compose.WithCallbacks(handler))
 package callbacks
