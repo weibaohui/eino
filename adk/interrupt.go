@@ -31,6 +31,7 @@ import (
 // It is created by the framework and passed to an agent's Resume method.
 // ResumeInfo 包含恢复被中断 Agent 执行所需的所有信息。
 // 它由框架创建，并传递给 Agent 的 Resume 方法。
+// 为什么要做这个：在 Agent 被中断后，重新运行（Resume）时需要知道原始执行的模式、中断时的上下文、内部状态等，以便从中断点继续。
 type ResumeInfo struct {
 	// EnableStreaming indicates whether the original execution was in streaming mode.
 	// EnableStreaming 指示原始执行是否处于流式模式。
@@ -42,17 +43,23 @@ type ResumeInfo struct {
 	// 并使用 GetInterruptState 获取内部状态。
 	*InterruptInfo
 
+	// WasInterrupted 指示当前 Agent 是否被直接中断（而不是其子 Agent 被中断）。
 	WasInterrupted bool
+	// InterruptState 中断时保存的内部状态数据。
 	InterruptState any
+	// IsResumeTarget 指示当前 Agent 是否是恢复执行的目标。
 	IsResumeTarget bool
-	ResumeData     any
+	// ResumeData 恢复执行时传入的数据（例如用户的进一步输入）。
+	ResumeData any
 }
 
 // InterruptInfo contains all the information about an interruption event.
 // It is created by the framework when an agent returns an interrupt action.
 // InterruptInfo 包含有关中断事件的所有信息。
 // 当 Agent 返回中断 Action 时，由框架创建。
+// 为什么要做这个：统一封装中断相关的信息，包括面向用户的数据和中断链上下文。
 type InterruptInfo struct {
+	// Data 关联的中断数据，通常是面向用户的信息。
 	Data any
 
 	// InterruptContexts provides a structured, user-facing view of the interrupt chain.

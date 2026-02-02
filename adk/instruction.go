@@ -22,9 +22,11 @@ import (
 	"strings"
 )
 
+// TransferToAgentInstruction 是用于指导模型如何进行 Agent 转移的系统指令模板。
+// 它列出了可用的 Agent，并说明了决策规则。
+// 为什么要做这个：在多 Agent 协作场景中，当一个 Agent 无法处理当前问题时，需要将其转移给更合适的 Agent。
+// 如何使用：通过 fmt.Sprintf 将可用 Agent 列表和转移工具名称填充到模板中。
 const (
-	// TransferToAgentInstruction 是用于指导模型如何进行 Agent 转移的系统指令模板。
-	// 它列出了可用的 Agent，并说明了决策规则。
 	TransferToAgentInstruction = `Available other agents: %s
 
 Decision rule:
@@ -35,8 +37,8 @@ When transferring: OUTPUT ONLY THE FUNCTION CALL`
 )
 
 // genTransferToAgentInstruction 生成转移 Agent 的系统指令。
-// 为什么要做这个：动态生成指令，告诉 LLM 当前有哪些 Agent 可用，以及如何调用工具进行转移。
-// 如何使用：传入上下文和可用 Agent 列表。
+// 为什么要做这个：动态生成包含所有可选 Agent 信息（名称和描述）的指令，告诉 LLM 当前有哪些 Agent 可用，以及如何调用工具进行转移。
+// 如何使用：传入上下文和可用 Agent 列表，返回格式化后的完整指令字符串。
 func genTransferToAgentInstruction(ctx context.Context, agents []Agent) string {
 	var sb strings.Builder
 	for _, agent := range agents {

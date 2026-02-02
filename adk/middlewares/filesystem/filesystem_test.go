@@ -27,7 +27,7 @@ import (
 	"github.com/cloudwego/eino/components/tool"
 )
 
-// setupTestBackend creates a test backend with some initial files
+// setupTestBackend 创建带有初始文件的测试后端
 func setupTestBackend() *filesystem.InMemoryBackend {
 	backend := filesystem.NewInMemoryBackend()
 	ctx := context.Background()
@@ -57,7 +57,7 @@ func setupTestBackend() *filesystem.InMemoryBackend {
 	return backend
 }
 
-// invokeTool is a helper to invoke a tool with JSON input
+// invokeTool 调用工具的辅助函数
 func invokeTool(_ *testing.T, bt tool.BaseTool, input string) (string, error) {
 	ctx := context.Background()
 	result, err := bt.(tool.InvokableTool).InvokableRun(ctx, input)
@@ -67,6 +67,7 @@ func invokeTool(_ *testing.T, bt tool.BaseTool, input string) (string, error) {
 	return result, nil
 }
 
+// TestLsTool 测试 Ls 工具
 func TestLsTool(t *testing.T) {
 	backend := setupTestBackend()
 	lsTool, err := newLsTool(backend, nil)

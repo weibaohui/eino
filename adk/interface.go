@@ -232,7 +232,9 @@ type runStepSerialization struct {
 }
 
 // AgentEvent CheckpointSchema: persisted via serialization.RunCtx (gob).
+// AgentEvent CheckpointSchema: 通过 serialization.RunCtx (gob) 持久化。
 type AgentEvent struct {
+	// AgentName 产生此事件的 Agent 名称。
 	AgentName string
 
 	// RunPath represents the execution path from root agent to the current event source.
@@ -240,23 +242,39 @@ type AgentEvent struct {
 	// because RunStep's fields are unexported. The framework sets RunPath exactly once:
 	// - flowAgent sets it when the event has no RunPath (len == 0)
 	// - agentTool prepends parent RunPath when forwarding events from nested agents
+	// RunPath 表示从根 Agent 到当前事件源的执行路径。
+	// 此字段完全由 eino 框架管理，最终用户无法设置，因为 RunStep 的字段是未导出的。
+	// 框架只设置 RunPath 一次：
+	// - flowAgent 在事件没有 RunPath (len == 0) 时设置它
+	// - agentTool 在转发来自嵌套 Agent 的事件时预置父 RunPath
 	RunPath []RunStep
 
+	// Output Agent 的输出。
 	Output *AgentOutput
 
+	// Action Agent 的动作。
 	Action *AgentAction
 
+	// Err 错误信息。
 	Err error
 }
 
+// AgentInput 定义 Agent 的输入。
 type AgentInput struct {
-	Messages        []Message
+	// Messages 输入消息列表。
+	Messages []Message
+	// EnableStreaming 是否启用流式传输。
 	EnableStreaming bool
 }
 
 //go:generate  mockgen -destination ../internal/mock/adk/Agent_mock.go --package adk -source interface.go
+
+// Agent 定义了 Agent 的基本接口。
+// 所有 Agent 实现都必须满足此接口。
 type Agent interface {
+	// Name 返回 Agent 的名称。
 	Name(ctx context.Context) string
+	// Description 返回 Agent 的描述。
 	Description(ctx context.Context) string
 
 	// Run runs the agent.
@@ -265,18 +283,32 @@ type Agent interface {
 	// the MessageStream MUST be exclusive and safe to be received directly.
 	// NOTE: it's recommended to use SetAutomaticClose() on the MessageStream of AgentEvents emitted by AsyncIterator,
 	// so that even the events are not processed, the MessageStream can still be closed.
+	// Run 运行 Agent。
+	// AsyncIterator 中返回的 AgentEvent 必须可以安全修改。
+	// 如果 AsyncIterator 中返回的 AgentEvent 包含 MessageStream，
+	// 则 MessageStream 必须是独占的且可以直接安全接收。
+	// 注意：建议对 AsyncIterator 发出的 AgentEvents 的 MessageStream 使用 SetAutomaticClose()，
+	// 这样即使事件未被处理，MessageStream 仍然可以关闭。
 	Run(ctx context.Context, input *AgentInput, options ...AgentRunOption) *AsyncIterator[*AgentEvent]
 }
 
+// OnSubAgents 定义了 Agent 处理子 Agent 的回调接口。
+// 如果 Agent 需要感知或管理其子 Agent，应实现此接口。
 type OnSubAgents interface {
+	// OnSetSubAgents 当为 Agent 设置子 Agent 时调用。
 	OnSetSubAgents(ctx context.Context, subAgents []Agent) error
+	// OnSetAsSubAgent 当 Agent 被设置为另一个 Agent 的子 Agent 时调用。
 	OnSetAsSubAgent(ctx context.Context, parent Agent) error
 
+	// OnDisallowTransferToParent 当禁止子 Agent 将控制权转回给父 Agent 时调用。
 	OnDisallowTransferToParent(ctx context.Context) error
 }
 
+// ResumableAgent 定义了支持恢复执行的 Agent 接口。
+// 如果 Agent 支持中断和恢复，应实现此接口。
 type ResumableAgent interface {
 	Agent
 
+	// Resume 恢复 Agent 执行。
 	Resume(ctx context.Context, info *ResumeInfo, opts ...AgentRunOption) *AsyncIterator[*AgentEvent]
 }

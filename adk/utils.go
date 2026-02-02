@@ -28,22 +28,36 @@ import (
 	"github.com/cloudwego/eino/schema"
 )
 
+// AsyncIterator 是一个异步迭代器，用于从通道中接收数据。
+// 为什么要做这个：提供一种异步遍历数据流的方式，支持无界通道。
 type AsyncIterator[T any] struct {
+	// ch 是底层的无界通道。
 	ch *internal.UnboundedChan[T]
 }
 
+// Next 获取下一个元素。
+// 返回值：
+//   - T: 获取到的元素。
+//   - bool: 如果通道已关闭且无更多元素，则返回 false；否则返回 true。
 func (ai *AsyncIterator[T]) Next() (T, bool) {
 	return ai.ch.Receive()
 }
 
+// AsyncGenerator 是一个异步生成器，用于向通道发送数据。
+// 为什么要做这个：提供一种异步生成数据流的方式，与 AsyncIterator 配对使用。
 type AsyncGenerator[T any] struct {
+	// ch 是底层的无界通道。
 	ch *internal.UnboundedChan[T]
 }
 
+// Send 发送一个元素到通道。
+// 参数：
+//   - v: 要发送的元素。
 func (ag *AsyncGenerator[T]) Send(v T) {
 	ag.ch.Send(v)
 }
 
+// Close 关闭生成器，表示不再发送更多数据。
 func (ag *AsyncGenerator[T]) Close() {
 	ag.ch.Close()
 }
@@ -51,11 +65,15 @@ func (ag *AsyncGenerator[T]) Close() {
 // NewAsyncIteratorPair returns a paired async iterator and generator
 // that share the same underlying channel.
 // NewAsyncIteratorPair 返回一对共享相同底层通道的异步迭代器和生成器。
+// 为什么要做这个：方便创建一个生产者-消费者模型的数据流管道。
+// 如何使用：调用此函数获取迭代器和生成器，生成器用于发送数据，迭代器用于接收数据。
 func NewAsyncIteratorPair[T any]() (*AsyncIterator[T], *AsyncGenerator[T]) {
 	ch := internal.NewUnboundedChan[T]()
 	return &AsyncIterator[T]{ch}, &AsyncGenerator[T]{ch}
 }
 
+// copyMap 复制一个 map。
+// 为什么要做这个：在需要修改 map 但不影响原始 map 时使用，或为了并发安全进行快照。
 func copyMap[K comparable, V any](m map[K]V) map[K]V {
 	res := make(map[K]V, len(m))
 	for k, v := range m {
@@ -64,6 +82,8 @@ func copyMap[K comparable, V any](m map[K]V) map[K]V {
 	return res
 }
 
+// concatInstructions 连接多条指令字符串。
+// 为什么要做这个：将多个指令片段合并为一个完整的指令字符串，中间用空行分隔。
 func concatInstructions(instructions ...string) string {
 	var sb strings.Builder
 	sb.WriteString(instructions[0])
@@ -78,6 +98,9 @@ func concatInstructions(instructions ...string) string {
 // GenTransferMessages generates assistant and tool messages to instruct a
 // transfer-to-agent tool call targeting the destination agent.
 // GenTransferMessages 生成 Assistant 消息和工具消息，以指示针对目标 Agent 的转交工具调用。
+// 为什么要做这个：在多 Agent 协作中，当需要从当前 Agent 转移到另一个 Agent 时，需要构造特定的消息序列来触发转移。
+// 如何使用：传入上下文和目标 Agent 名称，返回构造好的 Assistant 消息和 Tool 消息。
+// 代码逻辑：生成一个唯一的 ToolCallID，构造一个调用 transferToAgent 工具的 ToolCall，以及对应的 ToolMessage。
 func GenTransferMessages(_ context.Context, destAgentName string) (Message, Message) {
 	toolCallID := uuid.NewString()
 	tooCall := schema.ToolCall{ID: toolCallID, Function: schema.FunctionCall{Name: TransferToAgentToolName, Arguments: destAgentName}}
@@ -86,7 +109,9 @@ func GenTransferMessages(_ context.Context, destAgentName string) (Message, Mess
 	return assistantMessage, toolMessage
 }
 
-// set automatic close for event's message stream
+// setAutomaticClose 设置 AgentEvent 的消息流自动关闭。
+// 为什么要做这个：确保在流式输出结束时，底层资源被正确释放。
+// 代码逻辑：检查 Output 是否为流式，如果是，则设置 MessageStream 的自动关闭标志。
 func setAutomaticClose(e *AgentEvent) {
 	if e.Output == nil || e.Output.MessageOutput == nil || !e.Output.MessageOutput.IsStreaming {
 		return
@@ -230,6 +255,8 @@ func copyAgentEvent(ae *AgentEvent) *AgentEvent {
 // GetMessage extracts the Message from an AgentEvent. For streaming output,
 // it duplicates the stream and concatenates it into a single Message.
 // GetMessage 从 AgentEvent 中提取消息。对于流式输出，它会复制流并将其连接成单个消息。
+// 为什么要做这个：方便获取完整消息内容，同时保留原始 AgentEvent 中的流可供后续使用。
+// 代码逻辑：如果是流式输出，分叉流，一个用于拼接返回，一个放回 AgentEvent；如果是非流式，直接返回消息。
 func GetMessage(e *AgentEvent) (Message, *AgentEvent, error) {
 	if e.Output == nil || e.Output.MessageOutput == nil {
 		return nil, e, nil
@@ -248,6 +275,8 @@ func GetMessage(e *AgentEvent) (Message, *AgentEvent, error) {
 	return msgOutput.Message, e, nil
 }
 
+// genErrorIter 生成一个包含错误的异步迭代器。
+// 为什么要做这个：方便在发生错误时返回一个符合接口要求的迭代器，其中包含错误信息。
 func genErrorIter(err error) *AsyncIterator[*AgentEvent] {
 	iterator, generator := NewAsyncIteratorPair[*AgentEvent]()
 	generator.Send(&AgentEvent{Err: err})

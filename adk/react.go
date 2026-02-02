@@ -62,19 +62,24 @@ func isAddressAtDepth(currentAddr, handlerAddr Address, depth int) bool {
 	return len(currentAddr) == expectedLen && currentAddr[:len(handlerAddr)].Equals(handlerAddr)
 }
 
-// State holds agent runtime state including messages, tool actions,
-// and remaining iterations.
 // State 保存 Agent 运行时状态，包括消息、工具操作和剩余迭代次数。
+// 为什么要做这个：在 ReAct（Reasoning and Acting）循环中，需要跟踪对话历史、待执行的工具操作以及防止无限循环。
 type State struct {
+	// Messages 对话历史记录。
 	Messages []Message
 
-	HasReturnDirectly        bool
+	// HasReturnDirectly 是否包含需要直接返回结果的工具调用。
+	HasReturnDirectly bool
+	// ReturnDirectlyToolCallID 需要直接返回结果的工具调用 ID。
 	ReturnDirectlyToolCallID string
 
+	// ToolGenActions 存储由工具产生的 AgentAction，用于在工具执行完后附加到事件中。
 	ToolGenActions map[string]*AgentAction
 
+	// AgentName 当前 Agent 的名称。
 	AgentName string
 
+	// RemainingIterations 剩余允许的迭代次数，防止死循环。
 	RemainingIterations int
 }
 

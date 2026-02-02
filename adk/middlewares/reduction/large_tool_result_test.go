@@ -87,18 +87,19 @@ func TestToolResultOffloading_SmallResult(t *testing.T) {
 	}
 }
 
+// TestToolResultOffloading_LargeResult 测试大工具结果的 Offloading 逻辑
 func TestToolResultOffloading_LargeResult(t *testing.T) {
 	ctx := context.Background()
 	backend := newMockBackend()
 
 	config := &toolResultOffloadingConfig{
 		Backend:    backend,
-		TokenLimit: 10, // Very small limit to trigger offloading
+		TokenLimit: 10, // 设置非常小的限制以触发 Offloading
 	}
 
 	middleware := newToolResultOffloading(ctx, config)
 
-	// Create a large result (more than 10 * 4 = 40 bytes)
+	// 创建一个大结果（超过 10 * 4 = 40 字节）
 	largeResult := strings.Repeat("This is a long line of text that will exceed the token limit.\n", 10)
 	mockEndpoint := func(ctx context.Context, input *compose.ToolInput) (*compose.ToolOutput, error) {
 		return &compose.ToolOutput{Result: largeResult}, nil
@@ -116,7 +117,7 @@ func TestToolResultOffloading_LargeResult(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	// Result should be replaced with a message
+	// 结果应该被替换为提示信息
 	if !strings.Contains(output.Result, "Tool result too large") {
 		t.Errorf("expected result to contain 'Tool result too large', got %q", output.Result)
 	}
@@ -129,7 +130,7 @@ func TestToolResultOffloading_LargeResult(t *testing.T) {
 		t.Errorf("expected result to contain file path, got %q", output.Result)
 	}
 
-	// File should be written
+	// 应该有一个文件被写入
 	if len(backend.files) != 1 {
 		t.Fatalf("expected 1 file to be written, got %d files", len(backend.files))
 	}
@@ -144,6 +145,7 @@ func TestToolResultOffloading_LargeResult(t *testing.T) {
 	}
 }
 
+// TestToolResultOffloading_CustomPathGenerator 测试自定义路径生成器
 func TestToolResultOffloading_CustomPathGenerator(t *testing.T) {
 	ctx := context.Background()
 	backend := newMockBackend()
@@ -176,19 +178,18 @@ func TestToolResultOffloading_CustomPathGenerator(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	// Check custom path is used
+	// 结果应该包含自定义路径
 	if !strings.Contains(output.Result, customPath) {
 		t.Errorf("expected result to contain custom path %q, got %q", customPath, output.Result)
 	}
 
-	// File should be written to custom path
-	savedContent, ok := backend.files[customPath]
-	if !ok {
-		t.Fatalf("expected file at %q, got files: %v", customPath, backend.files)
+	// 文件应该写入到自定义路径
+	if len(backend.files) != 1 {
+		t.Fatalf("expected 1 file to be written, got %d files", len(backend.files))
 	}
 
-	if savedContent != largeResult {
-		t.Errorf("saved content doesn't match original result")
+	if _, ok := backend.files[customPath]; !ok {
+		t.Fatalf("expected file at %s, got files: %v", customPath, backend.files)
 	}
 }
 

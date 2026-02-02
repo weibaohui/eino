@@ -28,7 +28,7 @@ import (
 	"github.com/cloudwego/eino/schema"
 )
 
-// mockBackend is a simple in-memory backend for testing
+// mockBackend 用于测试的简单内存后端
 type mockBackend struct {
 	files map[string]string
 }
@@ -68,6 +68,7 @@ func (m *mockBackend) Edit(ctx context.Context, _ *EditRequest) error {
 	return nil
 }
 
+// TestToolResultOffloading_SmallResult 测试小结果的工具结果卸载
 func TestToolResultOffloading_SmallResult(t *testing.T) {
 	ctx := context.Background()
 	backend := newMockBackend()

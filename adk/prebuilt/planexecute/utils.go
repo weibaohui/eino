@@ -22,10 +22,13 @@ import (
 	"github.com/cloudwego/eino/adk"
 )
 
+// outputSessionKVsAgent 是一个包装器，用于在 Agent 执行结束后输出 Session 中的键值对。
+// 它通过拦截 Agent 的输出流，在流结束时追加包含 Session 数据的 AgentEvent。
 type outputSessionKVsAgent struct {
 	adk.Agent
 }
 
+// Run 执行被包装的 Agent，并在执行结束后将 Session 中的键值对作为 AgentEvent 发送。
 func (o *outputSessionKVsAgent) Run(ctx context.Context, input *adk.AgentInput,
 	options ...adk.AgentRunOption) *adk.AsyncIterator[*adk.AgentEvent] {
 
@@ -53,6 +56,9 @@ func (o *outputSessionKVsAgent) Run(ctx context.Context, input *adk.AgentInput,
 	return iterator
 }
 
+// agentOutputSessionKVs 创建一个 outputSessionKVsAgent 包装器。
+// 该包装器确保 Agent 的 Session 数据在执行结束时被捕获并输出，
+// 这对于在多 Agent 协作中传递状态（如 Plan、ExecutedSteps）非常重要。
 func agentOutputSessionKVs(ctx context.Context, agent adk.Agent) (adk.Agent, error) {
 	return &outputSessionKVsAgent{Agent: agent}, nil
 }

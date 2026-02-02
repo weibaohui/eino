@@ -212,22 +212,21 @@ type ChatModelAgentConfig struct {
 	// 可选。设置后，通过 AddSessionValue(ctx, outputKey, msg.Content) 存储输出。
 	OutputKey string
 
-
-	// MaxIterations defines the upper limit of ChatModel generation cycles.
-	// The agent will terminate with an error if this limit is exceeded.
-	// Optional. Defaults to 20.
+	// MaxIterations 定义 ChatModel 生成周期的上限。
+	// 如果超过此限制，Agent 将以错误终止。
+	// 可选。默认为 20。
 	MaxIterations int
 
-	// Middlewares configures agent middleware for extending functionality.
+	// Middlewares 配置用于扩展功能的 Agent 中间件。
 	Middlewares []AgentMiddleware
 
-	// ModelRetryConfig configures retry behavior for the ChatModel.
-	// When set, the agent will automatically retry failed ChatModel calls
-	// based on the configured policy.
-	// Optional. If nil, no retry will be performed.
+	// ModelRetryConfig 配置 ChatModel 的重试行为。
+	// 设置后，Agent 将根据配置的策略自动重试失败的 ChatModel 调用。
+	// 可选。如果为 nil，将不执行重试。
 	ModelRetryConfig *ModelRetryConfig
 }
 
+// ChatModelAgent 是基于 ChatModel 的 Agent 实现。
 type ChatModelAgent struct {
 	name        string
 	description string
@@ -260,7 +259,7 @@ type ChatModelAgent struct {
 
 type runFunc func(ctx context.Context, input *AgentInput, generator *AsyncGenerator[*AgentEvent], store *bridgeStore, opts ...compose.Option)
 
-// NewChatModelAgent constructs a chat model-backed agent with the provided config.
+// NewChatModelAgent 使用提供的配置构建一个基于 Chat Model 的 Agent。
 func NewChatModelAgent(_ context.Context, config *ChatModelAgentConfig) (*ChatModelAgent, error) {
 	if config.Name == "" {
 		return nil, errors.New("agent 'Name' is required")
@@ -315,7 +314,9 @@ func NewChatModelAgent(_ context.Context, config *ChatModelAgentConfig) (*ChatMo
 }
 
 const (
+	// TransferToAgentToolName 是转接工具的名称。
 	TransferToAgentToolName = "transfer_to_agent"
+	// TransferToAgentToolDesc 是转接工具的描述。
 	TransferToAgentToolDesc = "Transfer the question to another agent."
 )
 
@@ -372,6 +373,7 @@ func (et ExitTool) InvokableRun(ctx context.Context, argumentsInJSON string, _ .
 	return params.FinalResult, nil
 }
 
+// transferToAgent 实现转接 Agent 的工具。
 type transferToAgent struct{}
 
 func (tta transferToAgent) Info(_ context.Context) (*schema.ToolInfo, error) {
@@ -445,6 +447,7 @@ func (a *ChatModelAgent) OnDisallowTransferToParent(_ context.Context) error {
 	return nil
 }
 
+// cbHandler 处理 ChatModel 和 ToolsNode 的回调。
 type cbHandler struct {
 	*AsyncGenerator[*AgentEvent]
 	agentName string

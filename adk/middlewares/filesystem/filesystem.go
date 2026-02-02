@@ -198,6 +198,7 @@ type lsArgs struct {
 }
 
 // newLsTool 创建 ls 工具
+// 用于列出指定目录下的文件和子目录
 func newLsTool(fs filesystem.Backend, desc *string) (tool.BaseTool, error) {
 	d := ListFilesToolDesc
 	if desc != nil {
@@ -222,6 +223,8 @@ type readFileArgs struct {
 	Limit    int    `json:"limit"`
 }
 
+// newReadFileTool 创建 read_file 工具
+// 用于读取文件内容，支持分页读取
 func newReadFileTool(fs filesystem.Backend, desc *string) (tool.BaseTool, error) {
 	d := ReadFileToolDesc
 	if desc != nil {
@@ -247,6 +250,8 @@ type writeFileArgs struct {
 	Content  string `json:"content"`
 }
 
+// newWriteFileTool 创建 write_file 工具
+// 用于写入文件内容
 func newWriteFileTool(fs filesystem.Backend, desc *string) (tool.BaseTool, error) {
 	d := WriteFileToolDesc
 	if desc != nil {
@@ -271,6 +276,8 @@ type editFileArgs struct {
 	ReplaceAll bool   `json:"replace_all"`
 }
 
+// newEditFileTool 创建 edit_file 工具
+// 用于编辑文件内容，支持字符串替换
 func newEditFileTool(fs filesystem.Backend, desc *string) (tool.BaseTool, error) {
 	d := EditFileToolDesc
 	if desc != nil {
@@ -295,6 +302,8 @@ type globArgs struct {
 	Path    string `json:"path"`
 }
 
+// newGlobTool 创建 glob 工具
+// 用于根据 Glob 模式查找文件
 func newGlobTool(fs filesystem.Backend, desc *string) (tool.BaseTool, error) {
 	d := GlobToolDesc
 	if desc != nil {
@@ -323,6 +332,8 @@ type grepArgs struct {
 	OutputMode string  `json:"output_mode" jsonschema:"enum=files_with_matches,enum=content,enum=count"`
 }
 
+// newGrepTool 创建 grep 工具
+// 用于在文件中搜索指定模式的内容，支持多种输出模式
 func newGrepTool(fs filesystem.Backend, desc *string) (tool.BaseTool, error) {
 	d := GrepToolDesc
 	if desc != nil {
@@ -377,6 +388,8 @@ type executeArgs struct {
 	Command string `json:"command"`
 }
 
+// newExecuteTool 创建 execute 工具
+// 用于执行 Shell 命令（非流式）
 func newExecuteTool(sb filesystem.ShellBackend, desc *string) (tool.BaseTool, error) {
 	d := ExecuteToolDesc
 	if desc != nil {
@@ -395,6 +408,8 @@ func newExecuteTool(sb filesystem.ShellBackend, desc *string) (tool.BaseTool, er
 	})
 }
 
+// newStreamingExecuteTool 创建 execute 工具（流式）
+// 用于执行 Shell 命令并实时流式返回输出
 func newStreamingExecuteTool(sb filesystem.StreamingShellBackend, desc *string) (tool.BaseTool, error) {
 	d := ExecuteToolDesc
 	if desc != nil {
@@ -436,6 +451,8 @@ func newStreamingExecuteTool(sb filesystem.StreamingShellBackend, desc *string) 
 	})
 }
 
+// convExecuteResponse 将执行响应转换为字符串
+// 包含输出内容、错误码（如果非0）和截断提示
 func convExecuteResponse(response *filesystem.ExecuteResponse) string {
 	if response == nil {
 		return ""

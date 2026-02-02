@@ -35,40 +35,41 @@ func init() {
 	schema.RegisterName[[]TODO]("_eino_adk_prebuilt_deep_todo_slice")
 }
 
-// Config defines the configuration for creating a DeepAgent.
+// Config 定义创建 DeepAgent 的配置。
 type Config struct {
-	// Name is the identifier for the Deep agent.
+	// Name 是 Deep Agent 的标识符。
 	Name string
-	// Description provides a brief explanation of the agent's purpose.
+	// Description 提供 Agent 用途的简要说明。
 	Description string
 
-	// ChatModel is the model used by DeepAgent for reasoning and task execution.
+	// ChatModel 是 DeepAgent 用于推理和执行任务的模型。
 	ChatModel model.ToolCallingChatModel
-	// Instruction contains the system prompt that guides the agent's behavior.
-	// When empty, a built-in default system prompt will be used, which includes general assistant
-	// behavior guidelines, security policies, coding style guidelines, and tool usage policies.
+	// Instruction 包含指导 Agent 行为的系统提示词。
+	// 当为空时，将使用内置的默认系统提示词，其中包含通用助手行为准则、安全策略、编码风格指南和工具使用规范。
 	Instruction string
-	// SubAgents are specialized agents that can be invoked by the agent.
+	// SubAgents 是可以被该 Agent 调用的专用子 Agent。
 	SubAgents []adk.Agent
-	// ToolsConfig provides the tools and tool-calling configurations available for the agent to invoke.
+	// ToolsConfig 提供 Agent 可调用的工具和工具调用配置。
 	ToolsConfig adk.ToolsConfig
-	// MaxIteration limits the maximum number of reasoning iterations the agent can perform.
+	// MaxIteration 限制 Agent 可以执行的最大推理迭代次数。
 	MaxIteration int
 
-	// WithoutWriteTodos disables the built-in write_todos tool when set to true.
+	// WithoutWriteTodos 设置为 true 时禁用内置的 write_todos 工具。
 	WithoutWriteTodos bool
-	// WithoutGeneralSubAgent disables the general-purpose subagent when set to true.
+	// WithoutGeneralSubAgent 设置为 true 时禁用通用的子 Agent。
 	WithoutGeneralSubAgent bool
-	// TaskToolDescriptionGenerator allows customizing the description for the task tool.
-	// If provided, this function generates the tool description based on available subagents.
+	// TaskToolDescriptionGenerator 允许自定义 task 工具的描述。
+	// 如果提供，此函数将根据可用的子 Agent 生成工具描述。
 	TaskToolDescriptionGenerator func(ctx context.Context, availableAgents []adk.Agent) (string, error)
 
+	// Middlewares 是要添加到 Agent 的中间件列表。
 	Middlewares []adk.AgentMiddleware
 
+	// ModelRetryConfig 配置模型的重试策略。
 	ModelRetryConfig *adk.ModelRetryConfig
 
-	// OutputKey stores the agent's response in the session.
-	// Optional. When set, stores output via AddSessionValue(ctx, outputKey, msg.Content).
+	// OutputKey 将 Agent 的响应存储在 Session 中。
+	// 可选。当设置时，通过 AddSessionValue(ctx, outputKey, msg.Content) 存储输出。
 	OutputKey string
 }
 
@@ -120,6 +121,8 @@ func New(ctx context.Context, cfg *Config) (adk.ResumableAgent, error) {
 	})
 }
 
+// genModelInput 生成发送给模型的输入消息列表。
+// 它将指令（Instruction）作为系统消息添加到消息列表的开头。
 func genModelInput(ctx context.Context, instruction string, input *adk.AgentInput) ([]*schema.Message, error) {
 	msgs := make([]*schema.Message, 0, len(input.Messages)+1)
 
@@ -132,6 +135,8 @@ func genModelInput(ctx context.Context, instruction string, input *adk.AgentInpu
 	return msgs, nil
 }
 
+// buildBuiltinAgentMiddlewares 构建内置的 Agent 中间件。
+// 为什么要做这个：根据配置初始化必要的中间件，如 write_todos 工具。
 func buildBuiltinAgentMiddlewares(withoutWriteTodos bool) ([]adk.AgentMiddleware, error) {
 	var ms []adk.AgentMiddleware
 	if !withoutWriteTodos {
@@ -155,10 +160,14 @@ type TODO struct {
 	Status string `json:"status" jsonschema:"enum=pending,enum=in_progress,enum=completed"`
 }
 
+// writeTodosArguments 定义 write_todos 工具的参数结构。
 type writeTodosArguments struct {
+	// Todos 是更新后的待办事项列表。
 	Todos []TODO `json:"todos"`
 }
 
+// newWriteTodos 创建 write_todos 工具的中间件。
+// 该工具允许 Agent 管理任务列表，记录进度并在 Session 中存储状态。
 func newWriteTodos() (adk.AgentMiddleware, error) {
 	t, err := utils.InferTool("write_todos", writeTodosToolDescription, func(ctx context.Context, input writeTodosArguments) (output string, err error) {
 		adk.AddSessionValue(ctx, SessionKeyTodos, input.Todos)

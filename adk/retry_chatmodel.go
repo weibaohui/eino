@@ -288,6 +288,7 @@ func getStreamRetryInfo(ctx context.Context) (*streamRetryInfo, bool) {
 	return info, ok
 }
 
+// Stream 实现 ChatModel 接口的 Stream 方法，带有重试逻辑。
 func (r *retryChatModel) Stream(ctx context.Context, input []*schema.Message, opts ...model.Option) (
 	*schema.StreamReader[*schema.Message], error) {
 
@@ -351,6 +352,7 @@ func (r *retryChatModel) Stream(ctx context.Context, input []*schema.Message, op
 	return nil, &RetryExhaustedError{LastErr: lastErr, TotalRetries: r.config.MaxRetries}
 }
 
+// streamWithProxyCallbacks 在没有内置回调支持的情况下，使用代理回调执行 Stream。
 func (r *retryChatModel) streamWithProxyCallbacks(ctx context.Context,
 	input []*schema.Message, opts ...model.Option) (*schema.StreamReader[*schema.Message], error) {
 
@@ -372,6 +374,7 @@ func (r *retryChatModel) streamWithProxyCallbacks(ctx context.Context,
 	}), nil
 }
 
+// consumeStreamForError 消费流以检查是否存在错误。
 func consumeStreamForError(stream *schema.StreamReader[*schema.Message]) error {
 	defer stream.Close()
 	for {
@@ -385,6 +388,7 @@ func consumeStreamForError(stream *schema.StreamReader[*schema.Message]) error {
 	}
 }
 
+// GetType 实现 components.Typer 接口。
 func (r *retryChatModel) GetType() string {
 	if gt, ok := r.inner.(components.Typer); ok {
 		return gt.GetType()
@@ -392,4 +396,5 @@ func (r *retryChatModel) GetType() string {
 	return generic.ParseTypeName(reflect.ValueOf(r.inner))
 }
 
+// IsCallbacksEnabled 实现 components.Checker 接口。
 func (r *retryChatModel) IsCallbacksEnabled() bool { return true }

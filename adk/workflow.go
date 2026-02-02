@@ -36,13 +36,20 @@ const (
 	workflowAgentModeParallel
 )
 
+// workflowAgent 是一个支持多种执行模式（顺序、循环、并行）的工作流 Agent。
+// 为什么要做这个：提供一种结构化的方式来编排多个子 Agent，实现复杂的协作模式。
 type workflowAgent struct {
-	name        string
+	// name Agent 名称。
+	name string
+	// description Agent 描述。
 	description string
-	subAgents   []*flowAgent
+	// subAgents 管理的子 Agent 列表。
+	subAgents []*flowAgent
 
+	// mode 工作流执行模式（顺序、循环、并行）。
 	mode workflowAgentMode
 
+	// maxIterations 循环模式下的最大迭代次数。
 	maxIterations int
 }
 

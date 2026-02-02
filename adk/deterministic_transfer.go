@@ -31,13 +31,16 @@ func init() {
 }
 
 // deterministicTransferState 用于存储确定性转移的中断状态。
+// 为什么要做这个：在 Agent 执行过程中如果发生中断，需要保存当前的事件列表，以便在 Resume 时恢复执行上下文。
 type deterministicTransferState struct {
+	// EventList 已经产生的事件列表，用于在 Resume 时恢复会话。
 	EventList []*agentEventWrapper
 }
 
 // AgentWithDeterministicTransferTo 包装一个 Agent，使其在执行结束后确定性地转移到指定的 Agents。
 // 为什么要做这个：在某些场景下，我们希望 Agent 执行完后，总是将控制权交给特定的一组 Agent，而不是由模型决定。
-// 如何使用：传入上下文和 DeterministicTransferConfig（包含目标 Agent 列表）。
+// 这种模式常用于构建固定的多阶段流程（如：Planner -> Executor -> Checker）。
+// 如何使用：传入要包装的 Agent 和 DeterministicTransferConfig（包含目标 Agent 列表名称）。
 func AgentWithDeterministicTransferTo(_ context.Context, config *DeterministicTransferConfig) Agent {
 	if ra, ok := config.Agent.(ResumableAgent); ok {
 		return &resumableAgentWithDeterministicTransferTo{

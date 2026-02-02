@@ -33,7 +33,7 @@ import (
 	"github.com/cloudwego/eino/schema"
 )
 
-// TestNewSupervisor tests the New function
+// TestNewSupervisor 测试 New 函数
 func TestNewSupervisor(t *testing.T) {
 	ctx := context.Background()
 

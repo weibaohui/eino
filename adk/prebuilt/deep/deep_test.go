@@ -32,6 +32,7 @@ import (
 	"github.com/cloudwego/eino/schema"
 )
 
+// TestGenModelInput 测试 genModelInput 函数
 func TestGenModelInput(t *testing.T) {
 	ctx := context.Background()
 
@@ -66,6 +67,7 @@ func TestGenModelInput(t *testing.T) {
 	})
 }
 
+// TestWriteTodos 测试 WriteTodos 工具
 func TestWriteTodos(t *testing.T) {
 	m, err := buildBuiltinAgentMiddlewares(false)
 	assert.NoError(t, err)
@@ -80,6 +82,7 @@ func TestWriteTodos(t *testing.T) {
 	assert.Equal(t, fmt.Sprintf("Updated todo list to %s", todos), result)
 }
 
+// TestDeepSubAgentSharesSessionValues 测试 Deep SubAgent 共享 Session 值
 func TestDeepSubAgentSharesSessionValues(t *testing.T) {
 	ctx := context.Background()
 	spy := &spySubAgent{}

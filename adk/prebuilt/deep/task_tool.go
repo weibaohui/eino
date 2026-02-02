@@ -145,9 +145,12 @@ func (t *taskTool) Info(ctx context.Context) (*schema.ToolInfo, error) {
 	}, nil
 }
 
+// taskToolArgument 定义 task 工具的输入参数结构。
 type taskToolArgument struct {
+	// SubagentType 指定要调用的子 Agent 类型（名称）。
 	SubagentType string `json:"subagent_type"`
-	Description  string `json:"description"`
+	// Description 是传给子 Agent 的任务描述或指令。
+	Description string `json:"description"`
 }
 
 // InvokableRun 执行 task 工具。

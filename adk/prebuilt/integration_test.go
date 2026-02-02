@@ -35,6 +35,7 @@ import (
 	"github.com/cloudwego/eino/schema"
 )
 
+// approvalInfo 定义了需要批准的工具调用的信息
 type approvalInfo struct {
 	ToolName        string
 	ArgumentsInJSON string
@@ -46,6 +47,7 @@ func (ai *approvalInfo) String() string {
 		ai.ToolName, ai.ArgumentsInJSON)
 }
 
+// approvalResult 定义了批准结果
 type approvalResult struct {
 	Approved         bool
 	DisapproveReason *string
@@ -56,6 +58,7 @@ func init() {
 	schema.Register[*approvalResult]()
 }
 
+// approvableTool 是一个需要批准才能执行的工具
 type approvableTool struct {
 	name string
 	t    *testing.T

@@ -102,6 +102,8 @@ func buildSystemPrompt(skillToolName string, useChinese bool) string {
 	})
 }
 
+// skillTool 是 Skill 工具的实现。
+// 它通过 Backend 获取 Skill 列表，并根据用户请求返回 Skill 内容。
 type skillTool struct {
 	b          Backend
 	toolName   string
@@ -112,6 +114,8 @@ type descriptionTemplateHelper struct {
 	Matters []FrontMatter
 }
 
+// Info 返回 Skill 工具的元数据。
+// 它动态生成工具描述，列出所有可用的 Skill。
 func (s *skillTool) Info(ctx context.Context) (*schema.ToolInfo, error) {
 	skills, err := s.b.List(ctx)
 	if err != nil {
@@ -147,6 +151,8 @@ type inputArguments struct {
 	Skill string `json:"skill"`
 }
 
+// InvokableRun 执行 Skill 工具。
+// 它根据用户提供的 Skill 名称，从 Backend 加载 Skill 内容并返回。
 func (s *skillTool) InvokableRun(ctx context.Context, argumentsInJSON string, opts ...tool.Option) (string, error) {
 	args := &inputArguments{}
 	err := json.Unmarshal([]byte(argumentsInJSON), args)

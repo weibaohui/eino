@@ -28,26 +28,38 @@ import (
 	"github.com/cloudwego/eino/schema"
 )
 
-// runSession CheckpointSchema: persisted via serialization.RunCtx (gob).
+// runSession CheckpointSchema: 通过 serialization.RunCtx (gob) 持久化。
+// 为什么要做这个：在多 Agent 会话中存储和管理共享状态、历史事件和并发执行的分支（Lane）。
+// 如何使用：通过 getSession(ctx) 获取，用于添加/获取会话值或事件。
 type runSession struct {
-	Values    map[string]any
+	// Values 存储用户自定义的会话键值对。
+	Values map[string]any
+	// valuesMtx 保护 Values 映射的并发访问。
 	valuesMtx *sync.Mutex
 
-	Events     []*agentEventWrapper
+	// Events 存储在主路径上提交的历史事件。
+	Events []*agentEventWrapper
+	// LaneEvents 指向当前并发分支的事件列表，用于并行工作流。
 	LaneEvents *laneEvents
-	mtx        sync.Mutex
+	// mtx 保护 Events 列表的并发访问。
+	mtx sync.Mutex
 }
 
-// laneEvents CheckpointSchema: persisted via serialization.RunCtx (gob).
+// laneEvents CheckpointSchema: 通过 serialization.RunCtx (gob) 持久化。
+// 为什么要做这个：在并行执行时，每个分支（Lane）需要独立的事件存储，避免锁竞争并能按需回溯到父分支。
 type laneEvents struct {
+	// Events 当前分支产生的事件。
 	Events []*agentEventWrapper
+	// Parent 指向父级分支的事件。
 	Parent *laneEvents
 }
 
-// agentEventWrapper CheckpointSchema: persisted via serialization.RunCtx (gob).
+// agentEventWrapper CheckpointSchema: 通过 serialization.RunCtx (gob) 持久化。
+// 为什么要做这个：包装 AgentEvent，添加时间戳和流处理错误信息，以便在多 Agent 流中排序和管理流状态。
 type agentEventWrapper struct {
 	*AgentEvent
-	mu                  sync.Mutex
+	mu sync.Mutex
+	// concatenatedMessage 缓存已拼接的流消息，避免重复读取。
 	concatenatedMessage Message
 	// TS is the timestamp (in nanoseconds) when this event was created.
 	// It is primarily used by the laneEvents mechanism to order events
@@ -223,10 +235,15 @@ func (rs *runSession) getValue(key string) (any, bool) {
 	return value, ok
 }
 
+// runContext 封装了 Agent 运行时的上下文信息。
+// 为什么要做这个：在整个 Agent 执行链中传递根输入、执行路径和会话状态。
 type runContext struct {
+	// RootInput 原始的根输入，用于在 flowAgent 中重构子 Agent 输入。
 	RootInput *AgentInput
-	RunPath   []RunStep
+	// RunPath 从根 Agent 到当前 Agent 的完整执行路径。
+	RunPath []RunStep
 
+	// Session 关联的会话状态。
 	Session *runSession
 }
 

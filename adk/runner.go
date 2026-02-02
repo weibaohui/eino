@@ -27,26 +27,29 @@ import (
 	"github.com/cloudwego/eino/schema"
 )
 
-// Runner is the primary entry point for executing an Agent.
-// It manages the agent's lifecycle, including starting, resuming, and checkpointing.
 // Runner 是执行 Agent 的主要入口点。
 // 它管理 Agent 的生命周期，包括启动、恢复和 Checkpoint。
+// 为什么要做这个：提供一个高层的接口来运行 Agent，处理复杂的流式传输、状态持久化和中断恢复逻辑，使用户无需直接操作底层接口。
+// 如何使用：通过 NewRunner 创建，然后调用 Run、Query 或 Resume 系列方法。
 type Runner struct {
-	// a is the agent to be executed.
+	// a 是要执行的目标 Agent。
 	a Agent
-	// enableStreaming dictates whether the execution should be in streaming mode.
+	// enableStreaming 指示是否以流式模式执行。
 	enableStreaming bool
-	// store is the checkpoint store used to persist agent state upon interruption.
-	// If nil, checkpointing is disabled.
+	// store 是 Checkpoint 存储接口，用于在中断时持久化状态。如果为 nil，则禁用 Checkpoint 功能。
 	store CheckPointStore
 }
 
 type CheckPointStore = core.CheckPointStore
 
+// RunnerConfig 包含创建 Runner 的配置。
 type RunnerConfig struct {
-	Agent           Agent
+	// Agent 要运行的 Agent 实例。
+	Agent Agent
+	// EnableStreaming 是否启用流式输出。
 	EnableStreaming bool
 
+	// CheckPointStore 可选的状态持久化存储。
 	CheckPointStore CheckPointStore
 }
 
@@ -151,6 +154,7 @@ func (r *Runner) Resume(ctx context.Context, checkPointID string, opts ...AgentR
 //     execution. They act as conduits, allowing the resume signal to flow to their children. They will
 //     naturally re-interrupt if one of their interrupted children re-interrupts, as they receive the
 //     new `CompositeInterrupt` signal from them.
+//
 // ResumeWithParams 使用特定参数从 Checkpoint 继续中断的执行。
 // 这是最常见且功能强大的恢复方式，允许您针对特定的中断点（由其 Address/ID 标识）并为它们提供数据。
 //

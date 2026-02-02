@@ -252,8 +252,8 @@ func (at *agentTool) InvokableRun(ctx context.Context, argumentsInJSON string, o
 	return ret, nil
 }
 
-// agentToolOptions is a wrapper structure used to convert AgentRunOption slices to tool.Option.
-// It stores the agent name and corresponding run options for tool-specific processing.
+// agentToolOptions 是一个包装结构，用于将 AgentRunOption 切片转换为 tool.Option。
+// 它存储了 Agent 名称和相应的运行选项，以便进行特定于工具的处理。
 type agentToolOptions struct {
 	agentName       string
 	opts            []AgentRunOption
@@ -261,6 +261,8 @@ type agentToolOptions struct {
 	enableStreaming bool
 }
 
+// withAgentToolOptions 将 Agent 运行选项包装为 tool.Option。
+// 为什么要做这个：允许在工具调用时传递 Agent 特定的配置。
 func withAgentToolOptions(agentName string, opts []AgentRunOption) tool.Option {
 	return tool.WrapImplSpecificOptFn(func(opt *agentToolOptions) {
 		opt.agentName = agentName
@@ -268,12 +270,15 @@ func withAgentToolOptions(agentName string, opts []AgentRunOption) tool.Option {
 	})
 }
 
+// withAgentToolEventGenerator 设置 Agent 工具的事件生成器。
+// 为什么要做这个：允许将内部 Agent 的事件流式传输到外部。
 func withAgentToolEventGenerator(gen *AsyncGenerator[*AgentEvent]) tool.Option {
 	return tool.WrapImplSpecificOptFn(func(o *agentToolOptions) {
 		o.generator = gen
 	})
 }
 
+// getOptionsByAgentName 根据 Agent 名称获取相应的 AgentRunOption。
 func getOptionsByAgentName(agentName string, opts []tool.Option) []AgentRunOption {
 	var ret []AgentRunOption
 	for _, opt := range opts {
@@ -285,6 +290,7 @@ func getOptionsByAgentName(agentName string, opts []tool.Option) []AgentRunOptio
 	return ret
 }
 
+// getEmitGeneratorAndEnableStreaming 从选项中获取事件生成器和流式启用状态。
 func getEmitGeneratorAndEnableStreaming(opts []tool.Option) (*AsyncGenerator[*AgentEvent], bool) {
 	o := tool.GetImplSpecificOptions[agentToolOptions](nil, opts...)
 	if o == nil {
@@ -294,6 +300,8 @@ func getEmitGeneratorAndEnableStreaming(opts []tool.Option) (*AsyncGenerator[*Ag
 	return o.generator, o.enableStreaming
 }
 
+// getReactChatHistory 获取指定 Agent 的 React 聊天历史记录。
+// 它会处理消息格式转换和角色重写。
 func getReactChatHistory(ctx context.Context, destAgentName string) ([]Message, error) {
 	var messages []Message
 	var agentName string
@@ -322,6 +330,7 @@ func getReactChatHistory(ctx context.Context, destAgentName string) ([]Message, 
 	return history, err
 }
 
+// newInvokableAgentToolRunner 创建一个新的可调用 Agent 工具运行器。
 func newInvokableAgentToolRunner(agent Agent, store compose.CheckPointStore, enableStreaming bool) *Runner {
 	return &Runner{
 		a:               agent,

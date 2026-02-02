@@ -26,6 +26,7 @@ import (
 	"github.com/cloudwego/eino/schema"
 )
 
+// TestTaskTool 测试 TaskTool 的功能
 func TestTaskTool(t *testing.T) {
 	a1 := &myAgent{name: "1", desc: "desc of my agent 1"}
 	a2 := &myAgent{name: "2", desc: "desc of my agent 2"}

@@ -48,6 +48,7 @@ func (i *inMemoryBackend) Get(ctx context.Context, name string) (Skill, error) {
 	return Skill{}, errors.New("skill not found")
 }
 
+// TestTool 测试 Skill 工具
 func TestTool(t *testing.T) {
 	backend := &inMemoryBackend{m: []Skill{
 		{

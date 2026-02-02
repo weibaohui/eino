@@ -30,8 +30,9 @@ import (
 )
 
 // HistoryEntry 表示历史记录中的一条条目。
+// 为什么要做这个：在多 Agent 协作中，需要记录每一次对话的上下文，包括消息来源和内容。
 type HistoryEntry struct {
-	// IsUserInput 指示该条目是否来自用户输入。
+	// IsUserInput 指示该条目是否直接来自用户的原始输入。
 	IsUserInput bool
 	// AgentName 产生该条目的 Agent 名称。
 	AgentName string
@@ -41,19 +42,26 @@ type HistoryEntry struct {
 
 // HistoryRewriter 是用于重写历史记录的函数类型。
 // 为什么要做这个：当多个 Agent 协作时，下游 Agent 可能需要了解上游 Agent 的执行上下文。
-// 通过重写历史，可以将上游 Agent 的交互转换为下游 Agent 能够理解的格式（例如，添加前缀说明是谁说的）。
+// 通过重写历史，可以将上游 Agent 的交互转换为下游 Agent 能够理解的格式（例如，添加前缀说明是谁说的，将 ToolCall 结果格式化为易读的文本）。
+// 如何使用：在 flowAgent 配置中通过 WithHistoryRewriter 传入。
 type HistoryRewriter func(ctx context.Context, entries []*HistoryEntry) ([]Message, error)
 
 // flowAgent 是一个特殊的 Agent，它可以包含子 Agent 并管理它们之间的流转。
+// 为什么要做这个：实现层级化的多 Agent 协作模型（Agent Hierarchy）。它负责管理子 Agent、维护会话状态、处理 Agent 间的控制权转移（Transfer）以及历史记录的传递。
 type flowAgent struct {
 	Agent
 
-	subAgents   []*flowAgent
+	// subAgents 子 Agent 列表。
+	subAgents []*flowAgent
+	// parentAgent 父 Agent 引用。
 	parentAgent *flowAgent
 
+	// disallowTransferToParent 是否禁止转移回父 Agent。
 	disallowTransferToParent bool
-	historyRewriter          HistoryRewriter
+	// historyRewriter 用于在调用子 Agent 前重写历史记录。
+	historyRewriter HistoryRewriter
 
+	// checkPointStore 持久化存储接口。
 	checkPointStore compose.CheckPointStore
 }
 

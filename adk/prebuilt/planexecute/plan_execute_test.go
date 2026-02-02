@@ -35,7 +35,7 @@ import (
 	"github.com/cloudwego/eino/schema"
 )
 
-// TestNewPlanner tests the NewPlanner function with ChatModelWithFormattedOutput
+// TestNewPlannerWithFormattedOutput 测试使用 ChatModelWithFormattedOutput 的 NewPlanner 函数
 func TestNewPlannerWithFormattedOutput(t *testing.T) {
 	ctx := context.Background()
 
@@ -61,7 +61,7 @@ func TestNewPlannerWithFormattedOutput(t *testing.T) {
 	assert.Equal(t, "a planner agent", p.Description(ctx))
 }
 
-// TestNewPlannerWithToolCalling tests the NewPlanner function with ToolCallingChatModel
+// TestNewPlannerWithToolCalling 测试使用 ToolCallingChatModel 的 NewPlanner 函数
 func TestNewPlannerWithToolCalling(t *testing.T) {
 	ctx := context.Background()
 
@@ -89,7 +89,7 @@ func TestNewPlannerWithToolCalling(t *testing.T) {
 	assert.Equal(t, "a planner agent", p.Description(ctx))
 }
 
-// TestPlannerRunWithFormattedOutput tests the Run method of a planner created with ChatModelWithFormattedOutput
+// TestPlannerRunWithFormattedOutput 测试使用 ChatModelWithFormattedOutput 创建的 Planner 的 Run 方法
 func TestPlannerRunWithFormattedOutput(t *testing.T) {
 	ctx := context.Background()
 
@@ -144,7 +144,7 @@ func TestPlannerRunWithFormattedOutput(t *testing.T) {
 	assert.Equal(t, "Step 3", plan_.Steps[2])
 }
 
-// TestPlannerRunWithToolCalling tests the Run method of a planner created with ToolCallingChatModel
+// TestPlannerRunWithToolCalling 测试使用 ToolCallingChatModel 创建的 Planner 的 Run 方法
 func TestPlannerRunWithToolCalling(t *testing.T) {
 	ctx := context.Background()
 
