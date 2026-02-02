@@ -28,6 +28,8 @@ import (
 	"github.com/cloudwego/eino/schema"
 )
 
+// FieldMapping defines the mapping rule between predecessor output and successor input.
+// FieldMapping 定义前驱输出和后继输入之间的映射规则。
 type FieldMapping struct {
 	fromNodeKey string
 	from        string
@@ -37,6 +39,7 @@ type FieldMapping struct {
 }
 
 // String returns the string representation of the FieldMapping.
+// String 返回 FieldMapping 的字符串表示。
 func (m *FieldMapping) String() string {
 	var sb strings.Builder
 	sb.WriteString("[from ")
@@ -62,6 +65,9 @@ func (m *FieldMapping) String() string {
 // This is an exclusive mapping - once set, no other field mappings can be added since the successor input
 // has already been fully mapped.
 // Field: either the field of a struct, or the key of a map.
+// FromField 创建一个将单个前驱字段映射到整个后继输入的 FieldMapping。
+// 这是一个排他性映射 - 一旦设置，就不能添加其他字段映射，因为后继输入已被完全映射。
+// Field: 结构的字段或映射的键。
 func FromField(from string) *FieldMapping {
 	return &FieldMapping{
 		from: from,
@@ -70,6 +76,8 @@ func FromField(from string) *FieldMapping {
 
 // ToField creates a FieldMapping that maps the entire predecessor output to a single successor field.
 // Field: either the field of a struct, or the key of a map.
+// ToField 创建一个将整个前驱输出映射到单个后继字段的 FieldMapping。
+// Field: 结构的字段或映射的键。
 func ToField(to string, opts ...FieldMappingOption) *FieldMapping {
 	fm := &FieldMapping{
 		to: to,
@@ -82,6 +90,8 @@ func ToField(to string, opts ...FieldMappingOption) *FieldMapping {
 
 // MapFields creates a FieldMapping that maps a single predecessor field to a single successor field.
 // Field: either the field of a struct, or the key of a map.
+// MapFields 创建一个将单个前驱字段映射到单个后继字段的 FieldMapping。
+// Field: 结构的字段或映射的键。
 func MapFields(from, to string) *FieldMapping {
 	return &FieldMapping{
 		from: from,
@@ -89,18 +99,26 @@ func MapFields(from, to string) *FieldMapping {
 	}
 }
 
+// FromNodeKey returns the key of the source node.
+// FromNodeKey 返回源节点的键。
 func (m *FieldMapping) FromNodeKey() string {
 	return m.fromNodeKey
 }
 
+// FromPath returns the path of the source field.
+// FromPath 返回源字段的路径。
 func (m *FieldMapping) FromPath() FieldPath {
 	return splitFieldPath(m.from)
 }
 
+// ToPath returns the path of the target field.
+// ToPath 返回目标字段的路径。
 func (m *FieldMapping) ToPath() FieldPath {
 	return splitFieldPath(m.to)
 }
 
+// Equals checks if two FieldMappings are equal.
+// Equals 检查两个 FieldMapping 是否相等。
 func (m *FieldMapping) Equals(o *FieldMapping) bool {
 	if m == nil {
 		return o == nil
@@ -122,6 +140,16 @@ func (m *FieldMapping) Equals(o *FieldMapping) bool {
 //   - []string{"user"}            // top-level field
 //   - []string{"user", "name"}    // nested struct field
 //   - []string{"users", "admin"}  // map key access
+//
+// FieldPath 表示结构或映射中嵌套字段的路径。
+// 路径中的每个元素要么是：
+// - 结构字段名
+// - 映射键
+//
+// 示例路径：
+//   - []string{"user"}            // 顶级字段
+//   - []string{"user", "name"}    // 嵌套结构字段
+//   - []string{"users", "admin"}  // 映射键访问
 type FieldPath []string
 
 func (fp *FieldPath) join() string {
@@ -139,6 +167,8 @@ func splitFieldPath(path string) FieldPath {
 
 // pathSeparator is a special character (Unit Separator) used internally to join path elements.
 // This character is chosen because it's extremely unlikely to appear in user-defined field names or map keys.
+// pathSeparator 是内部用于连接路径元素的特殊字符（单元分隔符）。
+// 选择此字符是因为它极不可能出现在用户定义的字段名或映射键中。
 const pathSeparator = "\x1F"
 
 // FromFieldPath creates a FieldMapping that maps a single predecessor field path to the entire successor input.
@@ -151,6 +181,16 @@ const pathSeparator = "\x1F"
 //	FromFieldPath(FieldPath{"user", "profile", "name"})
 //
 // Note: The field path elements must not contain the internal path separator character ('\x1F').
+//
+// FromFieldPath 创建一个将单个前驱字段路径映射到整个后继输入的 FieldMapping。
+// 这是一个排他性映射 - 一旦设置，就不能添加其他字段映射，因为后继输入已被完全映射。
+//
+// 示例：
+//
+//	// 将嵌套 'user.profile' 中的 'name' 字段映射到整个后继输入
+//	FromFieldPath(FieldPath{"user", "profile", "name"})
+//
+// 注意：字段路径元素不得包含内部路径分隔符 ('\x1F')。
 func FromFieldPath(fromFieldPath FieldPath) *FieldMapping {
 	return &FieldMapping{
 		from: fromFieldPath.join(),
@@ -165,6 +205,15 @@ func FromFieldPath(fromFieldPath FieldPath) *FieldMapping {
 //	ToFieldPath(FieldPath{"response", "data", "userName"})
 //
 // Note: The field path elements must not contain the internal path separator character ('\x1F').
+//
+// ToFieldPath 创建一个将整个前驱输出映射到单个后继字段路径的 FieldMapping。
+//
+// 示例：
+//
+//	// 将整个前驱输出映射到 response.data.userName
+//	ToFieldPath(FieldPath{"response", "data", "userName"})
+//
+// 注意：字段路径元素不得包含内部路径分隔符 ('\x1F')。
 func ToFieldPath(toFieldPath FieldPath, opts ...FieldMappingOption) *FieldMapping {
 	fm := &FieldMapping{
 		to: toFieldPath.join(),
@@ -186,6 +235,18 @@ func ToFieldPath(toFieldPath FieldPath, opts ...FieldMappingOption) *FieldMappin
 //	)
 //
 // Note: The field path elements must not contain the internal path separator character ('\x1F').
+//
+// MapFieldPaths 创建一个将单个前驱字段路径映射到单个后继字段路径的 FieldMapping。
+//
+// 示例：
+//
+//	// 将 user.profile.name 映射到 response.userName
+//	MapFieldPaths(
+//	    FieldPath{"user", "profile", "name"},
+//	    FieldPath{"response", "userName"},
+//	)
+//
+// 注意：字段路径元素不得包含内部路径分隔符 ('\x1F')。
 func MapFieldPaths(fromFieldPath, toFieldPath FieldPath) *FieldMapping {
 	return &FieldMapping{
 		from: fromFieldPath.join(),
@@ -194,11 +255,15 @@ func MapFieldPaths(fromFieldPath, toFieldPath FieldPath) *FieldMapping {
 }
 
 // FieldMappingOption is a functional option for configuring a FieldMapping.
+// FieldMappingOption 是用于配置 FieldMapping 的函数选项。
 type FieldMappingOption func(*FieldMapping)
 
 // WithCustomExtractor sets a custom extractor function for the FieldMapping.
 // The extractor function is used to extract a value from the 'source' of the FieldMapping.
 // NOTE: if specified in this way, Eino can only check the validity of the field mapping at request time..
+// WithCustomExtractor 为 FieldMapping 设置自定义提取器函数。
+// 提取器函数用于从 FieldMapping 的“源”中提取值。
+// 注意：如果以这种方式指定，Eino 只能在请求时检查字段映射的有效性。
 func WithCustomExtractor(extractor func(input any) (any, error)) FieldMappingOption {
 	return func(m *FieldMapping) {
 		m.customExtractor = extractor
