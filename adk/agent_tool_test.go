@@ -94,6 +94,11 @@ func TestAgentTool_Info(t *testing.T) {
 	assert.NotNil(t, info.ParamsOneOf)
 }
 
+// TestAgentTool_SharedParentSessionValues 测试 AgentTool 在嵌套调用时共享父 Session 值的能力。
+// 验证：
+// 1. 子 Agent (作为 Tool) 能否访问父 Agent 设置的 Session 值。
+// 2. 子 Agent 对 Session 值的修改能否正确反映到父 Session 中（前提是引用同一个 Session 对象）。
+// 3. 验证 Session 锁的正确使用。
 func TestAgentTool_SharedParentSessionValues(t *testing.T) {
 	ctx := context.Background()
 
@@ -140,6 +145,7 @@ func TestAgentTool_SharedParentSessionValues(t *testing.T) {
 	assert.Equal(t, "child_val", v)
 }
 
+// sessionValuesAgent 是用于测试 Session 值共享的辅助 Agent。
 type sessionValuesAgent struct {
 	name            string
 	seenParentValue any
@@ -170,6 +176,8 @@ func (a *sessionValuesAgent) Run(ctx context.Context, _ *AgentInput, _ ...AgentR
 	return it
 }
 
+// TestAgentTool_InvokableRun 测试 AgentTool 的 InvokableRun 方法。
+// 验证 Agent 作为工具被调用时的各种场景，包括成功响应、工具调用响应、无效请求和错误处理。
 func TestAgentTool_InvokableRun(t *testing.T) {
 	// Create a context
 	ctx := context.Background()

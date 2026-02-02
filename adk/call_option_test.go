@@ -35,6 +35,7 @@ func (m *mockAgentForOption) Description(ctx context.Context) string {
 	return ""
 }
 
+// Run 模拟 Agent 运行，主要用于捕获传入的选项。
 func (m *mockAgentForOption) Run(ctx context.Context, input *AgentInput, opts ...AgentRunOption) *AsyncIterator[*AgentEvent] {
 	m.opts = opts
 	m.options = getCommonOptions(&options{}, opts...)
