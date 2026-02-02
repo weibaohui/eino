@@ -29,14 +29,20 @@ import (
 
 type on[T any] func(context.Context, T) (context.Context, T)
 
+// onStart invokes the OnStart callbacks.
+// onStart 调用 OnStart 回调。
 func onStart[T any](ctx context.Context, input T) (context.Context, T) {
 	return icb.On(ctx, input, icb.OnStartHandle[T], callbacks.TimingOnStart, true)
 }
 
+// onEnd invokes the OnEnd callbacks.
+// onEnd 调用 OnEnd 回调。
 func onEnd[T any](ctx context.Context, output T) (context.Context, T) {
 	return icb.On(ctx, output, icb.OnEndHandle[T], callbacks.TimingOnEnd, false)
 }
 
+// onStartWithStreamInput invokes the OnStartWithStreamInput callbacks.
+// onStartWithStreamInput 调用 OnStartWithStreamInput 回调。
 func onStartWithStreamInput[T any](ctx context.Context, input *schema.StreamReader[T]) (
 	context.Context, *schema.StreamReader[T]) {
 
@@ -66,6 +72,8 @@ func genericOnStartWithStreamInput(ctx context.Context, input streamReader) (con
 	return icb.On(ctx, input, genericOnStartWithStreamInputHandle, callbacks.TimingOnStartWithStreamInput, true)
 }
 
+// onEndWithStreamOutput invokes the OnEndWithStreamOutput callbacks.
+// onEndWithStreamOutput 调用 OnEndWithStreamOutput 回调。
 func onEndWithStreamOutput[T any](ctx context.Context, output *schema.StreamReader[T]) (
 	context.Context, *schema.StreamReader[T]) {
 
@@ -93,10 +101,16 @@ func genericOnEndWithStreamOutput(ctx context.Context, output streamReader) (con
 	return icb.On(ctx, output, genericOnEndWithStreamOutputHandle, callbacks.TimingOnEndWithStreamOutput, false)
 }
 
+// onError invokes the OnError callbacks.
+// onError 调用 OnError 回调。
 func onError(ctx context.Context, err error) (context.Context, error) {
 	return icb.On(ctx, err, icb.OnErrorHandle, callbacks.TimingOnError, false)
 }
 
+// runWithCallbacks executes a function with lifecycle callbacks.
+// It handles OnStart, OnEnd, and OnError callbacks automatically.
+// runWithCallbacks 执行带有生命周期回调的函数。
+// 它自动处理 OnStart、OnEnd 和 OnError 回调。
 func runWithCallbacks[I, O, TOption any](r func(context.Context, I, ...TOption) (O, error),
 	onStart on[I], onEnd on[O], onError on[error]) func(context.Context, I, ...TOption) (O, error) {
 

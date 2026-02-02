@@ -20,6 +20,10 @@ import (
 	"fmt"
 )
 
+// dagChannelBuilder creates a channel that manages dependencies and data flow in a DAG.
+// It initializes the tracking of control and data dependencies for a node.
+// dagChannelBuilder 创建一个管理 DAG 中依赖关系和数据流的通道。
+// 它初始化节点的控制和数据依赖项的跟踪。
 func dagChannelBuilder(controlDependencies []string, dataDependencies []string, zeroValue func() any, emptyStream func() streamReader) channel {
 	deps := make(map[string]dependencyState, len(controlDependencies))
 	for _, dep := range controlDependencies {
@@ -47,12 +51,28 @@ const (
 	dependencyStateSkipped
 )
 
+// dagChannel manages the state of dependencies for a node in the DAG.
+// It tracks which predecessors have completed and collects their output data.
+// dagChannel 管理 DAG 中节点依赖项的状态。
+// 它跟踪哪些前驱已完成并收集它们的输出数据。
 type dagChannel struct {
 	zeroValue   func() any
 	emptyStream func() streamReader
 
+	// ControlPredecessors tracks the state of control dependencies.
+	// Map key is the predecessor node key.
+	// ControlPredecessors 跟踪控制依赖项的状态。
+	// Map 键是前驱节点键。
 	ControlPredecessors map[string]dependencyState
+	// Values stores the output data from data predecessors.
+	// Map key is the predecessor node key.
+	// Values 存储来自数据前驱的输出数据。
+	// Map 键是前驱节点键。
 	Values              map[string]any
+	// DataPredecessors tracks whether data from data predecessors has arrived.
+	// Map key is the predecessor node key.
+	// DataPredecessors 跟踪来自数据前驱的数据是否已到达。
+	// Map 键是前驱节点键。
 	DataPredecessors    map[string]bool // if all dependencies have been skipped, indirect dependencies won't effect.
 	Skipped             bool
 

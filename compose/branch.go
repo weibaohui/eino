@@ -26,19 +26,25 @@ import (
 )
 
 // GraphBranchCondition is the condition type for the branch.
+// GraphBranchCondition 是分支的条件函数类型。
 type GraphBranchCondition[T any] func(ctx context.Context, in T) (endNode string, err error)
 
 // StreamGraphBranchCondition is the condition type for the stream branch.
+// StreamGraphBranchCondition 是流式分支的条件函数类型。
 type StreamGraphBranchCondition[T any] func(ctx context.Context, in *schema.StreamReader[T]) (endNode string, err error)
 
 // GraphMultiBranchCondition is the condition type for the multi choice branch.
+// GraphMultiBranchCondition 是多选分支的条件函数类型。
 type GraphMultiBranchCondition[T any] func(ctx context.Context, in T) (endNode map[string]bool, err error)
 
 // StreamGraphMultiBranchCondition is the condition type for the stream multi choice branch.
+// StreamGraphMultiBranchCondition 是流式多选分支的条件函数类型。
 type StreamGraphMultiBranchCondition[T any] func(ctx context.Context, in *schema.StreamReader[T]) (endNodes map[string]bool, err error)
 
 // GraphBranch is the branch type for the graph.
 // It is used to determine the next node based on the condition.
+// GraphBranch 是图的分支类型。
+// 它用于根据条件确定下一个节点。
 type GraphBranch struct {
 	invoke    func(ctx context.Context, input any) (output []string, err error)
 	collect   func(ctx context.Context, input streamReader) (output []string, err error)
@@ -50,6 +56,7 @@ type GraphBranch struct {
 }
 
 // GetEndNode returns the all end nodes of the branch.
+// GetEndNode 返回分支的所有结束节点。
 func (gb *GraphBranch) GetEndNode() map[string]bool {
 	return gb.endNodes
 }
@@ -86,6 +93,8 @@ func newGraphBranch[T any](r *runnablePacker[T, []string, any], endNodes map[str
 
 // NewGraphMultiBranch creates a branch for graphs where a condition selects
 // multiple end nodes; only keys present in endNodes are allowed.
+// NewGraphMultiBranch 创建一个图分支，其中条件可以选择多个结束节点；
+// 只有在 endNodes 中存在的键才被允许。
 func NewGraphMultiBranch[T any](condition GraphMultiBranchCondition[T], endNodes map[string]bool) *GraphBranch {
 	condRun := func(ctx context.Context, in T, opts ...any) ([]string, error) {
 		ends, err := condition(ctx, in)
@@ -108,6 +117,7 @@ func NewGraphMultiBranch[T any](condition GraphMultiBranchCondition[T], endNodes
 
 // NewStreamGraphMultiBranch creates a streaming branch where a condition on
 // the input stream selects multiple end nodes.
+// NewStreamGraphMultiBranch 创建一个流式分支，其中输入流上的条件可以选择多个结束节点。
 func NewStreamGraphMultiBranch[T any](condition StreamGraphMultiBranchCondition[T],
 	endNodes map[string]bool) *GraphBranch {
 
@@ -132,6 +142,8 @@ func NewStreamGraphMultiBranch[T any](condition StreamGraphMultiBranchCondition[
 
 // NewGraphBranch creates a new graph branch.
 // It is used to determine the next node based on the condition.
+// NewGraphBranch 创建一个新的图分支。
+// 它用于根据条件确定下一个节点。
 // e.g.
 //
 //	condition := func(ctx context.Context, in string) (string, error) {
@@ -154,6 +166,8 @@ func NewGraphBranch[T any](condition GraphBranchCondition[T], endNodes map[strin
 
 // NewStreamGraphBranch creates a new stream graph branch.
 // It is used to determine the next node based on the condition of stream input.
+// NewStreamGraphBranch 创建一个新的流式图分支。
+// 它用于根据流输入的条件确定下一个节点。
 // e.g.
 //
 //	condition := func(ctx context.Context, in *schema.StreamReader[T]) (string, error) {

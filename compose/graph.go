@@ -34,22 +34,28 @@ import (
 )
 
 // START is the start node of the graph. You can add your first edge with START.
+// START 是图的起始节点。你可以使用 START 添加第一条边。
 const START = "start"
 
 // END is the end node of the graph. You can add your last edge with END.
+// END 是图的结束节点。你可以使用 END 添加最后一条边。
 const END = "end"
 
 // graphRunType is a custom type used to control the running mode of the graph.
+// graphRunType 是用于控制图运行模式的自定义类型。
 type graphRunType string
 
 const (
 	// runTypePregel is a running mode of the graph that is suitable for large-scale graph processing tasks. Can have cycles in graph. Compatible with NodeTriggerType.AnyPredecessor.
+	// runTypePregel 是图的运行模式，适用于大规模图处理任务。图中可以有环。兼容 NodeTriggerType.AnyPredecessor。
 	runTypePregel graphRunType = "Pregel"
 	// runTypeDAG is a running mode of the graph that represents the graph as a directed acyclic graph, suitable for tasks that can be represented as a directed acyclic graph. Compatible with NodeTriggerType.AllPredecessor.
+	// runTypeDAG 是图的运行模式，将图表示为有向无环图，适用于可以表示为有向无环图的任务。兼容 NodeTriggerType.AllPredecessor。
 	runTypeDAG graphRunType = "DAG"
 )
 
 // String returns the string representation of the graph run type.
+// String 返回图运行类型的字符串表示。
 func (g graphRunType) String() string {
 	return string(g)
 }

@@ -29,6 +29,8 @@ import (
 
 // NewParallel creates a new parallel type.
 // it is useful when you want to run multiple nodes in parallel in a chain.
+// NewParallel 创建一个新的并行类型。
+// 当你想在链中并行运行多个节点时，这很有用。
 func NewParallel() *Parallel {
 	return &Parallel{
 		outputKeys: make(map[string]bool),
@@ -38,6 +40,9 @@ func NewParallel() *Parallel {
 // Parallel run multiple nodes in parallel
 //
 // use `NewParallel()` to create a new parallel type
+// Parallel 并行运行多个节点
+//
+// 使用 `NewParallel()` 创建一个新的并行类型
 // Example:
 //
 //	parallel := NewParallel()
@@ -53,6 +58,7 @@ type Parallel struct {
 }
 
 // AddChatModel adds a chat model to the parallel.
+// AddChatModel 向并行添加 ChatModel。
 // eg.
 //
 //	chatModel01, err := openai.NewChatModel(ctx, &openai.ChatModelConfig{
@@ -71,6 +77,7 @@ func (p *Parallel) AddChatModel(outputKey string, node model.BaseChatModel, opts
 }
 
 // AddChatTemplate adds a chat template to the parallel.
+// AddChatTemplate 向并行添加 ChatTemplate。
 // eg.
 //
 //	chatTemplate01, err := prompt.FromMessages(schema.FString, &schema.Message{
@@ -85,6 +92,7 @@ func (p *Parallel) AddChatTemplate(outputKey string, node prompt.ChatTemplate, o
 }
 
 // AddToolsNode adds a tools node to the parallel.
+// AddToolsNode 向并行添加 ToolsNode。
 // eg.
 //
 //	toolsNode, err := compose.NewToolNode(ctx, &compose.ToolsNodeConfig{
@@ -98,6 +106,7 @@ func (p *Parallel) AddToolsNode(outputKey string, node *ToolsNode, opts ...Graph
 }
 
 // AddLambda adds a lambda node to the parallel.
+// AddLambda 向并行添加 Lambda。
 // eg.
 //
 //	lambdaFunc := func(ctx context.Context, input *schema.Message) ([]*schema.Message, error) {
@@ -111,6 +120,7 @@ func (p *Parallel) AddLambda(outputKey string, node *Lambda, opts ...GraphAddNod
 }
 
 // AddEmbedding adds an embedding node to the parallel.
+// AddEmbedding 向并行添加 Embedding。
 // eg.
 //
 //	embeddingNode, err := openai.NewEmbedder(ctx, &openai.EmbeddingConfig{
@@ -124,6 +134,7 @@ func (p *Parallel) AddEmbedding(outputKey string, node embedding.Embedder, opts 
 }
 
 // AddRetriever adds a retriever node to the parallel.
+// AddRetriever 向并行添加 Retriever。
 // eg.
 //
 // retriever, err := vikingdb.NewRetriever(ctx, &vikingdb.RetrieverConfig{})
@@ -135,6 +146,7 @@ func (p *Parallel) AddRetriever(outputKey string, node retriever.Retriever, opts
 }
 
 // AddLoader adds a loader node to the parallel.
+// AddLoader 向并行添加 Loader。
 // eg.
 //
 //	loader, err := file.NewLoader(ctx, &file.LoaderConfig{})
@@ -146,6 +158,7 @@ func (p *Parallel) AddLoader(outputKey string, node document.Loader, opts ...Gra
 }
 
 // AddIndexer adds an indexer node to the parallel.
+// AddIndexer 向并行添加 Indexer。
 // eg.
 //
 //	indexer, err := volc_vikingdb.NewIndexer(ctx, &volc_vikingdb.IndexerConfig{
@@ -159,6 +172,7 @@ func (p *Parallel) AddIndexer(outputKey string, node indexer.Indexer, opts ...Gr
 }
 
 // AddDocumentTransformer adds an Document Transformer node to the parallel.
+// AddDocumentTransformer 向并行添加 DocumentTransformer。
 // eg.
 //
 //	markdownSplitter, err := markdown.NewHeaderSplitter(ctx, &markdown.HeaderSplitterConfig{})
@@ -171,6 +185,8 @@ func (p *Parallel) AddDocumentTransformer(outputKey string, node document.Transf
 
 // AddGraph adds a graph node to the parallel.
 // It is useful when you want to use a graph or a chain as a node in the parallel.
+// AddGraph 向并行添加 Graph。
+// 当你想使用图或链作为并行中的节点时，这很有用。
 // eg.
 //
 //	graph, err := compose.NewChain[any,any]()
@@ -182,6 +198,7 @@ func (p *Parallel) AddGraph(outputKey string, node AnyGraph, opts ...GraphAddNod
 }
 
 // AddPassthrough adds a passthrough node to the parallel.
+// AddPassthrough 向并行添加 Passthrough。
 // eg.
 //
 //	p.AddPassthrough("output_key01")

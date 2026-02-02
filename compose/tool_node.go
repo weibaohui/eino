@@ -36,9 +36,11 @@ type toolsNodeOptions struct {
 }
 
 // ToolsNodeOption is the option func type for ToolsNode.
+// ToolsNodeOption 是 ToolsNode 的选项函数类型。
 type ToolsNodeOption func(o *toolsNodeOptions)
 
 // WithToolOption adds tool options to the ToolsNode.
+// WithToolOption 向 ToolsNode 添加工具选项。
 func WithToolOption(opts ...tool.Option) ToolsNodeOption {
 	return func(o *toolsNodeOptions) {
 		o.ToolOptions = append(o.ToolOptions, opts...)
@@ -46,6 +48,7 @@ func WithToolOption(opts ...tool.Option) ToolsNodeOption {
 }
 
 // WithToolList sets the tool list for the ToolsNode.
+// WithToolList 设置 ToolsNode 的工具列表。
 func WithToolList(tool ...tool.BaseTool) ToolsNodeOption {
 	return func(o *toolsNodeOptions) {
 		o.ToolList = tool
@@ -60,6 +63,14 @@ func WithToolList(tool ...tool.BaseTool) ToolsNodeOption {
 //
 // Input: An AssistantMessage containing ToolCalls
 // Output: An array of ToolMessage where the order of elements corresponds to the order of ToolCalls in the input
+// ToolsNode 表示能够在图中执行工具的节点。
+// 图节点接口定义如下：
+//
+//	Invoke(ctx context.Context, input *schema.Message, opts ...ToolsNodeOption) ([]*schema.Message, error)
+//	Stream(ctx context.Context, input *schema.Message, opts ...ToolsNodeOption) (*schema.StreamReader[[]*schema.Message], error)
+//
+// 输入：包含 ToolCalls 的 AssistantMessage
+// 输出：ToolMessage 数组，元素的顺序对应于输入中 ToolCalls 的顺序
 type ToolsNode struct {
 	tuple                     *toolsTuple
 	unknownToolHandler        func(ctx context.Context, name, input string) (string, error)
@@ -70,63 +81,89 @@ type ToolsNode struct {
 }
 
 // ToolInput represents the input parameters for a tool call execution.
+// ToolInput 表示工具调用执行的输入参数。
 type ToolInput struct {
 	// Name is the name of the tool to be executed.
+	// Name 是要执行的工具的名称。
 	Name string
 	// Arguments contains the arguments for the tool call.
+	// Arguments 包含工具调用的参数。
 	Arguments string
 	// CallID is the unique identifier for this tool call.
+	// CallID 是此工具调用的唯一标识符。
 	CallID string
 	// CallOptions contains tool options for the execution.
+	// CallOptions 包含执行的工具选项。
 	CallOptions []tool.Option
 }
 
 // ToolOutput represents the result of a non-streaming tool call execution.
+// ToolOutput 表示非流式工具调用执行的结果。
 type ToolOutput struct {
 	// Result contains the string output from the tool execution.
+	// Result 包含工具执行的字符串输出。
 	Result string
 }
 
 // StreamToolOutput represents the result of a streaming tool call execution.
+// StreamToolOutput 表示流式工具调用执行的结果。
 type StreamToolOutput struct {
 	// Result is a stream reader that provides access to the tool's streaming output.
+	// Result 是一个流读取器，提供对工具流式输出的访问。
 	Result *schema.StreamReader[string]
 }
 
 // InvokableToolEndpoint is the function signature for non-streaming tool calls.
+// InvokableToolEndpoint 是非流式工具调用的函数签名。
 type InvokableToolEndpoint func(ctx context.Context, input *ToolInput) (*ToolOutput, error)
 
 // StreamableToolEndpoint is the function signature for streaming tool calls.
+// StreamableToolEndpoint 是流式工具调用的函数签名。
 type StreamableToolEndpoint func(ctx context.Context, input *ToolInput) (*StreamToolOutput, error)
 
 // InvokableToolMiddleware is a function that wraps InvokableToolEndpoint to add custom processing logic.
 // It can be used to intercept, modify, or enhance tool call execution for non-streaming tools.
+// InvokableToolMiddleware 是一个包装 InvokableToolEndpoint 以添加自定义处理逻辑的函数。
+// 它可以用于拦截、修改或增强非流式工具的工具调用执行。
 type InvokableToolMiddleware func(InvokableToolEndpoint) InvokableToolEndpoint
 
 // StreamableToolMiddleware is a function that wraps StreamableToolEndpoint to add custom processing logic.
 // It can be used to intercept, modify, or enhance tool call execution for streaming tools.
+// StreamableToolMiddleware 是一个包装 StreamableToolEndpoint 以添加自定义处理逻辑的函数。
+// 它可以用于拦截、修改或增强流式工具的工具调用执行。
 type StreamableToolMiddleware func(StreamableToolEndpoint) StreamableToolEndpoint
 
 // ToolMiddleware groups middleware hooks for invokable and streamable tool calls.
+// ToolMiddleware 对可调用和可流式传输的工具调用的中间件挂钩进行分组。
 type ToolMiddleware struct {
 	// Invokable contains middleware function for non-streaming tool calls.
 	// Note: This middleware only applies to tools that implement the InvokableTool interface.
+	// Invokable 包含非流式工具调用的中间件函数。
+	// 注意：此中间件仅适用于实现 InvokableTool 接口的工具。
 	Invokable InvokableToolMiddleware
 
 	// Streamable contains middleware function for streaming tool calls.
 	// Note: This middleware only applies to tools that implement the StreamableTool interface.
+	// Streamable 包含流式工具调用的中间件函数。
+	// 注意：此中间件仅适用于实现 StreamableTool 接口的工具。
 	Streamable StreamableToolMiddleware
 }
 
 // ToolsNodeConfig is the config for ToolsNode.
+// ToolsNodeConfig 是 ToolsNode 的配置。
 type ToolsNodeConfig struct {
 	// Tools specify the list of tools can be called which are BaseTool but must implement InvokableTool or StreamableTool.
+	// Tools 指定可以调用的工具列表，这些工具是 BaseTool，但必须实现 InvokableTool 或 StreamableTool。
 	Tools []tool.BaseTool
 
 	// UnknownToolsHandler handles tool calls for non-existent tools when LLM hallucinates.
 	// This field is optional. When not set, calling a non-existent tool will result in an error.
 	// When provided, if the LLM attempts to call a tool that doesn't exist in the Tools list,
 	// this handler will be invoked instead of returning an error, allowing graceful handling of hallucinated tools.
+	// UnknownToolsHandler 处理 LLM 产生幻觉时对不存在工具的工具调用。
+	// 此字段是可选的。如果未设置，调用不存在的工具将导致错误。
+	// 如果提供，当 LLM 尝试调用 Tools 列表中不存在的工具时，
+	// 将调用此处理程序而不是返回错误，从而允许优雅地处理幻觉工具。
 	// Parameters:
 	//   - ctx: The context for the tool call
 	//   - name: The name of the non-existent tool
@@ -139,10 +176,15 @@ type ToolsNodeConfig struct {
 	// ExecuteSequentially determines whether tool calls should be executed sequentially (in order) or in parallel.
 	// When set to true, tool calls will be executed one after another in the order they appear in the input message.
 	// When set to false (default), tool calls will be executed in parallel.
+	// ExecuteSequentially 确定工具调用是顺序执行（按顺序）还是并行执行。
+	// 当设置为 true 时，工具调用将按照它们在输入消息中出现的顺序一个接一个地执行。
+	// 当设置为 false（默认值）时，工具调用将并行执行。
 	ExecuteSequentially bool
 
 	// ToolArgumentsHandler allows handling of tool arguments before execution.
 	// When provided, this function will be called for each tool call to process the arguments.
+	// ToolArgumentsHandler 允许在执行前处理工具参数。
+	// 如果提供，将为每个工具调用调用此函数以处理参数。
 	// Parameters:
 	//   - ctx: The context for the tool call
 	//   - name: The name of the tool being called
@@ -156,10 +198,15 @@ type ToolsNodeConfig struct {
 	// Each element can contain Invokable and/or Streamable middleware.
 	// Invokable middleware only applies to tools implementing InvokableTool interface.
 	// Streamable middleware only applies to tools implementing StreamableTool interface.
+	// ToolCallMiddlewares 配置工具调用的中间件。
+	// 每个元素可以包含 Invokable 和/或 Streamable 中间件。
+	// Invokable 中间件仅适用于实现 InvokableTool 接口的工具。
+	// Streamable 中间件仅适用于实现 StreamableTool 接口的工具。
 	ToolCallMiddlewares []ToolMiddleware
 }
 
 // NewToolNode creates a new ToolsNode.
+// NewToolNode 创建一个新的 ToolsNode。
 // e.g.
 //
 //	conf := &ToolsNodeConfig{
@@ -194,6 +241,7 @@ func NewToolNode(ctx context.Context, conf *ToolsNodeConfig) (*ToolsNode, error)
 }
 
 // ToolsInterruptAndRerunExtra carries interrupt metadata for ToolsNode reruns.
+// ToolsInterruptAndRerunExtra 携带 ToolsNode 重运行的中断元数据。
 type ToolsInterruptAndRerunExtra struct {
 	ToolCalls     []schema.ToolCall
 	ExecutedTools map[string]string

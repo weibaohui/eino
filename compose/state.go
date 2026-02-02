@@ -27,6 +27,7 @@ import (
 )
 
 // GenLocalState is a function that generates the state.
+// GenLocalState 是生成状态的函数。
 type GenLocalState[S any] func(ctx context.Context) (state S)
 
 type stateKey struct{}
@@ -39,16 +40,22 @@ type internalState struct {
 
 // StatePreHandler is a function called before the node is executed.
 // Notice: if user called Stream but with StatePreHandler, the StatePreHandler will read all stream chunks and merge them into a single object.
+// StatePreHandler 是在节点执行前调用的函数。
+// 注意：如果用户调用 Stream 但使用了 StatePreHandler，StatePreHandler 将读取所有流块并将它们合并为单个对象。
 type StatePreHandler[I, S any] func(ctx context.Context, in I, state S) (I, error)
 
 // StatePostHandler is a function called after the node is executed.
 // Notice: if user called Stream but with StatePostHandler, the StatePostHandler will read all stream chunks and merge them into a single object.
+// StatePostHandler 是在节点执行后调用的函数。
+// 注意：如果用户调用 Stream 但使用了 StatePostHandler，StatePostHandler 将读取所有流块并将它们合并为单个对象。
 type StatePostHandler[O, S any] func(ctx context.Context, out O, state S) (O, error)
 
 // StreamStatePreHandler is a function that is called before the node is executed with stream input and output.
+// StreamStatePreHandler 是在节点执行前调用的函数，具有流式输入和输出。
 type StreamStatePreHandler[I, S any] func(ctx context.Context, in *schema.StreamReader[I], state S) (*schema.StreamReader[I], error)
 
 // StreamStatePostHandler is a function that is called after the node is executed with stream input and output.
+// StreamStatePostHandler 是在节点执行后调用的函数，具有流式输入和输出。
 type StreamStatePostHandler[O, S any] func(ctx context.Context, out *schema.StreamReader[O], state S) (*schema.StreamReader[O], error)
 
 func convertPreHandler[I, S any](handler StatePreHandler[I, S]) *composableRunnable {
@@ -114,19 +121,32 @@ func streamConvertPostHandler[O, S any](handler StreamStatePostHandler[O, S]) *c
 // ProcessState processes the state from the context in a concurrency-safe way.
 // This is the recommended way to access and modify state in custom nodes.
 // The provided function handler will be executed with exclusive access to the state (protected by mutex).
+// ProcessState 以并发安全的方式处理上下文中的状态。
+// 这是在自定义节点中访问和修改状态的推荐方式。
+// 提供的函数 handler 将在独占访问状态（由互斥锁保护）的情况下执行。
 //
 // State Lookup Behavior:
-// - If the requested state type exists in the current graph, it will be returned
-// - If not found in current graph, ProcessState will search in parent graph states (for nested graphs)
-// - This enables nested graphs to access state from their parent graphs
-// - Follows lexical scoping: inner state of the same type shadows outer state
+// 状态查找行为：
+//   - If the requested state type exists in the current graph, it will be returned
+//     如果请求的状态类型存在于当前图中，它将被返回
+//   - If not found in current graph, ProcessState will search in parent graph states (for nested graphs)
+//     如果当前图中未找到，ProcessState 将在父图状态中搜索（对于嵌套图）
+//   - This enables nested graphs to access state from their parent graphs
+//     这使得嵌套图可以访问其父图的状态
+//   - Follows lexical scoping: inner state of the same type shadows outer state
+//     遵循词法作用域：相同类型的内部状态会遮蔽外部状态
 //
 // Concurrency Safety:
-// - ProcessState automatically locks the mutex of the state being accessed (current or parent level)
-// - Each state level has its own mutex, allowing concurrent access to different levels
-// - The lock is held for the entire duration of the handler function
+// 并发安全性：
+//   - ProcessState automatically locks the mutex of the state being accessed (current or parent level)
+//     ProcessState 会自动锁定正在访问的状态（当前或父级）的互斥锁
+//   - Each state level has its own mutex, allowing concurrent access to different levels
+//     每个状态级别都有自己的互斥锁，允许并发访问不同级别
+//   - The lock is held for the entire duration of the handler function
+//     锁在整个 handler 函数执行期间被持有
 //
 // Note: This method will report an error if the state type doesn't match or state is not found in the context chain.
+// 注意：如果状态类型不匹配或在上下文链中未找到状态，此方法将报告错误。
 //
 // Example - Basic usage in a single graph:
 //

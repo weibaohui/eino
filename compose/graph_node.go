@@ -26,19 +26,27 @@ import (
 )
 
 // the info of most original executable object directly provided by the user
+// executorMeta 用户直接提供的最原始可执行对象的信息
 type executorMeta struct {
 
 	// automatically identified based on the way of addNode
+	// component 基于 addNode 方式自动识别
 	component component
 
 	// indicates whether the executable object user provided could execute the callback aspect itself.
 	// if it could, the callback in the corresponding graph node won't be executed
 	// for components, the value comes from callbacks.Checker
+	// isComponentCallbackEnabled 指示用户提供的可执行对象是否可以自己执行回调切面。
+	// 如果可以，则相应图节点中的回调将不会被执行
+	// 对于组件，该值来自 callbacks.Checker
 	isComponentCallbackEnabled bool
 
 	// for components, the value comes from components.Typer
 	// for lambda, the value comes from the user's explicit config
 	// if componentImplType is empty, then the class name or func name in the instance will be inferred, but no guarantee.
+	// componentImplType 对于组件，该值来自 components.Typer
+	// 对于 lambda，该值来自用户的显式配置
+	// 如果 componentImplType 为空，则将推断实例中的类名或函数名，但不保证准确。
 	componentImplType string
 }
 
@@ -46,6 +54,8 @@ type nodeInfo struct {
 
 	// the name of graph node for display purposes, not unique.
 	// passed from WithNodeName()
+	// name 图节点的名称，用于显示目的，不唯一。
+	// 从 WithNodeName() 传递
 	name string
 
 	inputKey  string
@@ -57,6 +67,7 @@ type nodeInfo struct {
 }
 
 // graphNode the complete information of the node in graph
+// graphNode 图中节点的完整信息
 type graphNode struct {
 	cr *composableRunnable
 

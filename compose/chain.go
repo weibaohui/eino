@@ -34,6 +34,7 @@ import (
 )
 
 // NewChain create a chain with input/output type.
+// NewChain 创建一个具有输入/输出类型的链。
 func NewChain[I, O any](opts ...NewGraphOption) *Chain[I, O] {
 	ch := &Chain[I, O]{
 		gg: NewGraph[I, O](opts...),
@@ -48,20 +49,36 @@ func NewChain[I, O any](opts ...NewGraphOption) *Chain[I, O] {
 // Chain nodes can be parallel / branch / sequence components.
 // Chain is designed to be used in a builder pattern (should Compile() before use).
 // And the interface is `Chain style`, you can use it like: `chain.AppendXX(...).AppendXX(...)`
+// Chain 是组件的链。
+// 链节点可以是并行/分支/序列组件。
+// 链设计为使用构建器模式（使用前应调用 Compile()）。
+// 接口为 `Chain 风格`，你可以这样使用：`chain.AppendXX(...).AppendXX(...)`
 //
 // Normal usage:
+// 普通用法：
 //  1. create a chain with input/output type: `chain := NewChain[inputType, outputType]()`
+//     创建具有输入/输出类型的链：`chain := NewChain[inputType, outputType]()`
 //  2. add components to chainable list:
+//     将组件添加到链表：
 //     2.1 add components: `chain.AppendChatTemplate(...).AppendChatModel(...).AppendToolsNode(...)`
+//     添加组件：`chain.AppendChatTemplate(...).AppendChatModel(...).AppendToolsNode(...)`
 //     2.2 add parallel or branch node if needed: `chain.AppendParallel()`, `chain.AppendBranch()`
+//     如果需要，添加并行或分支节点：`chain.AppendParallel()`, `chain.AppendBranch()`
 //  3. compile: `r, err := c.Compile()`
+//     编译：`r, err := c.Compile()`
 //  4. run:
+//     运行：
 //     4.1 `one input & one output` use `r.Invoke(ctx, input)`
+//     `单输入 & 单输出` 使用 `r.Invoke(ctx, input)`
 //     4.2 `one input & multi output chunk` use `r.Stream(ctx, input)`
+//     `单输入 & 多输出块` 使用 `r.Stream(ctx, input)`
 //     4.3 `multi input chunk & one output` use `r.Collect(ctx, inputReader)`
+//     `多输入块 & 单输出` 使用 `r.Collect(ctx, inputReader)`
 //     4.4 `multi input chunk & multi output chunk` use `r.Transform(ctx, inputReader)`
+//     `多输入块 & 多输出块` 使用 `r.Transform(ctx, inputReader)`
 //
 // Using in graph or other chain:
+// 在图或其他链中使用：
 // chain1 := NewChain[inputType, outputType]()
 // graph := NewGraph[](runTypePregel)
 // graph.AddGraph("key", chain1) // chain is an AnyGraph implementation
@@ -82,6 +99,7 @@ type Chain[I, O any] struct {
 }
 
 // ErrChainCompiled is returned when attempting to modify a chain after it has been compiled
+// ErrChainCompiled 当尝试在链编译后修改链时返回
 var ErrChainCompiled = errors.New("chain has been compiled, cannot be modified")
 
 // implements AnyGraph.
@@ -144,6 +162,8 @@ func (c *Chain[I, O]) component() component {
 
 // Compile to a Runnable.
 // Runnable can be used directly.
+// Compile 编译为 Runnable。
+// Runnable 可以直接使用。
 // e.g.
 //
 //		chain := NewChain[string, string]()
@@ -163,6 +183,7 @@ func (c *Chain[I, O]) Compile(ctx context.Context, opts ...GraphCompileOption) (
 }
 
 // AppendChatModel add a ChatModel node to the chain.
+// AppendChatModel 向链中添加一个 ChatModel 节点。
 // e.g.
 //
 //	model, err := openai.NewChatModel(ctx, config)
@@ -175,6 +196,7 @@ func (c *Chain[I, O]) AppendChatModel(node model.BaseChatModel, opts ...GraphAdd
 }
 
 // AppendChatTemplate add a ChatTemplate node to the chain.
+// AppendChatTemplate 向链中添加一个 ChatTemplate 节点。
 // eg.
 //
 //	chatTemplate, err := prompt.FromMessages(schema.FString, &schema.Message{
@@ -190,6 +212,7 @@ func (c *Chain[I, O]) AppendChatTemplate(node prompt.ChatTemplate, opts ...Graph
 }
 
 // AppendToolsNode add a ToolsNode node to the chain.
+// AppendToolsNode 向链中添加一个 ToolsNode 节点。
 // e.g.
 //
 //	toolsNode, err := tools.NewToolNode(ctx, &tools.ToolsNodeConfig{

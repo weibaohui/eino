@@ -35,6 +35,9 @@ type nodeOptionsPair generic.Pair[*graphNode, *graphAddNodeOpts]
 // ChainBranch represents a conditional branch in a chain of operations.
 // It allows for dynamic routing of execution based on a condition.
 // All branches within ChainBranch are expected to either end the Chain, or converge to another node in the Chain.
+// ChainBranch 表示操作链中的条件分支。
+// 它允许基于条件动态路由执行。
+// ChainBranch 内的所有分支都应结束链，或汇聚到链中的另一个节点。
 type ChainBranch struct {
 	internalBranch *GraphBranch
 	key2BranchNode map[string]nodeOptionsPair
@@ -43,6 +46,7 @@ type ChainBranch struct {
 
 // NewChainMultiBranch creates a chain branch where a condition selects
 // multiple end nodes to route execution.
+// NewChainMultiBranch 创建一个链分支，其中条件选择多个结束节点来路由执行。
 func NewChainMultiBranch[T any](cond GraphMultiBranchCondition[T]) *ChainBranch {
 	invokeCond := func(ctx context.Context, in T, opts ...any) (endNodes []string, err error) {
 		ends, err := cond(ctx, in)
@@ -64,6 +68,7 @@ func NewChainMultiBranch[T any](cond GraphMultiBranchCondition[T]) *ChainBranch 
 
 // NewStreamChainMultiBranch creates a chain branch that selects multiple end
 // nodes based on a condition evaluated on the input stream.
+// NewStreamChainMultiBranch 创建一个链分支，该分支根据在输入流上评估的条件选择多个结束节点。
 func NewStreamChainMultiBranch[T any](cond StreamGraphMultiBranchCondition[T]) *ChainBranch {
 	collectCon := func(ctx context.Context, in *schema.StreamReader[T], opts ...any) (endNodes []string, err error) {
 		ends, err := cond(ctx, in)
@@ -87,6 +92,10 @@ func NewStreamChainMultiBranch[T any](cond StreamGraphMultiBranchCondition[T]) *
 // It takes a generic type T and a GraphBranchCondition function for that type.
 // The returned ChainBranch will have an empty key2BranchNode map and a condition function
 // that wraps the provided cond to handle type assertions and error checking.
+// NewChainBranch 基于给定条件创建一个新的 ChainBranch 实例。
+// 它接受一个泛型类型 T 和该类型的 GraphBranchCondition 函数。
+// 返回的 ChainBranch 将具有一个空的 key2BranchNode 映射和一个条件函数，
+// 该函数包装提供的 cond 以处理类型断言和错误检查。
 // eg.
 //
 //	condition := func(ctx context.Context, in string, opts ...any) (endNode string, err error) {
@@ -111,6 +120,10 @@ func NewChainBranch[T any](cond GraphBranchCondition[T]) *ChainBranch {
 // It takes a generic type T and a StreamGraphBranchCondition function for that type.
 // The returned ChainBranch will have an empty key2BranchNode map and a condition function
 // that wraps the provided cond to handle type assertions and error checking.
+// NewStreamChainBranch 基于给定的流条件创建一个新的 ChainBranch 实例。
+// 它接受一个泛型类型 T 和该类型的 StreamGraphBranchCondition 函数。
+// 返回的 ChainBranch 将具有一个空的 key2BranchNode 映射和一个条件函数，
+// 该函数包装提供的 cond 以处理类型断言和错误检查。
 // eg.
 //
 //	condition := func(ctx context.Context, in *schema.StreamReader[string], opts ...any) (endNode string, err error) {
@@ -131,6 +144,7 @@ func NewStreamChainBranch[T any](cond StreamGraphBranchCondition[T]) *ChainBranc
 }
 
 // AddChatModel adds a ChatModel node to the branch.
+// AddChatModel 向分支添加 ChatModel 节点。
 // eg.
 //
 //	chatModel01, err := openai.NewChatModel(ctx, &openai.ChatModelConfig{
@@ -147,6 +161,7 @@ func (cb *ChainBranch) AddChatModel(key string, node model.BaseChatModel, opts .
 }
 
 // AddChatTemplate adds a ChatTemplate node to the branch.
+// AddChatTemplate 向分支添加 ChatTemplate 节点。
 // eg.
 //
 //	chatTemplate, err := prompt.FromMessages(schema.FString, &schema.Message{
@@ -168,6 +183,7 @@ func (cb *ChainBranch) AddChatTemplate(key string, node prompt.ChatTemplate, opt
 }
 
 // AddToolsNode adds a ToolsNode to the branch.
+// AddToolsNode 向分支添加 ToolsNode 节点。
 // eg.
 //
 //	toolsNode, err := tools.NewToolNode(ctx, &tools.ToolsNodeConfig{
@@ -181,6 +197,7 @@ func (cb *ChainBranch) AddToolsNode(key string, node *ToolsNode, opts ...GraphAd
 }
 
 // AddLambda adds a Lambda node to the branch.
+// AddLambda 向分支添加 Lambda 节点。
 // eg.
 //
 //	lambdaFunc := func(ctx context.Context, in string, opts ...any) (out string, err error) {
@@ -195,6 +212,7 @@ func (cb *ChainBranch) AddLambda(key string, node *Lambda, opts ...GraphAddNodeO
 }
 
 // AddEmbedding adds an Embedding node to the branch.
+// AddEmbedding 向分支添加 Embedding 节点。
 // eg.
 //
 //	embeddingNode, err := openai.NewEmbedder(ctx, &openai.EmbeddingConfig{

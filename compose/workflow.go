@@ -31,6 +31,7 @@ import (
 )
 
 // WorkflowNode is the node of the Workflow.
+// WorkflowNode 是工作流的节点。
 type WorkflowNode struct {
 	g                *graph
 	key              string
@@ -42,6 +43,8 @@ type WorkflowNode struct {
 
 // Workflow is wrapper of graph, replacing AddEdge with declaring dependencies and field mappings between nodes.
 // Under the hood it uses NodeTriggerMode(AllPredecessor), so does not support cycles.
+// Workflow 是图的包装器，用声明节点间的依赖关系和字段映射代替 AddEdge。
+// 底层使用 NodeTriggerMode(AllPredecessor)，因此不支持环。
 type Workflow[I, O any] struct {
 	g                *graph
 	workflowNodes    map[string]*WorkflowNode
@@ -58,6 +61,7 @@ const (
 )
 
 // NewWorkflow creates a new Workflow.
+// NewWorkflow 创建一个新的工作流。
 func NewWorkflow[I, O any](opts ...NewGraphOption) *Workflow[I, O] {
 	options := &newGraphOptions{}
 	for _, opt := range opts {
@@ -79,71 +83,83 @@ func NewWorkflow[I, O any](opts ...NewGraphOption) *Workflow[I, O] {
 }
 
 // Compile builds the workflow into a runnable graph.
+// Compile 将工作流构建为可运行的图。
 func (wf *Workflow[I, O]) Compile(ctx context.Context, opts ...GraphCompileOption) (Runnable[I, O], error) {
 	return compileAnyGraph[I, O](ctx, wf, opts...)
 }
 
 // AddChatModelNode adds a chat model node and returns it.
+// AddChatModelNode 添加一个聊天模型节点并返回它。
 func (wf *Workflow[I, O]) AddChatModelNode(key string, chatModel model.BaseChatModel, opts ...GraphAddNodeOpt) *WorkflowNode {
 	_ = wf.g.AddChatModelNode(key, chatModel, opts...)
 	return wf.initNode(key)
 }
 
 // AddChatTemplateNode adds a chat template node and returns it.
+// AddChatTemplateNode 添加一个聊天模板节点并返回它。
 func (wf *Workflow[I, O]) AddChatTemplateNode(key string, chatTemplate prompt.ChatTemplate, opts ...GraphAddNodeOpt) *WorkflowNode {
 	_ = wf.g.AddChatTemplateNode(key, chatTemplate, opts...)
 	return wf.initNode(key)
 }
 
 // AddToolsNode adds a tools node and returns it.
+// AddToolsNode 添加一个工具节点并返回它。
 func (wf *Workflow[I, O]) AddToolsNode(key string, tools *ToolsNode, opts ...GraphAddNodeOpt) *WorkflowNode {
 	_ = wf.g.AddToolsNode(key, tools, opts...)
 	return wf.initNode(key)
 }
 
 // AddRetrieverNode adds a retriever node and returns it.
+// AddRetrieverNode 添加一个检索器节点并返回它。
 func (wf *Workflow[I, O]) AddRetrieverNode(key string, retriever retriever.Retriever, opts ...GraphAddNodeOpt) *WorkflowNode {
 	_ = wf.g.AddRetrieverNode(key, retriever, opts...)
 	return wf.initNode(key)
 }
 
 // AddEmbeddingNode adds an embedding node and returns it.
+// AddEmbeddingNode 添加一个嵌入节点并返回它。
 func (wf *Workflow[I, O]) AddEmbeddingNode(key string, embedding embedding.Embedder, opts ...GraphAddNodeOpt) *WorkflowNode {
 	_ = wf.g.AddEmbeddingNode(key, embedding, opts...)
 	return wf.initNode(key)
 }
 
 // AddIndexerNode adds an indexer node to the workflow and returns it.
+// AddIndexerNode 向工作流添加一个索引器节点并返回它。
 func (wf *Workflow[I, O]) AddIndexerNode(key string, indexer indexer.Indexer, opts ...GraphAddNodeOpt) *WorkflowNode {
 	_ = wf.g.AddIndexerNode(key, indexer, opts...)
 	return wf.initNode(key)
 }
 
 // AddLoaderNode adds a document loader node to the workflow and returns it.
+// AddLoaderNode 向工作流添加一个文档加载器节点并返回它。
 func (wf *Workflow[I, O]) AddLoaderNode(key string, loader document.Loader, opts ...GraphAddNodeOpt) *WorkflowNode {
 	_ = wf.g.AddLoaderNode(key, loader, opts...)
 	return wf.initNode(key)
 }
 
 // AddDocumentTransformerNode adds a document transformer node and returns it.
+// AddDocumentTransformerNode 添加一个文档转换器节点并返回它。
 func (wf *Workflow[I, O]) AddDocumentTransformerNode(key string, transformer document.Transformer, opts ...GraphAddNodeOpt) *WorkflowNode {
 	_ = wf.g.AddDocumentTransformerNode(key, transformer, opts...)
 	return wf.initNode(key)
 }
 
 // AddGraphNode adds a nested graph node to the workflow and returns it.
+// AddGraphNode 向工作流添加一个嵌套图节点并返回它。
 func (wf *Workflow[I, O]) AddGraphNode(key string, graph AnyGraph, opts ...GraphAddNodeOpt) *WorkflowNode {
 	_ = wf.g.AddGraphNode(key, graph, opts...)
 	return wf.initNode(key)
 }
 
 // AddLambdaNode adds a lambda node to the workflow and returns it.
+// AddLambdaNode 向工作流添加一个 lambda 节点并返回它。
 func (wf *Workflow[I, O]) AddLambdaNode(key string, lambda *Lambda, opts ...GraphAddNodeOpt) *WorkflowNode {
 	_ = wf.g.AddLambdaNode(key, lambda, opts...)
 	return wf.initNode(key)
 }
 
 // End returns the WorkflowNode representing END node.
+// End 返回代表 END 节点的 WorkflowNode。
 func (wf *Workflow[I, O]) End() *WorkflowNode {
 	if node, ok := wf.workflowNodes[END]; ok {
 		return node
@@ -152,6 +168,7 @@ func (wf *Workflow[I, O]) End() *WorkflowNode {
 }
 
 // AddPassthroughNode adds a passthrough node to the workflow and returns it.
+// AddPassthroughNode 向工作流添加一个透传节点并返回它。
 func (wf *Workflow[I, O]) AddPassthroughNode(key string, opts ...GraphAddNodeOpt) *WorkflowNode {
 	_ = wf.g.AddPassthroughNode(key, opts...)
 	return wf.initNode(key)
@@ -160,12 +177,19 @@ func (wf *Workflow[I, O]) AddPassthroughNode(key string, opts ...GraphAddNodeOpt
 // AddInput creates both data and execution dependencies between nodes.
 // It configures how data flows from the predecessor node (fromNodeKey) to the current node,
 // and ensures the current node only executes after the predecessor completes.
+// AddInput 在节点之间创建数据和执行依赖关系。
+// 它配置数据如何从前驱节点 (fromNodeKey) 流向当前节点，
+// 并确保当前节点仅在前驱节点完成后执行。
 //
 // Parameters:
+// 参数：
 //   - fromNodeKey: the key of the predecessor node
+//     前驱节点的键
 //   - inputs: field mappings that specify how data should flow from the predecessor
 //     to the current node. If no mappings are provided, the entire output of the
 //     predecessor will be used as input.
+//     字段映射，指定数据应如何从前驱节点流向当前节点。
+//     如果未提供映射，则前驱节点的整个输出将用作输入。
 //
 // Example:
 //
@@ -176,6 +200,7 @@ func (wf *Workflow[I, O]) AddPassthroughNode(key string, opts ...GraphAddNodeOpt
 //	node.AddInput("dataNode")
 //
 // Returns the current node for method chaining.
+// 返回当前节点以进行方法链式调用。
 func (n *WorkflowNode) AddInput(fromNodeKey string, inputs ...*FieldMapping) *WorkflowNode {
 	return n.addDependencyRelation(fromNodeKey, inputs, &workflowAddInputOpts{})
 }

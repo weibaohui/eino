@@ -38,6 +38,11 @@ func init() {
 // Both custom interfaces and structs need to be registered using this function.
 // Types only need to be registered once - pointers and other references will be handled automatically.
 // All built-in eino types are already registered.
+// RegisterSerializableType 注册一个自定义类型以进行 eino 序列化。
+// 这允许 eino 正确地序列化和反序列化自定义类型。
+// 自定义接口和结构体都需要使用此函数注册。
+// 类型只需注册一次 - 指针和其他引用将自动处理。
+// 所有内置的 eino 类型都已注册。
 // Parameters:
 // - name: A unique identifier for the type being registered (should not start with "_eino")
 // - T: The generic type parameter representing the type to register
@@ -56,6 +61,7 @@ type Serializer interface {
 }
 
 // WithCheckPointStore sets the checkpoint store implementation for a graph.
+// WithCheckPointStore 设置图的检查点存储实现。
 func WithCheckPointStore(store CheckPointStore) GraphCompileOption {
 	return func(o *graphCompileOptions) {
 		o.checkPointStore = store
@@ -63,6 +69,7 @@ func WithCheckPointStore(store CheckPointStore) GraphCompileOption {
 }
 
 // WithSerializer sets the serializer used to persist checkpoint state.
+// WithSerializer 设置用于持久化检查点状态的序列化器。
 func WithSerializer(serializer Serializer) GraphCompileOption {
 	return func(o *graphCompileOptions) {
 		o.serializer = serializer
@@ -70,6 +77,7 @@ func WithSerializer(serializer Serializer) GraphCompileOption {
 }
 
 // WithCheckPointID sets the checkpoint ID to load from and write to by default.
+// WithCheckPointID 设置默认读取和写入的检查点 ID。
 func WithCheckPointID(checkPointID string) Option {
 	return Option{
 		checkPointID: &checkPointID,
@@ -80,6 +88,9 @@ func WithCheckPointID(checkPointID string) Option {
 // If not provided, the checkpoint ID from WithCheckPointID will be used for writing.
 // This is useful for scenarios where you want to load from an existed checkpoint
 // but save the progress to a new, separate checkpoint.
+// WithWriteToCheckPointID 指定要写入的不同的检查点 ID。
+// 如果未提供，则将使用 WithCheckPointID 中的检查点 ID 进行写入。
+// 这对于想要从现有检查点加载但将进度保存到新的单独检查点的场景很有用。
 func WithWriteToCheckPointID(checkPointID string) Option {
 	return Option{
 		writeToCheckPointID: &checkPointID,
@@ -87,6 +98,7 @@ func WithWriteToCheckPointID(checkPointID string) Option {
 }
 
 // WithForceNewRun forces the graph to run from the beginning, ignoring any checkpoints.
+// WithForceNewRun 强制图从头开始运行，忽略任何检查点。
 func WithForceNewRun() Option {
 	return Option{
 		forceNewRun: true,
@@ -94,9 +106,11 @@ func WithForceNewRun() Option {
 }
 
 // StateModifier modifies state during checkpoint operations for a given node path.
+// StateModifier 在给定节点路径的检查点操作期间修改状态。
 type StateModifier func(ctx context.Context, path NodePath, state any) error
 
 // WithStateModifier installs a state modifier invoked during checkpoint read/write.
+// WithStateModifier 安装在检查点读取/写入期间调用的状态修改器。
 func WithStateModifier(sm StateModifier) Option {
 	return Option{
 		stateModifier: sm,
